@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Debt Management - Finance Tracker</title>
+    <style>
+        /* Same styles as dashboard plus additional */
+        .payment-history {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #F9FAFB;
+            border-radius: 10px;
+        }
+        
+        .make-payment-form {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--background);
+            border-radius: 10px;
+        }
+        
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+        
+        .filter-buttons {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .filter-btn.active {
+            background: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation same as dashboard -->
+    
+    <div class="container">
+        <h2>💰 Debt Management</h2>
+        
+        <!-- Summary Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-title">Total Owed to Me</div>
+                <div class="stat-value positive" th:text="${totalOwedToMe} + ' TZS'"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Total I Owe</div>
+                <div class="stat-value negative" th:text="${totalIOwe} + ' TZS'"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Net Position</div>
+                <div class="stat-value" th:class="${netPosition >= 0 ? 'positive' : 'negative'}" 
+                     th:text="${netPosition} + ' TZS'"></div>
+            </div>
+        </div>
+        
+        <!-- Filter Buttons -->
+        <div class="filter-buttons">
+            <button class="filter-btn" onclick="filterDebts('all')">All</button>
+            <button class="filter-btn" onclick="filterDebts('OWED_TO_ME')">Owed to Me</button>
+            <button class="filter-btn" onclick="filterDebts('I_OWE')">I Owe</button>
+            <button class="filter-btn" onclick="filterDebts('SETTLED')">Settled</button>
+            <button class="filter-btn" onclick="filterDebts('PENDING')">Pending</button>
+        </div>
+        
+        <!-- Add Debt Button -->
+        <a href="/debts/add" class="action-btn" style="display: inline-block; margin-bottom: 2rem;">+ Add New Debt</a>
+        
+        <!-- Debts List -->
+        <div class="dashboard-section">
+            <h3>My Debts</h3>
+            <div th:each="debt : ${debts}" class="debt-item" style="border: 1px solid #E5E7EB; margin-bottom: 1rem; border-radius: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap;">
+                    <div>
+                        <h4 th:text="${debt.personName}"></h4>
+                        <p th:text="${debt.description}"></p>
+                        <small>Date: <span th:text="${#temporals.format(debt.dateGiven, 'yyyy-MM-dd')}"></span></small>
+                        <p>Amount: <strong th:text="${debt.amount} + ' TZS'"></strong></p>
+                        <p>Remaining: <strong th:text="${debt.remainingAmount} + ' TZS'"></strong></p>
+                        <p>Status: <span class="status-badge" th:class="'status-' + ${debt.status.toLowerCase()}" 
+                                       th:text="${debt.status}"></span></p>
+                    </div>
+                    <div>
+                        <a th:href="'/debts/make-payment/' + ${debt.id}" class="btn-small action-btn">Make Payment</a>
+                        <a th:href="'/debts/edit/' + ${debt.id}" class="btn-small action-btn">Edit</a>
+                        <a th:href="'/debts/delete/' + ${debt.id}" class="btn-small action-btn" 
+                           onclick="return confirm('Are you sure?')">Delete</a>
+                    </div>
+                </div>
+                
+                <!-- Payment History -->
+                <div th:if="${!debt.paymentHistory.empty}" class="payment-history">
+                    <h5>Payment History:</h5>
+                    <ul>
+                        <li th:each="payment : ${debt.paymentHistory}">
+                            <span th:text="${#temporals.format(payment.paymentDate, 'yyyy-MM-dd')}"></span> - 
+                            Paid <span th:text="${payment.amountPaid}"></span> TZS - 
+                            <span th:text="${payment.notes}"></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function filterDebts(type) {
+            // JavaScript filtering logic
+            const items = document.querySelectorAll('.debt-item');
+            items.forEach(item => {
+                if (type === 'all') {
+                    item.style.display = 'block';
+                } else {
+                    // Add data-type attribute to each debt item
+                    const itemType = item.getAttribute('data-type');
+                    if (itemType === type) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
