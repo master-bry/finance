@@ -1,21 +1,120 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}">
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Investments - Finance Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <style>
+        :root {
+            --primary-dark: #2F6B3F;
+            --secondary: #7FB77E;
+            --accent: #F7C85C;
+            --background: #FFF6C0;
+            --white: #FFFFFF;
+            --success: #10B981;
+            --danger: #EF4444;
+            --sidebar-width: 280px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--background); }
+        
+        .sidebar {
+            position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #1a4d2a 100%);
+            color: white; padding: 1.5rem; overflow-y: auto;
+        }
+        .sidebar-header { text-align: center; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 1.5rem; }
+        .sidebar-header h2 span { color: var(--accent); }
+        .nav-menu { list-style: none; }
+        .nav-item { margin-bottom: 0.5rem; }
+        .nav-link { display: flex; align-items: center; padding: 0.75rem 1rem; color: white; text-decoration: none; border-radius: 10px; gap: 12px; transition: all 0.3s; }
+        .nav-link:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
+        .nav-link.active { background: var(--accent); color: var(--primary-dark); font-weight: bold; }
+        
+        .main-content { margin-left: var(--sidebar-width); padding: 1.5rem; min-height: 100vh; }
+        .top-bar {
+            background: var(--white); border-radius: 15px; padding: 1rem 1.5rem; margin-bottom: 1.5rem;
+            display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .logout-btn { background: var(--danger); color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: var(--white);
+            padding: 1.25rem;
+            border-radius: 15px;
+            border-left: 4px solid var(--primary-dark);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .stat-title { color: #6B7280; font-size: 0.8rem; margin-bottom: 0.5rem; }
+        .stat-value { font-size: 1.8rem; font-weight: bold; }
+        .positive { color: var(--success); }
+        .negative { color: var(--danger); }
+        
+        .btn-add {
+            background: var(--primary-dark);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        .btn-add:hover { background: var(--secondary); }
+        
+        .section-card {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent);
+        }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #E5E7EB; }
+        .data-table th { background: #F9FAFB; font-weight: 600; }
+        
+        .btn-sm {
+            padding: 0.3rem 0.7rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            margin: 0 2px;
+            display: inline-block;
+        }
+        .btn-update { background: var(--accent); color: #333; }
+        .btn-delete { background: var(--danger); color: white; }
+        
+        .alert-success { background: #D1FAE5; color: #065F46; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
+        .alert-error { background: #FEE2E2; color: #991B1B; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
+        
+        .mobile-menu-btn { position: fixed; top: 1rem; left: 1rem; z-index: 1100; background: var(--primary-dark); color: white; padding: 0.5rem; border-radius: 8px; cursor: pointer; display: none; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .mobile-menu-btn { display: block; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h2>💰 Finance<span>Tracker</span></h2>
-            <p>Manage Your Finances</p>
-        </div>
+    <div class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header"><h2>💰 Finance<span>Tracker</span></h2><p>Manage Your Finances</p></div>
         <ul class="nav-menu">
             <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> Dashboard</a></li>
             <li class="nav-item"><a href="/transactions" class="nav-link"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
@@ -26,38 +125,81 @@
         </ul>
     </div>
     
-    <!-- Main Content -->
     <div class="main-content">
         <div class="top-bar">
             <div><h3>📈 Investments</h3><p>Track your investment portfolio</p></div>
-            <a href="/dashboard" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+            <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
         
+        <div th:if="${success}" class="alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert-error" th:text="${error}"></div>
+        
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-title">💰 Total Invested</div><div class="stat-value"><span th:text="${#numbers.formatDecimal(totalInvested, 1, 2)}"></span> TZS</div></div>
-            <div class="stat-card"><div class="stat-title">📈 Current Value</div><div class="stat-value"><span th:text="${#numbers.formatDecimal(totalCurrentValue, 1, 2)}"></span> TZS</div></div>
-            <div class="stat-card"><div class="stat-title">📊 Profit/Loss</div><div class="stat-value" th:class="${totalProfitLoss >= 0 ? 'positive' : 'negative'}"><span th:text="${#numbers.formatDecimal(totalProfitLoss, 1, 2)}"></span> TZS</div></div>
+            <div class="stat-card">
+                <div class="stat-title">💰 Total Invested</div>
+                <div class="stat-value"><span th:text="${#numbers.formatDecimal(totalInvested, 1, 2)}"></span> TZS</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">📈 Current Value</div>
+                <div class="stat-value"><span th:text="${#numbers.formatDecimal(totalCurrentValue, 1, 2)}"></span> TZS</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">📊 Profit/Loss</div>
+                <div class="stat-value" th:class="${totalProfitLoss >= 0 ? 'positive' : 'negative'}">
+                    <span th:text="${#numbers.formatDecimal(totalProfitLoss, 1, 2)}"></span> TZS
+                </div>
+            </div>
         </div>
         
         <a href="/investments/add" class="btn-add"><i class="fas fa-plus"></i> Add Investment</a>
         
-        <div th:each="inv : ${investments}" class="investment-card">
-            <div class="investment-header">
-                <span class="investment-name" th:text="${inv.name}"></span>
-                <span th:class="${inv.profitLoss >= 0 ? 'positive' : 'negative'}" th:text="${#numbers.formatDecimal(inv.profitLossPercentage, 1, 2)} + '%'"></span>
+        <div class="section-card">
+            <div class="section-header">
+                <h4><i class="fas fa-chart-line"></i> My Investments (<span th:text="${investments.size()}"></span>)</h4>
             </div>
-            <p>Invested: <strong th:text="${#numbers.formatDecimal(inv.amountInvested, 1, 2)}"></strong> TZS</p>
-            <p>Current: <strong th:text="${#numbers.formatDecimal(inv.currentValue, 1, 2)}"></strong> TZS</p>
-            <p>Type: <span th:text="${inv.type}"></span> | Risk: <span th:text="${inv.riskLevel}"></span></p>
-            <div style="margin-top: 10px;">
-                <a th:href="'/investments/update-value/' + ${inv.id}" class="btn-sm btn-update">💰 Update Value</a>
-                <a th:href="'/investments/edit/' + ${inv.id}" class="btn-sm btn-edit">✏️ Edit</a>
-                <a th:href="'/investments/delete/' + ${inv.id}" class="btn-sm btn-delete" onclick="return confirm('Delete this investment?')">🗑️ Delete</a>
+            
+            <div th:if="${investments.empty}" style="text-align: center; padding: 2rem; color: #6B7280;">
+                <i class="fas fa-chart-line" style="font-size: 3rem;"></i>
+                <p>No investments yet. Click "Add Investment" to get started!</p>
             </div>
-        </div>
-        <div th:if="${investments.empty}" style="text-align: center; padding: 2rem; background: white; border-radius: 15px;">
-            <p>No investments yet. <a href="/investments/add">Add your first investment!</a></p>
+            
+            <table class="data-table" th:if="${!investments.empty}">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Invested</th>
+                        <th>Current</th>
+                        <th>Profit/Loss</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="inv : ${investments}">
+                        <td><strong th:text="${inv.name}"></strong></td>
+                        <td><span th:text="${inv.type}"></span></td>
+                        <td><span th:text="${#numbers.formatDecimal(inv.amountInvested, 1, 2)}"></span> TZS</td>
+                        <td><span th:text="${#numbers.formatDecimal(inv.currentValue, 1, 2)}"></span> TZS</td>
+                        <td>
+                            <span th:class="${inv.profitLoss >= 0 ? 'positive' : 'negative'}">
+                                <span th:text="${#numbers.formatDecimal(inv.profitLoss, 1, 2)}"></span> TZS
+                                (<span th:text="${#numbers.formatDecimal(inv.profitLossPercentage, 1, 2)}"></span>%)
+                            </span>
+                        </td>
+                        <td><span th:text="${inv.status}"></span></td>
+                        <td>
+                            <a th:href="'/investments/update-value/' + ${inv.id}" class="btn-sm btn-update"><i class="fas fa-chart-line"></i> Update</a>
+                            <a th:href="'/investments/delete/' + ${inv.id}" class="btn-sm btn-delete" onclick="return confirm('Delete this investment?')"><i class="fas fa-trash"></i> Delete</a>
+                         </td>
+                     </tr>
+                </tbody>
+            </table>
         </div>
     </div>
+    
+    <script>
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+    </script>
 </body>
 </html>

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Investment - Finance Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary-dark: #2F6B3F;
@@ -12,156 +13,88 @@
             --background: #FFF6C0;
             --white: #FFFFFF;
             --danger: #EF4444;
+            --sidebar-width: 280px;
         }
-        
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--background); }
         
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--background);
-            min-height: 100vh;
+        .sidebar {
+            position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #1a4d2a 100%);
+            color: white; padding: 1.5rem; overflow-y: auto;
         }
+        .sidebar-header { text-align: center; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 1.5rem; }
+        .sidebar-header h2 span { color: var(--accent); }
+        .nav-menu { list-style: none; }
+        .nav-item { margin-bottom: 0.5rem; }
+        .nav-link { display: flex; align-items: center; padding: 0.75rem 1rem; color: white; text-decoration: none; border-radius: 10px; gap: 12px; transition: all 0.3s; }
+        .nav-link:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
+        .nav-link.active { background: var(--accent); color: var(--primary-dark); font-weight: bold; }
         
-        .navbar {
-            background: var(--primary-dark);
-            color: white;
-            padding: 1rem 2rem;
+        .main-content { margin-left: var(--sidebar-width); padding: 1.5rem; min-height: 100vh; }
+        .top-bar {
+            background: var(--white); border-radius: 15px; padding: 1rem 1.5rem; margin-bottom: 1.5rem;
+            display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        
-        .navbar-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo { font-size: 1.5rem; font-weight: bold; }
-        .logo span { color: var(--accent); }
-        
-        .container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
+        .logout-btn { background: var(--danger); color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; }
         
         .form-container {
-            background: var(--white);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            background: var(--white); border-radius: 15px; padding: 2rem; max-width: 600px; margin: 0 auto;
         }
-        
-        h1 {
-            color: var(--primary-dark);
-            margin-bottom: 1.5rem;
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 0.75rem; border: 2px solid #E5E7EB; border-radius: 10px; font-size: 1rem;
         }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); }
+        .btn-save { background: var(--primary-dark); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 10px; cursor: pointer; font-size: 1rem; width: 100%; }
+        .btn-save:hover { background: var(--secondary); }
+        .btn-back { background: #6B7280; color: white; padding: 0.75rem 1.5rem; border-radius: 10px; text-decoration: none; display: inline-block; margin-top: 1rem; text-align: center; width: 100%; }
         
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
         
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #374151;
-            font-weight: 500;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #E5E7EB;
-            border-radius: 10px;
-            font-size: 1rem;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-        
-        .btn {
-            flex: 1;
-            padding: 0.75rem;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-        }
-        
-        .btn-primary {
-            background: var(--primary-dark);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: var(--secondary);
-        }
-        
-        .btn-secondary {
-            background: #9CA3AF;
-            color: white;
-        }
-        
-        .error-message {
-            color: var(--danger);
-            font-size: 0.85rem;
-            margin-top: 0.25rem;
-        }
-        
-        .row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        
-        @media (max-width: 640px) {
-            .row {
-                grid-template-columns: 1fr;
-            }
+        .mobile-menu-btn { position: fixed; top: 1rem; left: 1rem; z-index: 1100; background: var(--primary-dark); color: white; padding: 0.5rem; border-radius: 8px; cursor: pointer; display: none; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .mobile-menu-btn { display: block; }
         }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-container">
-            <div class="logo">💰 Finance<span>Tracker</span></div>
-            <div class="nav-links">
-                <a href="/dashboard">Dashboard</a>
-                <a href="/transactions">Transactions</a>
-                <a href="/debts">Debts</a>
-                <a href="/investments">Investments</a>
-                <a href="/goals">Goals</a>
-                <a href="/budget">Budget</a>
-            </div>
-        </div>
-    </nav>
+    <div class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
     
-    <div class="container">
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header"><h2>💰 Finance<span>Tracker</span></h2><p>Manage Your Finances</p></div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+            <li class="nav-item"><a href="/transactions" class="nav-link"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+            <li class="nav-item"><a href="/debts" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Debts</a></li>
+            <li class="nav-item"><a href="/investments" class="nav-link active"><i class="fas fa-chart-line"></i> Investments</a></li>
+            <li class="nav-item"><a href="/goals" class="nav-link"><i class="fas fa-bullseye"></i> Goals</a></li>
+            <li class="nav-item"><a href="/budget" class="nav-link"><i class="fas fa-wallet"></i> Budget</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="top-bar">
+            <div><h3>➕ Add Investment</h3><p>Record your investment</p></div>
+            <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+        
         <div class="form-container">
-            <h1>📈 Add New Investment</h1>
-            
-            <form action="#" th:action="@{/investments/add}" th:object="${investment}" method="post">
+            <form action="/investments/add" method="post">
                 <div class="form-group">
-                    <label for="name">Investment Name *</label>
-                    <input type="text" id="name" th:field="*{name}" required placeholder="e.g., ABC Company Shares">
-                    <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error-message"></div>
+                    <label>Investment Name *</label>
+                    <input type="text" name="name" required placeholder="e.g., ABC Company Shares">
                 </div>
                 
                 <div class="row">
                     <div class="form-group">
-                        <label for="type">Type *</label>
-                        <select id="type" th:field="*{type}" required>
+                        <label>Type *</label>
+                        <select name="type" required>
                             <option value="">Select type</option>
                             <option value="STOCKS">📊 Stocks</option>
                             <option value="REAL_ESTATE">🏠 Real Estate</option>
@@ -170,14 +103,13 @@
                             <option value="CRYPTO">₿ Cryptocurrency</option>
                             <option value="OTHER">📌 Other</option>
                         </select>
-                        <div th:if="${#fields.hasErrors('type')}" th:errors="*{type}" class="error-message"></div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="riskLevel">Risk Level</label>
-                        <select id="riskLevel" th:field="*{riskLevel}">
+                        <label>Risk Level</label>
+                        <select name="riskLevel">
                             <option value="LOW">🟢 Low Risk</option>
-                            <option value="MEDIUM">🟡 Medium Risk</option>
+                            <option value="MEDIUM" selected>🟡 Medium Risk</option>
                             <option value="HIGH">🔴 High Risk</option>
                         </select>
                     </div>
@@ -185,52 +117,41 @@
                 
                 <div class="row">
                     <div class="form-group">
-                        <label for="amountInvested">Amount Invested *</label>
-                        <input type="number" step="0.01" id="amountInvested" th:field="*{amountInvested}" required placeholder="0.00">
-                        <div th:if="${#fields.hasErrors('amountInvested')}" th:errors="*{amountInvested}" class="error-message"></div>
+                        <label>Amount Invested *</label>
+                        <input type="number" step="0.01" name="amountInvested" required placeholder="0.00">
                     </div>
                     
                     <div class="form-group">
-                        <label for="currentValue">Current Value</label>
-                        <input type="number" step="0.01" id="currentValue" th:field="*{currentValue}" placeholder="0.00">
+                        <label>Current Value</label>
+                        <input type="number" step="0.01" name="currentValue" placeholder="Leave empty = same as invested">
                     </div>
                 </div>
                 
                 <div class="row">
                     <div class="form-group">
-                        <label for="expectedReturn">Expected Return (%)</label>
-                        <input type="number" step="0.01" id="expectedReturn" th:field="*{expectedReturn}" placeholder="e.g., 10.5">
+                        <label>Expected Return (%)</label>
+                        <input type="number" step="0.01" name="expectedReturn" placeholder="e.g., 10.5">
                     </div>
                     
                     <div class="form-group">
-                        <label for="provider">Provider/Bank</label>
-                        <input type="text" id="provider" th:field="*{provider}" placeholder="e.g., NMB Bank">
-                    </div>
-                </div>
-                
-                <div class="row">
-                    <div class="form-group">
-                        <label for="startDate">Start Date</label>
-                        <input type="date" id="startDate" th:field="*{startDate}">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="maturityDate">Maturity Date</label>
-                        <input type="date" id="maturityDate" th:field="*{maturityDate}">
+                        <label>Provider/Bank</label>
+                        <input type="text" name="provider" placeholder="e.g., NMB Bank">
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="notes">Notes</label>
-                    <textarea id="notes" th:field="*{notes}" rows="3" placeholder="Any additional information..."></textarea>
+                    <label>Notes</label>
+                    <textarea name="notes" rows="3" placeholder="Any additional information..."></textarea>
                 </div>
                 
-                <div class="btn-group">
-                    <button type="submit" class="btn btn-primary">💾 Save Investment</button>
-                    <a href="/investments" class="btn btn-secondary">❌ Cancel</a>
-                </div>
+                <button type="submit" class="btn-save"><i class="fas fa-save"></i> Save Investment</button>
+                <a href="/investments" class="btn-back"><i class="fas fa-arrow-left"></i> Cancel</a>
             </form>
         </div>
     </div>
+    
+    <script>
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+    </script>
 </body>
 </html>

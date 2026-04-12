@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Investment Transaction - Finance Tracker</title>
+    <title>Update Value - Finance Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary-dark: #2F6B3F;
@@ -11,139 +12,97 @@
             --accent: #F7C85C;
             --background: #FFF6C0;
             --white: #FFFFFF;
+            --danger: #EF4444;
             --success: #10B981;
+            --sidebar-width: 280px;
         }
-        
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--background); }
         
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--background);
-            min-height: 100vh;
+        .sidebar {
+            position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #1a4d2a 100%);
+            color: white; padding: 1.5rem; overflow-y: auto;
         }
+        .sidebar-header { text-align: center; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 1.5rem; }
+        .sidebar-header h2 span { color: var(--accent); }
+        .nav-menu { list-style: none; }
+        .nav-item { margin-bottom: 0.5rem; }
+        .nav-link { display: flex; align-items: center; padding: 0.75rem 1rem; color: white; text-decoration: none; border-radius: 10px; gap: 12px; transition: all 0.3s; }
+        .nav-link:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
+        .nav-link.active { background: var(--accent); color: var(--primary-dark); font-weight: bold; }
         
-        .navbar {
-            background: var(--primary-dark);
-            color: white;
-            padding: 1rem 2rem;
+        .main-content { margin-left: var(--sidebar-width); padding: 1.5rem; min-height: 100vh; }
+        .top-bar {
+            background: var(--white); border-radius: 15px; padding: 1rem 1.5rem; margin-bottom: 1.5rem;
+            display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        
-        .navbar-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo { font-size: 1.5rem; font-weight: bold; }
-        .logo span { color: var(--accent); }
-        
-        .container {
-            max-width: 600px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
+        .logout-btn { background: var(--danger); color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; }
         
         .form-container {
-            background: var(--white);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            background: var(--white); border-radius: 15px; padding: 2rem; max-width: 500px; margin: 0 auto;
         }
-        
-        h1 {
-            color: var(--primary-dark);
-            margin-bottom: 1.5rem;
+        .info-box {
+            background: #F9FAFB; padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem;
         }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151; }
+        .form-group input {
+            width: 100%; padding: 0.75rem; border: 2px solid #E5E7EB; border-radius: 10px; font-size: 1rem;
         }
+        .btn-save { background: var(--success); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 10px; cursor: pointer; font-size: 1rem; width: 100%; }
+        .btn-back { background: #6B7280; color: white; padding: 0.75rem 1.5rem; border-radius: 10px; text-decoration: none; display: inline-block; margin-top: 1rem; text-align: center; width: 100%; }
         
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #374151;
-            font-weight: 500;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #E5E7EB;
-            border-radius: 10px;
-            font-size: 1rem;
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-        
-        .btn {
-            flex: 1;
-            padding: 0.75rem;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-        }
-        
-        .btn-primary {
-            background: var(--success);
-            color: white;
-        }
-        
-        .btn-secondary {
-            background: #9CA3AF;
-            color: white;
+        .mobile-menu-btn { position: fixed; top: 1rem; left: 1rem; z-index: 1100; background: var(--primary-dark); color: white; padding: 0.5rem; border-radius: 8px; cursor: pointer; display: none; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .mobile-menu-btn { display: block; }
         }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-container">
-            <div class="logo">💰 Finance<span>Tracker</span></div>
-        </div>
-    </nav>
+    <div class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
     
-    <div class="container">
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header"><h2>💰 Finance<span>Tracker</span></h2><p>Manage Your Finances</p></div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+            <li class="nav-item"><a href="/transactions" class="nav-link"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+            <li class="nav-item"><a href="/debts" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Debts</a></li>
+            <li class="nav-item"><a href="/investments" class="nav-link active"><i class="fas fa-chart-line"></i> Investments</a></li>
+            <li class="nav-item"><a href="/goals" class="nav-link"><i class="fas fa-bullseye"></i> Goals</a></li>
+            <li class="nav-item"><a href="/budget" class="nav-link"><i class="fas fa-wallet"></i> Budget</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="top-bar">
+            <div><h3>📈 Update Investment Value</h3><p>Update current market value</p></div>
+            <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+        
         <div class="form-container">
-            <h1>📝 Add Investment Transaction</h1>
-            <p style="margin-bottom: 1rem; color: #6B7280;">For: <strong th:text="${investment.name}"></strong></p>
+            <div class="info-box">
+                <p><strong>Investment:</strong> <span th:text="${investment.name}"></span></p>
+                <p><strong>Amount Invested:</strong> <span th:text="${#numbers.formatDecimal(investment.amountInvested, 1, 2)}"></span> TZS</p>
+                <p><strong>Current Value:</strong> <span th:text="${#numbers.formatDecimal(investment.currentValue, 1, 2)}"></span> TZS</p>
+            </div>
             
-            <form th:action="@{/investments/add-transaction/{id}(id=${investment.id})}" method="post">
+            <form th:action="@{/investments/update-value/{id}(id=${investment.id})}" method="post">
                 <div class="form-group">
-                    <label for="type">Transaction Type</label>
-                    <select id="type" name="type" required>
-                        <option value="DEPOSIT">💰 Deposit (Add money)</option>
-                        <option value="WITHDRAWAL">💸 Withdrawal (Take money)</option>
-                        <option value="INTEREST">📈 Interest Earned</option>
-                        <option value="DIVIDEND">🎯 Dividend Received</option>
-                    </select>
+                    <label>New Current Value *</label>
+                    <input type="number" step="0.01" name="currentValue" required placeholder="Enter new value">
                 </div>
-                
-                <div class="form-group">
-                    <label for="amount">Amount</label>
-                    <input type="number" step="0.01" id="amount" name="amount" required placeholder="0.00">
-                </div>
-                
-                <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea id="description" name="description" rows="3" placeholder="Describe this transaction..."></textarea>
-                </div>
-                
-                <div class="btn-group">
-                    <button type="submit" class="btn btn-primary">✅ Add Transaction</button>
-                    <a href="/investments" class="btn btn-secondary">Cancel</a>
-                </div>
+                <button type="submit" class="btn-save"><i class="fas fa-save"></i> Update Value</button>
+                <a href="/investments" class="btn-back"><i class="fas fa-arrow-left"></i> Cancel</a>
             </form>
         </div>
     </div>
+    
+    <script>
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+    </script>
 </body>
 </html>
