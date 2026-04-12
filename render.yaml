@@ -1,9 +1,9 @@
 services:
   - type: web
     name: finance-tracker
-    env: java
-    buildCommand: ./mvnw clean install
-    startCommand: java -jar target/finance-1.0.0.jar
+    env: docker
+    buildCommand: ./mvnw clean package -DskipTests
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: MONGODB_URI
         sync: false

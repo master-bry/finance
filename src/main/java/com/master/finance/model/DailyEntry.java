@@ -4,9 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Document(collection = "daily_entries")
 public class DailyEntry {
@@ -74,6 +72,7 @@ public class DailyEntry {
         this.totalIncome = 0.0;
         this.totalExpense = 0.0;
         this.closingBalance = 0.0;
+        this.openingBalance = 0.0;
         this.expenses = new ArrayList<>();
         this.incomes = new ArrayList<>();
     }
