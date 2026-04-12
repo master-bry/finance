@@ -76,12 +76,8 @@
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
+
         <!-- Thymeleaf Layout Dialect -->
-        <dependency>
-            <groupId>nz.net.ultraq.thymeleaf</groupId>
-            <artifactId>thymeleaf-layout-dialect</artifactId>
-           </dependency>
-                <!-- Thymeleaf Layout Dialect -->
             <dependency>
               <groupId>nz.net.ultraq.thymeleaf</groupId>
               <artifactId>thymeleaf-layout-dialect</artifactId>

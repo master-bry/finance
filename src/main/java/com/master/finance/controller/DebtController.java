@@ -1,17 +1,16 @@
 package com.master.finance.controller;
 
 import com.master.finance.model.Debt;
-import com.master.finance.repository.DebtRepository;
+import com.master.finance.service.DebtService;
 import com.master.finance.service.UserService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Controller
@@ -19,7 +18,7 @@ import java.util.List;
 public class DebtController {
     
     @Autowired
-    private DebtRepository debtRepository;
+    private DebtService debtService;
     
     @Autowired
     private UserService userService;
@@ -27,133 +26,99 @@ public class DebtController {
     @GetMapping
     public String listDebts(Authentication authentication, Model model) {
         String userId = getUserId(authentication);
-        List<Debt> debts = debtRepository.findByUserIdAndDeletedFalse(userId);
+        List<Debt> debts = debtService.getUserDebts(userId);
         
-        double totalOwedToMe = debts.stream()
-                .filter(d -> "OWED_TO_ME".equals(d.getType()) && !"SETTLED".equals(d.getStatus()))
-                .mapToDouble(Debt::getRemainingAmount)
-                .sum();
-        
-        double totalIOwe = debts.stream()
-                .filter(d -> "I_OWE".equals(d.getType()) && !"SETTLED".equals(d.getStatus()))
-                .mapToDouble(Debt::getRemainingAmount)
-                .sum();
+        double totalOwedToMe = debtService.getTotalOwedToMe(userId);
+        double totalIOwe = debtService.getTotalIOwe(userId);
         
         model.addAttribute("debts", debts);
         model.addAttribute("totalOwedToMe", totalOwedToMe);
         model.addAttribute("totalIOwe", totalIOwe);
         model.addAttribute("netPosition", totalOwedToMe - totalIOwe);
-        model.addAttribute("currentPage", "debts");
-        model.addAttribute("title", "Debts");
-        model.addAttribute("pageSubtitle", "Track who owes you and who you owe");
         
         return "debts/index";
     }
     
     @GetMapping("/add")
-    public String showAddForm(Model model) {
-        model.addAttribute("debt", new Debt());
-        model.addAttribute("currentPage", "debts");
-        model.addAttribute("title", "Add Debt");
+    public String showAddForm() {
         return "debts/add";
     }
     
     @PostMapping("/add")
-    public String addDebt(@Valid @ModelAttribute Debt debt,
-                          BindingResult result,
+    public String addDebt(@RequestParam String personName,
+                          @RequestParam String type,
+                          @RequestParam Double amount,
+                          @RequestParam(required = false) String phoneNumber,
+                          @RequestParam(required = false) String dueDate,
+                          @RequestParam(required = false) String description,
                           Authentication authentication,
                           RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", "Please fix the errors");
-            return "redirect:/debts/add";
-        }
-        
-        String userId = getUserId(authentication);
-        debt.setUserId(userId);
-        debt.setRemainingAmount(debt.getAmount());
-        debt.setStatus("PENDING");
-        debt.setDateGiven(LocalDateTime.now());
-        debt.setLastUpdated(LocalDateTime.now());
-        debt.setDeleted(false);
-        debtRepository.save(debt);
-        
-        redirectAttributes.addFlashAttribute("success", "Debt added successfully!");
-        return "redirect:/debts";
-    }
-    
-    @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable String id, Authentication authentication, Model model) {
-        String userId = getUserId(authentication);
-        debtRepository.findById(id).ifPresent(debt -> {
-            if (debt.getUserId().equals(userId)) {
-                model.addAttribute("debt", debt);
+        try {
+            String userId = getUserId(authentication);
+            
+            // Create new debt
+            Debt debt = new Debt();
+            debt.setUserId(userId);
+            debt.setPersonName(personName);
+            debt.setType(type);
+            debt.setAmount(amount);
+            debt.setPhoneNumber(phoneNumber);
+            debt.setDescription(description);
+            
+            // Set due date if provided
+            if (dueDate != null && !dueDate.isEmpty()) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                LocalDateTime dueDateTime = LocalDateTime.parse(dueDate + "T00:00:00");
+                debt.setDueDate(dueDateTime);
             }
-        });
-        model.addAttribute("currentPage", "debts");
-        model.addAttribute("title", "Edit Debt");
-        return "debts/edit";
-    }
-    
-    @PostMapping("/edit/{id}")
-    public String updateDebt(@PathVariable String id,
-                             @Valid @ModelAttribute Debt debt,
-                             Authentication authentication,
-                             RedirectAttributes redirectAttributes) {
-        String userId = getUserId(authentication);
-        Debt existingDebt = debtRepository.findById(id).orElse(null);
-        if (existingDebt != null) {
-            debt.setPaymentHistory(existingDebt.getPaymentHistory());
+            
+            // Save debt
+            debtService.saveDebt(debt);
+            redirectAttributes.addFlashAttribute("success", "Debt added successfully!");
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "Error saving debt: " + e.getMessage());
         }
-        debt.setId(id);
-        debt.setUserId(userId);
-        debt.setLastUpdated(LocalDateTime.now());
-        debtRepository.save(debt);
-        redirectAttributes.addFlashAttribute("success", "Debt updated!");
+        
         return "redirect:/debts";
     }
     
     @GetMapping("/delete/{id}")
     public String deleteDebt(@PathVariable String id, RedirectAttributes redirectAttributes) {
-        debtRepository.findById(id).ifPresent(debt -> {
-            debt.setDeleted(true);
-            debt.setDeletedAt(LocalDateTime.now());
-            debtRepository.save(debt);
-        });
-        redirectAttributes.addFlashAttribute("success", "Debt deleted!");
+        try {
+            debtService.deleteDebt(id);
+            redirectAttributes.addFlashAttribute("success", "Debt deleted successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error deleting debt");
+        }
         return "redirect:/debts";
     }
     
     @GetMapping("/make-payment/{id}")
     public String showPaymentForm(@PathVariable String id, Model model) {
-        debtRepository.findById(id).ifPresent(debt -> model.addAttribute("debt", debt));
-        model.addAttribute("currentPage", "debts");
+        debtService.getDebt(id).ifPresent(debt -> model.addAttribute("debt", debt));
         return "debts/payment";
     }
     
     @PostMapping("/make-payment/{id}")
     public String makePayment(@PathVariable String id,
                               @RequestParam Double amount,
-                              @RequestParam String notes,
+                              @RequestParam(required = false) String notes,
                               RedirectAttributes redirectAttributes) {
-        debtRepository.findById(id).ifPresent(debt -> {
-            Debt.PaymentRecord payment = new Debt.PaymentRecord();
-            payment.setAmountPaid(amount);
-            payment.setNotes(notes);
-            debt.getPaymentHistory().add(payment);
-            
-            double newRemaining = debt.getRemainingAmount() - amount;
-            debt.setRemainingAmount(newRemaining);
-            
-            if (newRemaining <= 0) {
-                debt.setStatus("SETTLED");
-                debt.setRemainingAmount(0.0);
-            } else if (newRemaining < debt.getAmount()) {
-                debt.setStatus("PARTIAL");
+        try {
+            if (amount == null || amount <= 0) {
+                redirectAttributes.addFlashAttribute("error", "Please enter a valid amount");
+                return "redirect:/debts/make-payment/" + id;
             }
-            debt.setLastUpdated(LocalDateTime.now());
-            debtRepository.save(debt);
-        });
-        redirectAttributes.addFlashAttribute("success", "Payment recorded!");
+            
+            debtService.makePayment(id, amount, notes);
+            redirectAttributes.addFlashAttribute("success", "Payment recorded successfully!");
+            
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error recording payment");
+        }
+        
         return "redirect:/debts";
     }
     

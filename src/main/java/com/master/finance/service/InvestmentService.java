@@ -23,10 +23,20 @@ public class InvestmentService {
     }
     
     public Investment saveInvestment(Investment investment) {
+        if (investment.getStartDate() == null) {
+            investment.setStartDate(LocalDateTime.now());
+        }
+        if (investment.getStatus() == null) {
+            investment.setStatus("ACTIVE");
+        }
+        if (investment.getCurrentValue() == null) {
+            investment.setCurrentValue(investment.getAmountInvested());
+        }
+        investment.setDeleted(false);
         return investmentRepository.save(investment);
     }
     
-    public void softDeleteInvestment(String id) {
+    public void deleteInvestment(String id) {
         investmentRepository.findById(id).ifPresent(investment -> {
             investment.setDeleted(true);
             investment.setDeletedAt(LocalDateTime.now());
@@ -34,35 +44,9 @@ public class InvestmentService {
         });
     }
     
-    public void permanentDeleteInvestment(String id) {
-        investmentRepository.deleteById(id);
-    }
-    
     public Investment updateCurrentValue(String id, Double newValue) {
         Investment investment = investmentRepository.findById(id).orElseThrow();
         investment.setCurrentValue(newValue);
-        return investmentRepository.save(investment);
-    }
-    
-    public Investment addTransaction(String id, String type, Double amount, String description) {
-        Investment investment = investmentRepository.findById(id).orElseThrow();
-        
-        Investment.InvestmentTransaction transaction = new Investment.InvestmentTransaction();
-        transaction.setType(type);
-        transaction.setAmount(amount);
-        transaction.setDescription(description);
-        investment.getTransactions().add(transaction);
-        
-        if ("DEPOSIT".equals(type)) {
-            investment.setAmountInvested(investment.getAmountInvested() + amount);
-            investment.setCurrentValue(investment.getCurrentValue() + amount);
-        } else if ("WITHDRAWAL".equals(type)) {
-            investment.setAmountInvested(investment.getAmountInvested() - amount);
-            investment.setCurrentValue(investment.getCurrentValue() - amount);
-        } else if ("INTEREST".equals(type) || "DIVIDEND".equals(type)) {
-            investment.setCurrentValue(investment.getCurrentValue() + amount);
-        }
-        
         return investmentRepository.save(investment);
     }
     

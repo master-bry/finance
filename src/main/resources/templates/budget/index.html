@@ -2,64 +2,65 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
-<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
     <title>Budget - Finance Tracker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
 </head>
 <body>
-    <div class="sidebar">
-        <div class="sidebar-header"><h2>💰 Finance<span>Tracker</span></h2><p>Manage Your Finances</p></div>
-        <ul class="nav-menu">
-            <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-            <li class="nav-item"><a href="/transactions" class="nav-link"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
-            <li class="nav-item"><a href="/debts" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Debts</a></li>
-            <li class="nav-item"><a href="/investments" class="nav-link"><i class="fas fa-chart-line"></i> Investments</a></li>
-            <li class="nav-item"><a href="/goals" class="nav-link"><i class="fas fa-bullseye"></i> Goals</a></li>
-            <li class="nav-item"><a href="/budget" class="nav-link active"><i class="fas fa-wallet"></i> Budget</a></li>
-        </ul>
-    </div>
-    
-    <div class="main-content">
-        <div class="top-bar">
-            <div><h3>📋 Monthly Budget</h3><p>Plan and track your spending</p></div>
-            <a href="/dashboard" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
-        </div>
-        
-        <div class="budget-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3>Budget for <span th:text="${currentMonth}"></span></h3>
-                <a href="/budget/edit" class="btn-edit"><i class="fas fa-edit"></i> Edit Budget</a>
+    <div layout:fragment="content">
+        <div class="section-card">
+            <div class="section-header">
+                <h4>📋 Budget for <span th:text="${currentMonth}"></span></h4>
+                <a href="/budget/edit" class="btn-sm">✏️ Edit Budget</a>
             </div>
             
-            <div class="budget-summary">
-                <div class="summary-item"><div>💰 Planned Income</div><div class="summary-value"><span th:text="${#numbers.formatDecimal(budget.totalIncome, 1, 2)}"></span> TZS</div></div>
-                <div class="summary-item"><div>💸 Planned Expenses</div><div class="summary-value"><span th:text="${#numbers.formatDecimal(budget.totalExpense, 1, 2)}"></span> TZS</div></div>
-                <div class="summary-item"><div>🎯 Savings Target</div><div class="summary-value"><span th:text="${#numbers.formatDecimal(budget.savingsTarget, 1, 2)}"></span> TZS</div></div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">💰 Planned Income</div>
+                    <div class="stat-value positive">
+                        <span th:text="${#numbers.formatDecimal(budget.totalIncome, 1, 2)}"></span> TZS
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">💸 Planned Expenses</div>
+                    <div class="stat-value negative">
+                        <span th:text="${#numbers.formatDecimal(budget.totalExpense, 1, 2)}"></span> TZS
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">🎯 Savings Target</div>
+                    <div class="stat-value positive">
+                        <span th:text="${#numbers.formatDecimal(budget.savingsTarget, 1, 2)}"></span> TZS
+                    </div>
+                </div>
             </div>
             
-            <h4 style="margin-bottom: 1rem;">Category Breakdown</h4>
-            <table>
+            <h5 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--primary-dark);">Category Breakdown</h5>
+            <table class="data-table">
                 <thead>
-                    <tr><th>Category</th><th>Planned (TZS)</th><th>Actual (TZS)</th><th>Variance</th><th>Status</th></tr>
+                    <tr>
+                        <th>Category</th>
+                        <th>Planned (TZS)</th>
+                        <th>Actual (TZS)</th>
+                        <th>Variance</th>
+                        <th>Status</th>
+                    </tr>
                 </thead>
                 <tbody>
                     <tr th:each="entry : ${budget.categoryBudgets}">
                         <td th:text="${entry.key}">Category</td>
                         <td th:text="${#numbers.formatDecimal(entry.value.planned, 1, 2)}">Planned</td>
                         <td th:text="${#numbers.formatDecimal(entry.value.actual, 1, 2)}">Actual</td>
-                        <td th:class="${entry.value.variance > 0 ? 'over-budget' : 'under-budget'}" th:text="${#numbers.formatDecimal(entry.value.variance, 1, 2)}">Variance</td>
+                        <td th:class="${entry.value.variance > 0 ? 'negative' : 'positive'}" th:text="${#numbers.formatDecimal(entry.value.variance, 1, 2)}">Variance</td>
                         <td>
                             <span th:if="${entry.value.variance > 0}" style="color: var(--danger);">⚠️ Over</span>
                             <span th:if="${entry.value.variance < 0}" style="color: var(--success);">✅ Under</span>
                             <span th:if="${entry.value.variance == 0}" style="color: #6B7280;">On Track</span>
                         </td>
                     </tr>
+                    <tr th:if="${budget.categoryBudgets.empty}">
+                        <td colspan="5" style="text-align: center; padding: 2rem;">No budget configured. <a href="/budget/edit">Create your budget</a></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </div>
-</body>
-</html>

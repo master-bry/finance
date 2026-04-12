@@ -6,86 +6,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${title} + ' - Finance Tracker'">Finance Tracker</title>
     <!-- External CSS -->
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* Fallback styles in case external CSS doesn't load */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-        .stat-card { background: white; padding: 1.25rem; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #2F6B3F; }
-        .positive { color: #10B981; }
-        .negative { color: #EF4444; }
-        .section-card { background: white; border-radius: 15px; padding: 1.5rem; margin-bottom: 1.5rem; }
-        .btn-sm { background: #2F6B3F; color: white; padding: 0.4rem 0.8rem; border-radius: 6px; text-decoration: none; }
-        .data-table { width: 100%; border-collapse: collapse; }
-        .data-table th, .data-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #E5E7EB; }
-    </style>
 </head>
 <body>
     <!-- Mobile Menu Button -->
-    <div class="mobile-menu-btn" onclick="toggleSidebar()" style="position: fixed; top: 1rem; left: 1rem; z-index: 1100; background: #2F6B3F; color: white; padding: 0.5rem; border-radius: 8px; cursor: pointer;">
+    <div class="mobile-menu-btn" onclick="toggleSidebar()">
         <i class="fas fa-bars"></i>
     </div>
     
     <!-- Sidebar Navigation -->
-    <div class="sidebar" id="sidebar" style="position: fixed; left: 0; top: 0; width: 280px; height: 100vh; background: linear-gradient(135deg, #2F6B3F 0%, #1a4d2a 100%); color: white; padding: 1.5rem; transition: all 0.3s; z-index: 1000; overflow-y: auto;">
-        <div class="sidebar-header" style="text-align: center; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 1.5rem;">
-            <h2>💰 Finance<span style="color: #F7C85C;">Tracker</span></h2>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>💰 Finance<span>Tracker</span></h2>
             <p>Manage Your Finances</p>
         </div>
         
-        <ul class="nav-menu" style="list-style: none;">
-            <li class="nav-item" style="margin-bottom: 0.5rem;">
-                <a href="/dashboard" class="nav-link" style="display: flex; align-items: center; padding: 0.75rem 1rem; color: white; text-decoration: none; border-radius: 10px; gap: 12px;">
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/dashboard" class="nav-link" th:classappend="${currentPage == 'dashboard' ? 'active' : ''}">
                     <i class="fas fa-chart-line"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="/transactions" class="nav-link" style="display: flex; align-items: center; padding: 0.75rem 1rem; color: white; text-decoration: none; border-radius: 10px; gap: 12px;">
+                <a href="/transactions" class="nav-link" th:classappend="${currentPage == 'transactions' ? 'active' : ''}">
                     <i class="fas fa-exchange-alt"></i>
                     <span>Transactions</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="/debts" class="nav-link" style="display: flex; align-items: center; padding: 0.75rem 1rem; color: white; text-decoration: none; border-radius: 10px; gap: 12px;">
+                <a href="/debts" class="nav-link" th:classappend="${currentPage == 'debts' ? 'active' : ''}">
                     <i class="fas fa-hand-holding-usd"></i>
                     <span>Debts</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="/investments" class="nav-link" style="display: flex; align-items: center; padding: 0.75rem 1rem; color: white; text-decoration: none; border-radius: 10px; gap: 12px;">
+                <a href="/investments" class="nav-link" th:classappend="${currentPage == 'investments' ? 'active' : ''}">
                     <i class="fas fa-chart-line"></i>
                     <span>Investments</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="/goals" class="nav-link" style="display: flex; align-items: center; padding: 0.75rem 1rem; color: white; text-decoration: none; border-radius: 10px; gap: 12px;">
+                <a href="/goals" class="nav-link" th:classappend="${currentPage == 'goals' ? 'active' : ''}">
                     <i class="fas fa-bullseye"></i>
                     <span>Goals</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="/budget" class="nav-link" style="display: flex; align-items: center; padding: 0.75rem 1rem; color: white; text-decoration: none; border-radius: 10px; gap: 12px;">
+                <a href="/budget" class="nav-link" th:classappend="${currentPage == 'budget' ? 'active' : ''}">
                     <i class="fas fa-wallet"></i>
                     <span>Budget</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/daily-entry" class="nav-link" th:classappend="${currentPage == 'daily' ? 'active' : ''}">
+                    <i class="fas fa-calendar-day"></i>
+                    <span>Daily Entry</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/reports" class="nav-link" th:classappend="${currentPage == 'reports' ? 'active' : ''}">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
                 </a>
             </li>
         </ul>
     </div>
     
     <!-- Main Content -->
-    <div class="main-content" style="margin-left: 280px; padding: 1.5rem; min-height: 100vh;">
+    <div class="main-content">
         <!-- Top Bar -->
-        <div class="top-bar" style="background: white; border-radius: 15px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+        <div class="top-bar">
             <div class="welcome-text">
-                <h3 style="color: #2F6B3F;">Welcome back, <span sec:authentication="name"></span>!</h3>
-                <p th:text="${pageSubtitle}" style="color: #6B7280;">Manage your finances</p>
+                <h3>Welcome back, <span sec:authentication="name"></span>!</h3>
+                <p th:text="${pageSubtitle}">Manage your finances</p>
             </div>
             <div class="user-info">
-                <a href="/logout" class="logout-btn" style="background: #EF4444; color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;">Logout</a>
+                <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>
         
@@ -99,8 +100,7 @@
     
     <script>
         function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('active');
+            document.getElementById('sidebar').classList.toggle('active');
         }
     </script>
 </body>

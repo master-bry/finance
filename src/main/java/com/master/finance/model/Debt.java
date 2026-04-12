@@ -12,10 +12,10 @@ public class Debt {
     private String id;
     private String userId;
     private String personName;
-    private String type; // "OWED_TO_ME" or "I_OWE"
+    private String type;
     private Double amount;
     private Double remainingAmount;
-    private String status; // "PENDING", "PARTIAL", "SETTLED"
+    private String status;
     private String description;
     private LocalDateTime dueDate;
     private LocalDateTime dateGiven;
@@ -23,11 +23,10 @@ public class Debt {
     private String phoneNumber;
     private String notes;
     private List<PaymentRecord> paymentHistory = new ArrayList<>();
-    
-    // Soft delete fields
     private boolean deleted = false;
     private LocalDateTime deletedAt;
     
+    // PaymentRecord inner class
     public static class PaymentRecord {
         private LocalDateTime paymentDate;
         private Double amountPaid;
@@ -45,6 +44,7 @@ public class Debt {
         public void setNotes(String notes) { this.notes = notes; }
     }
     
+    // Constructors
     public Debt() {
         this.dateGiven = LocalDateTime.now();
         this.lastUpdated = LocalDateTime.now();

@@ -18,25 +18,40 @@ public class DebtService {
         return debtRepository.findByUserIdAndDeletedFalse(userId);
     }
     
-    public List<Debt> getDebtsOwedToMe(String userId) {
-        return debtRepository.findByUserIdAndTypeAndDeletedFalse(userId, "OWED_TO_ME");
-    }
-    
-    public List<Debt> getDebtsIOwe(String userId) {
-        return debtRepository.findByUserIdAndTypeAndDeletedFalse(userId, "I_OWE");
-    }
-    
     public Optional<Debt> getDebt(String id) {
         return debtRepository.findById(id);
     }
     
     public Debt saveDebt(Debt debt) {
+        // Set required fields
+        if (debt.getDateGiven() == null) {
+            debt.setDateGiven(LocalDateTime.now());
+        }
         debt.setLastUpdated(LocalDateTime.now());
         debt.setDeleted(false);
+        
+        // Set remaining amount if not set
+        if (debt.getRemainingAmount() == null || debt.getRemainingAmount() == 0) {
+            debt.setRemainingAmount(debt.getAmount());
+        }
+        
+        // Set status
+        if (debt.getRemainingAmount() <= 0) {
+            debt.setStatus("SETTLED");
+        } else if (debt.getRemainingAmount() < debt.getAmount()) {
+            debt.setStatus("PARTIAL");
+        } else {
+            debt.setStatus("PENDING");
+        }
+        
+        // Initialize payment history if null
+        if (debt.getPaymentHistory() == null) {
+            debt.setPaymentHistory(new java.util.ArrayList<>());
+        }
+        
         return debtRepository.save(debt);
     }
     
-    // Soft delete - marks as deleted but keeps in database
     public void deleteDebt(String id) {
         debtRepository.findById(id).ifPresent(debt -> {
             debt.setDeleted(true);
@@ -45,17 +60,12 @@ public class DebtService {
         });
     }
     
-    // Permanent delete - removes from database completely
-    public void permanentDeleteDebt(String id) {
-        debtRepository.deleteById(id);
-    }
-    
     public Debt makePayment(String debtId, Double amount, String notes) {
         Debt debt = debtRepository.findById(debtId).orElseThrow();
         
         Debt.PaymentRecord payment = new Debt.PaymentRecord();
         payment.setAmountPaid(amount);
-        payment.setNotes(notes);
+        payment.setNotes(notes != null ? notes : "");
         debt.getPaymentHistory().add(payment);
         
         double newRemaining = debt.getRemainingAmount() - amount;
@@ -73,28 +83,18 @@ public class DebtService {
     }
     
     public Double getTotalOwedToMe(String userId) {
-        return debtRepository.findActiveDebtsByUserIdAndTypeAndDeletedFalse(userId, "OWED_TO_ME")
-                .stream()
+        List<Debt> debts = debtRepository.findByUserIdAndTypeAndDeletedFalse(userId, "OWED_TO_ME");
+        return debts.stream()
+                .filter(d -> !"SETTLED".equals(d.getStatus()))
                 .mapToDouble(Debt::getRemainingAmount)
                 .sum();
     }
     
     public Double getTotalIOwe(String userId) {
-        return debtRepository.findActiveDebtsByUserIdAndTypeAndDeletedFalse(userId, "I_OWE")
-                .stream()
+        List<Debt> debts = debtRepository.findByUserIdAndTypeAndDeletedFalse(userId, "I_OWE");
+        return debts.stream()
+                .filter(d -> !"SETTLED".equals(d.getStatus()))
                 .mapToDouble(Debt::getRemainingAmount)
                 .sum();
-    }
-    
-    public Double getNetPosition(String userId) {
-        return getTotalOwedToMe(userId) - getTotalIOwe(userId);
-    }
-    
-    public List<Debt> getOverdueDebts(String userId) {
-        LocalDateTime now = LocalDateTime.now();
-        return getUserDebts(userId).stream()
-                .filter(d -> d.getDueDate() != null && d.getDueDate().isBefore(now))
-                .filter(d -> !"SETTLED".equals(d.getStatus()))
-                .toList();
     }
 }

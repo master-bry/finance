@@ -8,6 +8,7 @@ import java.util.List;
 
 @Repository
 public interface InvestmentRepository extends MongoRepository<Investment, String> {
+    
     @Query("{ 'userId': ?0, 'deleted': false }")
     List<Investment> findByUserIdAndDeletedFalse(String userId);
     
