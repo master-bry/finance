@@ -22,6 +22,7 @@ public class BudgetService {
     @Autowired
     private UserService userService;
     
+    // Save or update budget
     public Budget saveBudget(Budget budget, String userId) {
         budget.setUserId(userId);
         budget.setUpdatedAt(LocalDateTime.now());
@@ -30,8 +31,10 @@ public class BudgetService {
         LocalDateTime startDate = LocalDateTime.parse(month + "-01T00:00:00");
         LocalDateTime endDate = startDate.plusMonths(1);
         
+        // Get actual transactions for the month
         List<Transaction> transactions = transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, startDate, endDate);
         
+        // Calculate actual totals
         double totalIncome = transactions.stream()
                 .filter(t -> "INCOME".equals(t.getType()))
                 .mapToDouble(Transaction::getAmount)
@@ -45,6 +48,7 @@ public class BudgetService {
         budget.setTotalIncome(totalIncome);
         budget.setTotalExpense(totalExpense);
         
+        // Calculate actual expenses by category
         Map<String, Double> actualByCategory = new HashMap<>();
         for (Transaction t : transactions) {
             if ("EXPENSE".equals(t.getType())) {
@@ -52,9 +56,7 @@ public class BudgetService {
             }
         }
         
-        double actualSavings = totalIncome - totalExpense;
-        budget.setActualSavings(actualSavings);
-        
+        // Update category budgets with actual amounts
         if (budget.getCategoryBudgets() != null) {
             for (Map.Entry<String, Budget.CategoryBudget> entry : budget.getCategoryBudgets().entrySet()) {
                 String category = entry.getKey();
@@ -63,11 +65,17 @@ public class BudgetService {
             }
         }
         
+        // Calculate actual savings
+        double actualSavings = totalIncome - totalExpense;
+        budget.setActualSavings(actualSavings);
+        
+        // Check for budget alerts
         checkBudgetAlerts(budget, userId);
         
         return budgetRepository.save(budget);
     }
     
+    // Check if any category is over budget and send alerts
     private void checkBudgetAlerts(Budget budget, String userId) {
         List<String> alerts = new ArrayList<>();
         
@@ -83,43 +91,51 @@ public class BudgetService {
                              category, overAmount, percentage));
                 }
                 
+                // Critical alert for 20% over budget
                 if (catBudget.getPlanned() > 0 && catBudget.getActual() > catBudget.getPlanned() * 1.2) {
                     alerts.add(String.format("🔴 CRITICAL: %s budget is 20%% over! Review your spending.", category));
                 }
             }
         }
         
+        // Check total budget vs income
         if (budget.getTotalExpense() > budget.getTotalIncome() && budget.getTotalIncome() > 0) {
             double deficit = budget.getTotalExpense() - budget.getTotalIncome();
             alerts.add(String.format("⚠️ Your expenses exceed your income by %.2f TZS this month!", deficit));
         }
         
+        // Check savings target
         if (budget.getSavingsTarget() > 0 && budget.getActualSavings() < budget.getSavingsTarget()) {
             double shortfall = budget.getSavingsTarget() - budget.getActualSavings();
             alerts.add(String.format("💰 You're %.2f TZS short of your savings target this month!", shortfall));
         }
         
+        // Add alerts to user notifications
         if (!alerts.isEmpty()) {
             userService.addNotifications(userId, alerts);
         }
     }
     
+    // Get budget for specific month
     public Optional<Budget> getBudget(String userId, String month) {
         return budgetRepository.findByUserIdAndMonth(userId, month);
     }
     
+    // Get current month budget
     public Budget getCurrentMonthBudget(String userId) {
         String currentMonth = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
         return budgetRepository.findByUserIdAndMonth(userId, currentMonth)
                 .orElseGet(() -> createDefaultBudget(userId, currentMonth));
     }
     
+    // Get previous month budget
     public Budget getPreviousMonthBudget(String userId) {
         String previousMonth = LocalDateTime.now().minusMonths(1).format(DateTimeFormatter.ofPattern("yyyy-MM"));
         return budgetRepository.findByUserIdAndMonth(userId, previousMonth)
                 .orElse(null);
     }
     
+    // Create default budget for a user
     private Budget createDefaultBudget(String userId, String month) {
         Budget budget = new Budget();
         budget.setUserId(userId);
@@ -130,6 +146,7 @@ public class BudgetService {
         budget.setActualSavings(0.0);
         budget.setDeleted(false);
         
+        // Default categories
         Map<String, Budget.CategoryBudget> defaults = new LinkedHashMap<>();
         String[] categories = {"Food", "Transport", "Rent", "Utilities", "Entertainment", 
                                "Shopping", "Healthcare", "Education", "Savings", "Other"};
@@ -145,6 +162,7 @@ public class BudgetService {
         return budgetRepository.save(budget);
     }
     
+    // Get budget vs actual comparison report
     public Map<String, Object> getBudgetVsActual(String userId, String month) {
         Optional<Budget> budgetOpt = budgetRepository.findByUserIdAndMonth(userId, month);
         
@@ -184,11 +202,13 @@ public class BudgetService {
         return report;
     }
     
+    // Get budget history for last N months
     public List<Budget> getBudgetHistory(String userId, int months) {
         List<Budget> allBudgets = budgetRepository.findByUserIdOrderByMonthDesc(userId);
         return allBudgets.stream().limit(months).toList();
     }
     
+    // Get yearly budget summary
     public Map<String, Object> getYearlyBudgetSummary(String userId, int year) {
         Map<String, Object> yearlySummary = new HashMap<>();
         List<Map<String, Object>> monthlyData = new ArrayList<>();
@@ -196,6 +216,8 @@ public class BudgetService {
         double totalIncomePlanned = 0;
         double totalExpensePlanned = 0;
         double totalSavingsTarget = 0;
+        double totalActualIncome = 0;
+        double totalActualExpense = 0;
         
         for (int month = 1; month <= 12; month++) {
             String monthStr = String.format("%d-%02d", year, month);
@@ -206,9 +228,12 @@ public class BudgetService {
                 totalIncomePlanned += budget.getTotalIncome();
                 totalExpensePlanned += budget.getTotalExpense();
                 totalSavingsTarget += budget.getSavingsTarget();
+                totalActualIncome += budget.getTotalIncome();
+                totalActualExpense += budget.getTotalExpense();
                 
                 Map<String, Object> monthData = new HashMap<>();
                 monthData.put("month", month);
+                monthData.put("monthName", getMonthName(month));
                 monthData.put("income", budget.getTotalIncome());
                 monthData.put("expense", budget.getTotalExpense());
                 monthData.put("savings", budget.getActualSavings());
@@ -221,16 +246,26 @@ public class BudgetService {
         yearlySummary.put("totalIncomePlanned", totalIncomePlanned);
         yearlySummary.put("totalExpensePlanned", totalExpensePlanned);
         yearlySummary.put("totalSavingsTarget", totalSavingsTarget);
+        yearlySummary.put("totalActualIncome", totalActualIncome);
+        yearlySummary.put("totalActualExpense", totalActualExpense);
+        yearlySummary.put("totalActualSavings", totalActualIncome - totalActualExpense);
         yearlySummary.put("monthlyData", monthlyData);
         
         return yearlySummary;
     }
     
+    // Soft delete budget
     public void softDeleteBudget(String budgetId) {
         budgetRepository.findById(budgetId).ifPresent(budget -> {
             budget.setDeleted(true);
-            budget.setDeletedAt(LocalDateTime.now());
             budgetRepository.save(budget);
         });
+    }
+    
+    // Helper method to get month name
+    private String getMonthName(int month) {
+        String[] months = {"January", "February", "March", "April", "May", "June", 
+                           "July", "August", "September", "October", "November", "December"};
+        return months[month - 1];
     }
 }
