@@ -1,7 +1,8 @@
 package com.master.finance.controller;
 
 import com.master.finance.model.Budget;
-import com.master.finance.service.BudgetService;
+import com.master.finance.repository.BudgetRepository;
+import com.master.finance.repository.TransactionRepository;
 import com.master.finance.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -9,13 +10,21 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/budget")
 public class BudgetController {
     
     @Autowired
-    private BudgetService budgetService;
+    private BudgetRepository budgetRepository;
+    
+    @Autowired
+    private TransactionRepository transactionRepository;
     
     @Autowired
     private UserService userService;
@@ -23,16 +32,25 @@ public class BudgetController {
     @GetMapping
     public String viewBudget(Authentication authentication, Model model) {
         String userId = getUserId(authentication);
-        Budget budget = budgetService.getCurrentMonthBudget(userId);
+        String currentMonth = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        
+        Budget budget = budgetRepository.findByUserIdAndMonth(userId, currentMonth)
+                .orElseGet(() -> createDefaultBudget(userId, currentMonth));
+        
         model.addAttribute("budget", budget);
-        model.addAttribute("comparison", budgetService.getBudgetVsActual(userId, budget.getMonth()));
+        model.addAttribute("currentMonth", currentMonth);
+        
         return "budget/index";
     }
     
     @GetMapping("/edit")
     public String showEditForm(Authentication authentication, Model model) {
         String userId = getUserId(authentication);
-        Budget budget = budgetService.getCurrentMonthBudget(userId);
+        String currentMonth = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        
+        Budget budget = budgetRepository.findByUserIdAndMonth(userId, currentMonth)
+                .orElseGet(() -> createDefaultBudget(userId, currentMonth));
+        
         model.addAttribute("budget", budget);
         return "budget/edit";
     }
@@ -42,9 +60,39 @@ public class BudgetController {
                              Authentication authentication,
                              RedirectAttributes redirectAttributes) {
         String userId = getUserId(authentication);
-        budgetService.saveBudget(budget, userId);
+        String currentMonth = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        
+        budget.setUserId(userId);
+        budget.setMonth(currentMonth);
+        budget.setUpdatedAt(LocalDateTime.now());
+        
+        budgetRepository.save(budget);
         redirectAttributes.addFlashAttribute("success", "Budget saved successfully!");
         return "redirect:/budget";
+    }
+    
+    private Budget createDefaultBudget(String userId, String month) {
+        Budget budget = new Budget();
+        budget.setUserId(userId);
+        budget.setMonth(month);
+        budget.setTotalIncome(0.0);
+        budget.setTotalExpense(0.0);
+        budget.setSavingsTarget(0.0);
+        budget.setActualSavings(0.0);
+        
+        Map<String, Budget.CategoryBudget> defaults = new LinkedHashMap<>();
+        String[] categories = {"Food", "Transport", "Rent", "Utilities", "Entertainment", 
+                               "Shopping", "Healthcare", "Education", "Savings", "Other"};
+        
+        for (String category : categories) {
+            Budget.CategoryBudget catBudget = new Budget.CategoryBudget();
+            catBudget.setPlanned(0.0);
+            catBudget.setActual(0.0);
+            defaults.put(category, catBudget);
+        }
+        
+        budget.setCategoryBudgets(defaults);
+        return budgetRepository.save(budget);
     }
     
     private String getUserId(Authentication authentication) {

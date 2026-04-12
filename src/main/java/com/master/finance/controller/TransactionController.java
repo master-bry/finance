@@ -31,7 +31,6 @@ public class TransactionController {
         String userId = getUserId(authentication);
         List<Transaction> transactions = transactionRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId);
         
-        // Calculate stats
         double totalIncome = transactions.stream()
                 .filter(t -> "INCOME".equals(t.getType()))
                 .mapToDouble(Transaction::getAmount)
@@ -42,22 +41,22 @@ public class TransactionController {
                 .mapToDouble(Transaction::getAmount)
                 .sum();
         
-        Map<String, Object> stats = new HashMap<>();
-        stats.put("totalIncome", totalIncome);
-        stats.put("totalExpense", totalExpense);
-        stats.put("balance", totalIncome - totalExpense);
-        stats.put("transactionCount", transactions.size());
-        
         model.addAttribute("transactions", transactions);
-        model.addAttribute("stats", stats);
+        model.addAttribute("totalIncome", totalIncome);
+        model.addAttribute("totalExpense", totalExpense);
+        model.addAttribute("balance", totalIncome - totalExpense);
+        model.addAttribute("currentPage", "transactions");
+        model.addAttribute("title", "Transactions");
+        model.addAttribute("pageSubtitle", "Manage your income and expenses");
+        
         return "transactions/index";
     }
     
     @GetMapping("/add")
     public String showAddForm(Model model) {
-        if (!model.containsAttribute("transaction")) {
-            model.addAttribute("transaction", new Transaction());
-        }
+        model.addAttribute("transaction", new Transaction());
+        model.addAttribute("currentPage", "transactions");
+        model.addAttribute("title", "Add Transaction");
         return "transactions/add";
     }
     
@@ -67,8 +66,7 @@ public class TransactionController {
                                  Authentication authentication,
                                  RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.transaction", result);
-            redirectAttributes.addFlashAttribute("transaction", transaction);
+            redirectAttributes.addFlashAttribute("error", "Please fix the errors");
             return "redirect:/transactions/add";
         }
         
@@ -90,6 +88,8 @@ public class TransactionController {
                 model.addAttribute("transaction", transaction);
             }
         });
+        model.addAttribute("currentPage", "transactions");
+        model.addAttribute("title", "Edit Transaction");
         return "transactions/edit";
     }
     
@@ -102,7 +102,7 @@ public class TransactionController {
         transaction.setId(id);
         transaction.setUserId(userId);
         transactionRepository.save(transaction);
-        redirectAttributes.addFlashAttribute("success", "Transaction updated successfully!");
+        redirectAttributes.addFlashAttribute("success", "Transaction updated!");
         return "redirect:/transactions";
     }
     
@@ -113,7 +113,7 @@ public class TransactionController {
             transaction.setDeletedAt(LocalDateTime.now());
             transactionRepository.save(transaction);
         });
-        redirectAttributes.addFlashAttribute("success", "Transaction deleted successfully!");
+        redirectAttributes.addFlashAttribute("success", "Transaction deleted!");
         return "redirect:/transactions";
     }
     

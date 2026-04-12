@@ -1,301 +1,64 @@
 <!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Budget Management</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: #FFF6C0;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #2F6B3F;
-            margin-top: 0;
-        }
-        .header-actions {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .btn-edit, .btn-back {
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            display: inline-block;
-        }
-        .btn-edit {
-            background: #007bff;
-            color: white;
-        }
-        .btn-back {
-            background: #6c757d;
-            color: white;
-        }
-        .btn-edit:hover { background: #0056b3; }
-        .btn-back:hover { background: #5a6268; }
-        
-        .month-selector {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #f5f5f5;
-            border-radius: 8px;
-        }
-        .month-controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .month-button {
-            background: #2F6B3F;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .month-button:hover {
-            background: #7FB77E;
-        }
-        .month-display {
-            font-weight: bold;
-            font-size: 16px;
-            color: #2F6B3F;
-            min-width: 150px;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .stat-card {
-            background: linear-gradient(135deg, #2F6B3F 0%, #7FB77E 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .stat-label {
-            font-size: 12px;
-            opacity: 0.9;
-            margin-bottom: 8px;
-        }
-        .stat-value {
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .stat-comparison {
-            font-size: 11px;
-            margin-top: 8px;
-            opacity: 0.8;
-        }
-        .is-over-budget {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-        }
-        
-        .section-title {
-            margin-top: 25px;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #2F6B3F;
-            color: white;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        
-        .budget-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        .budget-table th,
-        .budget-table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        .budget-table th {
-            background: #2F6B3F;
-            color: white;
-            font-weight: bold;
-        }
-        .budget-table tr:hover {
-            background: #f9f9f9;
-        }
-        
-        .category-name {
-            font-weight: 600;
-            color: #2F6B3F;
-        }
-        
-        .budget-bar {
-            background: #e0e0e0;
-            height: 20px;
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 8px 0;
-        }
-        .budget-fill {
-            background: linear-gradient(90deg, #28a745, #7FB77E);
-            height: 100%;
-            transition: width 0.3s;
-        }
-        .budget-fill.over-budget {
-            background: linear-gradient(90deg, #dc3545, #ff6b6b);
-        }
-        
-        .amount {
-            font-weight: 600;
-            font-size: 14px;
-        }
-        .amount-spent {
-            color: #2F6B3F;
-        }
-        .amount-budget {
-            color: #666;
-        }
-        .amount-remaining {
-            color: #28a745;
-        }
-        .amount-over {
-            color: #dc3545;
-            font-weight: bold;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-        .status-ok {
-            background: #d4edda;
-            color: #155724;
-        }
-        .status-warning {
-            background: #fff3cd;
-            color: #856404;
-        }
-        .status-over {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-    </style>
+    <title>Budget - Finance Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
 </head>
 <body>
-    <div class="container">
-        <h1>📋 Budget Management</h1>
-        
-        <div class="header-actions">
-            <a href="/budget/edit" class="btn-edit">✏️ Edit Budget</a>
-            <a href="/dashboard" class="btn-back">← Back to Dashboard</a>
+    <div class="sidebar">
+        <div class="sidebar-header"><h2>💰 Finance<span>Tracker</span></h2><p>Manage Your Finances</p></div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+            <li class="nav-item"><a href="/transactions" class="nav-link"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+            <li class="nav-item"><a href="/debts" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Debts</a></li>
+            <li class="nav-item"><a href="/investments" class="nav-link"><i class="fas fa-chart-line"></i> Investments</a></li>
+            <li class="nav-item"><a href="/goals" class="nav-link"><i class="fas fa-bullseye"></i> Goals</a></li>
+            <li class="nav-item"><a href="/budget" class="nav-link active"><i class="fas fa-wallet"></i> Budget</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="top-bar">
+            <div><h3>📋 Monthly Budget</h3><p>Plan and track your spending</p></div>
+            <a href="/dashboard" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
         </div>
         
-        <!-- Month Selector -->
-        <div class="month-selector">
-            <div class="month-controls">
-                <button class="month-button">← Previous</button>
-                <div class="month-display" th:text="${budget.month}">Month</div>
-                <button class="month-button">Next →</button>
+        <div class="budget-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3>Budget for <span th:text="${currentMonth}"></span></h3>
+                <a href="/budget/edit" class="btn-edit"><i class="fas fa-edit"></i> Edit Budget</a>
             </div>
-        </div>
-        
-        <!-- Summary Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">Total Budget</div>
-                <div class="stat-value" th:text="'TZS ' + ${budget.totalBudget}">TZS 0</div>
+            
+            <div class="budget-summary">
+                <div class="summary-item"><div>💰 Planned Income</div><div class="summary-value"><span th:text="${#numbers.formatDecimal(budget.totalIncome, 1, 2)}"></span> TZS</div></div>
+                <div class="summary-item"><div>💸 Planned Expenses</div><div class="summary-value"><span th:text="${#numbers.formatDecimal(budget.totalExpense, 1, 2)}"></span> TZS</div></div>
+                <div class="summary-item"><div>🎯 Savings Target</div><div class="summary-value"><span th:text="${#numbers.formatDecimal(budget.savingsTarget, 1, 2)}"></span> TZS</div></div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Total Spent</div>
-                <div class="stat-value" th:text="'TZS ' + ${budget.totalSpent}">TZS 0</div>
-                <div class="stat-comparison" th:text="'(' + ${#numbers.formatDecimal(budget.spentPercentage, 0, 1)} + '% of budget)'">0%</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Remaining</div>
-                <div class="stat-value" th:text="'TZS ' + ${budget.remaining}">TZS 0</div>
-            </div>
-            <div class="stat-card" th:if="${budget.income > 0}">
-                <div class="stat-label">Income</div>
-                <div class="stat-value" th:text="'TZS ' + ${budget.income}">TZS 0</div>
-            </div>
-        </div>
-        
-        <!-- Budget vs Actual Comparison -->
-        <h3 class="section-title">💰 Category Breakdown</h3>
-        <table class="budget-table" th:if="${!budget.categoryBudgets.empty}">
-            <thead>
-                <tr>
-                    <th>Category</th>
-                    <th>Budget</th>
-                    <th>Spent</th>
-                    <th>Progress</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="entry : ${budget.categoryBudgets}">
-                    <td>
-                        <span class="category-name" th:text="${entry.key}">Category</span>
-                    </td>
-                    <td>
-                        <span class="amount amount-budget" th:text="'TZS ' + ${entry.value.amount}">0</span>
-                    </td>
-                    <td>
-                        <span class="amount amount-spent" th:text="'TZS ' + ${entry.value.spent}">0</span>
-                    </td>
-                    <td>
-                        <div class="budget-bar"
-                             th:class="${entry.value.spent > entry.value.amount ? 'budget-fill over-budget' : 'budget-fill'}">
-                            <div class="budget-fill" th:class="${entry.value.spent > entry.value.amount ? 'over-budget' : ''}"
-                                 th:style="'width: ' + ${Math.min(100, (entry.value.spent / entry.value.amount) * 100)} + '%;'"></div>
-                        </div>
-                        <small th:if="${entry.value.spent <= entry.value.amount}"
-                               th:text="${#numbers.formatDecimal((entry.value.spent / entry.value.amount) * 100, 0, 0)} + '% spent'">0%</small>
-                        <small th:if="${entry.value.spent > entry.value.amount}"
-                               th:text="'OVER by TZS ' + ${entry.value.spent - entry.value.amount}"
-                               style="color: #dc3545; font-weight: bold;">OVER</small>
-                    </td>
-                    <td>
-                        <span class="status-badge"
-                              th:if="${entry.value.spent <= entry.value.amount * 0.8}"
-                              th:class="status-ok">✓ OK</span>
-                        <span class="status-badge"
-                              th:if="${entry.value.spent > entry.value.amount * 0.8 && entry.value.spent <= entry.value.amount}"
-                              th:class="status-warning">⚠ Warning</span>
-                        <span class="status-badge"
-                              th:if="${entry.value.spent > entry.value.amount}"
-                              th:class="status-over">✗ Over</span>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        
-        <div th:if="${budget.categoryBudgets.empty}" class="empty-state">
-            <p>📝 No budget categories set</p>
-            <a href="/budget/edit" class="btn-edit">Create Budget</a>
+            
+            <h4 style="margin-bottom: 1rem;">Category Breakdown</h4>
+            <table>
+                <thead>
+                    <tr><th>Category</th><th>Planned (TZS)</th><th>Actual (TZS)</th><th>Variance</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    <tr th:each="entry : ${budget.categoryBudgets}">
+                        <td th:text="${entry.key}">Category</td>
+                        <td th:text="${#numbers.formatDecimal(entry.value.planned, 1, 2)}">Planned</td>
+                        <td th:text="${#numbers.formatDecimal(entry.value.actual, 1, 2)}">Actual</td>
+                        <td th:class="${entry.value.variance > 0 ? 'over-budget' : 'under-budget'}" th:text="${#numbers.formatDecimal(entry.value.variance, 1, 2)}">Variance</td>
+                        <td>
+                            <span th:if="${entry.value.variance > 0}" style="color: var(--danger);">⚠️ Over</span>
+                            <span th:if="${entry.value.variance < 0}" style="color: var(--success);">✅ Under</span>
+                            <span th:if="${entry.value.variance == 0}" style="color: #6B7280;">On Track</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </body>

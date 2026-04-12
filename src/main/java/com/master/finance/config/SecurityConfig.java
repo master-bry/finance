@@ -4,7 +4,6 @@ import com.master.finance.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,10 +23,11 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/", "/login", "/register", "/css/**", "/js/**", "/static/**", 
-                                "/images/**", "/webjars/**", "/debug/**", "/reset/**", 
-                                "/fix-password", "/test-login/**", "/check-user", 
-                                "/set-password/**", "/reencode-password", "/generate-hash",
-                                "/update-my-password").permitAll()
+                                "/images/**", "/debug/**", "/reset/**", "/fix-password", 
+                                "/test-login/**", "/check-user", "/set-password/**", 
+                                "/reencode-password", "/generate-hash", "/update-my-password",
+                                "/dashboard", "/transactions/**", "/debts/**", "/investments/**", 
+                                "/goals/**", "/budget/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -38,14 +38,10 @@ public class SecurityConfig {
             .logout(logout -> logout
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
-            );
+            )
+            .userDetailsService(userDetailsService);
         
         return http.build();
-    }
-    
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
     }
     
     @Bean

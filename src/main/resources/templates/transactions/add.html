@@ -2,72 +2,29 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Add Transaction</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: #FFF6C0;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-        }
-        h1 { color: #2F6B3F; }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        button {
-            background: #2F6B3F;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover { background: #7FB77E; }
-        .error { color: red; font-size: 12px; }
-        .back-link { margin-top: 20px; display: inline-block; }
-    </style>
+    <title>Add Transaction - Finance Tracker</title>
 </head>
 <body>
-    <div class="container">
-        <h1>➕ Add Transaction</h1>
+    <div class="form-container">
+        <h2><i class="fas fa-plus-circle"></i> Add New Transaction</h2>
         
         <form action="#" th:action="@{/transactions/add}" th:object="${transaction}" method="post">
             <div class="form-group">
                 <label>Description *</label>
-                <input type="text" th:field="*{description}" required>
-                <div class="error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+                <input type="text" th:field="*{description}" required placeholder="e.g., Grocery shopping, Salary">
             </div>
             
             <div class="form-group">
                 <label>Amount *</label>
-                <input type="number" step="0.01" th:field="*{amount}" required>
-                <div class="error" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></div>
+                <input type="number" step="0.01" th:field="*{amount}" required placeholder="0.00">
             </div>
             
             <div class="form-group">
                 <label>Type *</label>
                 <select th:field="*{type}" required>
-                    <option value="">Select</option>
-                    <option value="INCOME">Income</option>
-                    <option value="EXPENSE">Expense</option>
+                    <option value="">Select type</option>
+                    <option value="INCOME">💰 Income</option>
+                    <option value="EXPENSE">💸 Expense</option>
                 </select>
             </div>
             
@@ -81,10 +38,9 @@
                 <textarea th:field="*{notes}" rows="3"></textarea>
             </div>
             
-            <button type="submit">Save Transaction</button>
+            <button type="submit" class="btn-save">💾 Save Transaction</button>
+            <a href="/transactions" class="btn-back" style="margin-left: 1rem;">Cancel</a>
         </form>
-        
-        <a href="/transactions" class="back-link">← Back to Transactions</a>
     </div>
 </body>
 </html>

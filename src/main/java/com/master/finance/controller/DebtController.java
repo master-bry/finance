@@ -1,7 +1,7 @@
 package com.master.finance.controller;
 
 import com.master.finance.model.Debt;
-import com.master.finance.service.DebtService;
+import com.master.finance.repository.DebtRepository;
 import com.master.finance.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,15 +11,15 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/debts")
 public class DebtController {
     
     @Autowired
-    private DebtService debtService;
+    private DebtRepository debtRepository;
     
     @Autowired
     private UserService userService;
@@ -27,25 +27,34 @@ public class DebtController {
     @GetMapping
     public String listDebts(Authentication authentication, Model model) {
         String userId = getUserId(authentication);
-        List<Debt> debts = debtService.getUserDebts(userId);
+        List<Debt> debts = debtRepository.findByUserIdAndDeletedFalse(userId);
         
-        // Calculate totals using service methods
-        double totalOwedToMe = debtService.getTotalOwedToMe(userId);
-        double totalIOwe = debtService.getTotalIOwe(userId);
+        double totalOwedToMe = debts.stream()
+                .filter(d -> "OWED_TO_ME".equals(d.getType()) && !"SETTLED".equals(d.getStatus()))
+                .mapToDouble(Debt::getRemainingAmount)
+                .sum();
+        
+        double totalIOwe = debts.stream()
+                .filter(d -> "I_OWE".equals(d.getType()) && !"SETTLED".equals(d.getStatus()))
+                .mapToDouble(Debt::getRemainingAmount)
+                .sum();
         
         model.addAttribute("debts", debts);
         model.addAttribute("totalOwedToMe", totalOwedToMe);
         model.addAttribute("totalIOwe", totalIOwe);
         model.addAttribute("netPosition", totalOwedToMe - totalIOwe);
+        model.addAttribute("currentPage", "debts");
+        model.addAttribute("title", "Debts");
+        model.addAttribute("pageSubtitle", "Track who owes you and who you owe");
         
         return "debts/index";
     }
     
     @GetMapping("/add")
     public String showAddForm(Model model) {
-        if (!model.containsAttribute("debt")) {
-            model.addAttribute("debt", new Debt());
-        }
+        model.addAttribute("debt", new Debt());
+        model.addAttribute("currentPage", "debts");
+        model.addAttribute("title", "Add Debt");
         return "debts/add";
     }
     
@@ -53,148 +62,98 @@ public class DebtController {
     public String addDebt(@Valid @ModelAttribute Debt debt,
                           BindingResult result,
                           Authentication authentication,
-                          RedirectAttributes redirectAttributes,
-                          Model model) {
+                          RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
-            // Pass errors to view for display
-            model.addAttribute("debt", debt);
-            model.addAttribute("org.springframework.validation.BindingResult.debt", result);
-            return "debts/add";
+            redirectAttributes.addFlashAttribute("error", "Please fix the errors");
+            return "redirect:/debts/add";
         }
         
         String userId = getUserId(authentication);
         debt.setUserId(userId);
         debt.setRemainingAmount(debt.getAmount());
         debt.setStatus("PENDING");
+        debt.setDateGiven(LocalDateTime.now());
+        debt.setLastUpdated(LocalDateTime.now());
+        debt.setDeleted(false);
+        debtRepository.save(debt);
         
-        debtService.saveDebt(debt);
-        redirectAttributes.addFlashAttribute("success", "✓ Debt added successfully!");
+        redirectAttributes.addFlashAttribute("success", "Debt added successfully!");
         return "redirect:/debts";
     }
     
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable String id, Authentication authentication, Model model) {
         String userId = getUserId(authentication);
-        Optional<Debt> debtOpt = debtService.getDebt(id);
-        
-        if (debtOpt.isEmpty() || !debtOpt.get().getUserId().equals(userId)) {
-            return "redirect:/debts?error=not-found";
-        }
-        
-        model.addAttribute("debt", debtOpt.get());
+        debtRepository.findById(id).ifPresent(debt -> {
+            if (debt.getUserId().equals(userId)) {
+                model.addAttribute("debt", debt);
+            }
+        });
+        model.addAttribute("currentPage", "debts");
+        model.addAttribute("title", "Edit Debt");
         return "debts/edit";
     }
     
     @PostMapping("/edit/{id}")
     public String updateDebt(@PathVariable String id,
                              @Valid @ModelAttribute Debt debt,
-                             BindingResult result,
-                             Authentication authentication,
-                             RedirectAttributes redirectAttributes,
-                             Model model) {
-        String userId = getUserId(authentication);
-        
-        // Verify authorization
-        Optional<Debt> existingDebtOpt = debtService.getDebt(id);
-        if (existingDebtOpt.isEmpty() || !existingDebtOpt.get().getUserId().equals(userId)) {
-            return "redirect:/debts?error=unauthorized";
-        }
-        
-        if (result.hasErrors()) {
-            model.addAttribute("debt", debt);
-            model.addAttribute("org.springframework.validation.BindingResult.debt", result);
-            return "debts/edit";
-        }
-        
-        Debt existingDebt = existingDebtOpt.get();
-        
-        // Preserve payment history and update fields
-        debt.setId(id);
-        debt.setUserId(userId);
-        debt.setPaymentHistory(existingDebt.getPaymentHistory());
-        debt.setRemainingAmount(existingDebt.getRemainingAmount());
-        debt.setDateGiven(existingDebt.getDateGiven());
-        
-        debtService.saveDebt(debt);
-        redirectAttributes.addFlashAttribute("success", "✓ Debt updated successfully!");
-        return "redirect:/debts";
-    }
-    
-    @PostMapping("/delete/{id}")
-    public String deleteDebt(@PathVariable String id, 
                              Authentication authentication,
                              RedirectAttributes redirectAttributes) {
         String userId = getUserId(authentication);
-        
-        // Verify authorization
-        Optional<Debt> debtOpt = debtService.getDebt(id);
-        if (debtOpt.isEmpty() || !debtOpt.get().getUserId().equals(userId)) {
-            redirectAttributes.addFlashAttribute("error", "✗ You don't have permission to delete this debt");
-            return "redirect:/debts";
+        Debt existingDebt = debtRepository.findById(id).orElse(null);
+        if (existingDebt != null) {
+            debt.setPaymentHistory(existingDebt.getPaymentHistory());
         }
-        
-        debtService.deleteDebt(id);
-        redirectAttributes.addFlashAttribute("success", "✓ Debt deleted successfully!");
+        debt.setId(id);
+        debt.setUserId(userId);
+        debt.setLastUpdated(LocalDateTime.now());
+        debtRepository.save(debt);
+        redirectAttributes.addFlashAttribute("success", "Debt updated!");
+        return "redirect:/debts";
+    }
+    
+    @GetMapping("/delete/{id}")
+    public String deleteDebt(@PathVariable String id, RedirectAttributes redirectAttributes) {
+        debtRepository.findById(id).ifPresent(debt -> {
+            debt.setDeleted(true);
+            debt.setDeletedAt(LocalDateTime.now());
+            debtRepository.save(debt);
+        });
+        redirectAttributes.addFlashAttribute("success", "Debt deleted!");
         return "redirect:/debts";
     }
     
     @GetMapping("/make-payment/{id}")
-    public String showPaymentForm(@PathVariable String id, 
-                                  Authentication authentication,
-                                  Model model,
-                                  RedirectAttributes redirectAttributes) {
-        String userId = getUserId(authentication);
-        Optional<Debt> debtOpt = debtService.getDebt(id);
-        
-        if (debtOpt.isEmpty() || !debtOpt.get().getUserId().equals(userId)) {
-            redirectAttributes.addFlashAttribute("error", "✗ Debt not found");
-            return "redirect:/debts";
-        }
-        
-        model.addAttribute("debt", debtOpt.get());
+    public String showPaymentForm(@PathVariable String id, Model model) {
+        debtRepository.findById(id).ifPresent(debt -> model.addAttribute("debt", debt));
+        model.addAttribute("currentPage", "debts");
         return "debts/payment";
     }
     
     @PostMapping("/make-payment/{id}")
     public String makePayment(@PathVariable String id,
                               @RequestParam Double amount,
-                              @RequestParam(required = false, defaultValue = "") String notes,
-                              Authentication authentication,
+                              @RequestParam String notes,
                               RedirectAttributes redirectAttributes) {
-        String userId = getUserId(authentication);
-        
-        // Verify authorization
-        Optional<Debt> debtOpt = debtService.getDebt(id);
-        if (debtOpt.isEmpty() || !debtOpt.get().getUserId().equals(userId)) {
-            redirectAttributes.addFlashAttribute("error", "✗ You don't have permission to make payments on this debt");
-            return "redirect:/debts";
-        }
-        
-        Debt debt = debtOpt.get();
-        
-        // Validate payment amount
-        if (amount == null || amount <= 0) {
-            redirectAttributes.addFlashAttribute("error", "✗ Payment amount must be greater than 0");
-            return "redirect:/debts/make-payment/" + id;
-        }
-        
-        if (amount > debt.getRemainingAmount()) {
-            redirectAttributes.addFlashAttribute("error", "✗ Payment amount cannot exceed remaining amount of " + debt.getRemainingAmount());
-            return "redirect:/debts/make-payment/" + id;
-        }
-        
-        if ("SETTLED".equals(debt.getStatus())) {
-            redirectAttributes.addFlashAttribute("error", "✗ This debt is already settled");
-            return "redirect:/debts";
-        }
-        
-        try {
-            debtService.makePayment(id, amount, notes);
-            redirectAttributes.addFlashAttribute("success", "✓ Payment of " + amount + " recorded successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "✗ Error recording payment: " + e.getMessage());
-        }
-        
+        debtRepository.findById(id).ifPresent(debt -> {
+            Debt.PaymentRecord payment = new Debt.PaymentRecord();
+            payment.setAmountPaid(amount);
+            payment.setNotes(notes);
+            debt.getPaymentHistory().add(payment);
+            
+            double newRemaining = debt.getRemainingAmount() - amount;
+            debt.setRemainingAmount(newRemaining);
+            
+            if (newRemaining <= 0) {
+                debt.setStatus("SETTLED");
+                debt.setRemainingAmount(0.0);
+            } else if (newRemaining < debt.getAmount()) {
+                debt.setStatus("PARTIAL");
+            }
+            debt.setLastUpdated(LocalDateTime.now());
+            debtRepository.save(debt);
+        });
+        redirectAttributes.addFlashAttribute("success", "Payment recorded!");
         return "redirect:/debts";
     }
     

@@ -32,18 +32,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
-	
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-sync</artifactId>
-         </dependency>
-		 <!-- Dotenv Java for reading .env files -->
-       <dependency>
-           <groupId>io.github.cdimascio</groupId>
-           <artifactId>dotenv-java</artifactId>
-           <version>3.0.0</version>
-      </dependency>
-   
+        
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
@@ -76,10 +65,32 @@
         </dependency>
         
         <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
+        </dependency>
+        <!-- Thymeleaf Layout Dialect -->
+        <dependency>
+            <groupId>nz.net.ultraq.thymeleaf</groupId>
+            <artifactId>thymeleaf-layout-dialect</artifactId>
+           </dependency>
+                <!-- Thymeleaf Layout Dialect -->
+            <dependency>
+              <groupId>nz.net.ultraq.thymeleaf</groupId>
+              <artifactId>thymeleaf-layout-dialect</artifactId>
+            </dependency>
+        
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     

@@ -1,467 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance Tracker - Dashboard</title>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-dark: #2F6B3F;
-            --secondary: #7FB77E;
-            --accent: #F7C85C;
-            --background: #FFF6C0;
-            --text-dark: #1F2937;
-            --text-light: #6B7280;
-            --success: #10B981;
-            --danger: #EF4444;
-            --warning: #F59E0B;
-            --info: #3B82F6;
-            --white: #FFFFFF;
-            --sidebar-width: 280px;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--background);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        
-        /* Sidebar Navigation */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: var(--sidebar-width);
-            height: 100vh;
-            background: linear-gradient(135deg, var(--primary-dark) 0%, #1a4d2a 100%);
-            color: white;
-            padding: 1.5rem;
-            transition: all 0.3s;
-            z-index: 1000;
-            overflow-y: auto;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-        }
-        
-        .sidebar-header {
-            text-align: center;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            margin-bottom: 1.5rem;
-        }
-        
-        .sidebar-header h2 {
-            font-size: 1.5rem;
-            margin-bottom: 0.25rem;
-        }
-        
-        .sidebar-header h2 span {
-            color: var(--accent);
-        }
-        
-        .sidebar-header p {
-            font-size: 0.8rem;
-            opacity: 0.8;
-        }
-        
-        .nav-menu {
-            list-style: none;
-        }
-        
-        .nav-item {
-            margin-bottom: 0.5rem;
-        }
-        
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            color: white;
-            text-decoration: none;
-            border-radius: 10px;
-            transition: all 0.3s;
-            gap: 12px;
-        }
-        
-        .nav-link i {
-            width: 24px;
-            font-size: 1.2rem;
-        }
-        
-        .nav-link:hover {
-            background: rgba(255,255,255,0.1);
-            transform: translateX(5px);
-        }
-        
-        .nav-link.active {
-            background: var(--accent);
-            color: var(--primary-dark);
-            font-weight: bold;
-        }
-        
-        /* Main Content */
-        .main-content {
-            margin-left: var(--sidebar-width);
-            padding: 1.5rem;
-            min-height: 100vh;
-        }
-        
-        /* Top Bar */
-        .top-bar {
-            background: var(--white);
-            border-radius: 15px;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .welcome-text h3 {
-            color: var(--primary-dark);
-            margin-bottom: 0.25rem;
-        }
-        
-        .welcome-text p {
-            color: var(--text-light);
-            font-size: 0.85rem;
-        }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .logout-btn {
-            background: var(--danger);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-        
-        .logout-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-        }
-        
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .stat-card {
-            background: var(--white);
-            padding: 1.25rem;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-            border-left: 4px solid var(--primary-dark);
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-        
-        .stat-title {
-            color: var(--text-light);
-            font-size: 0.8rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: bold;
-        }
-        
-        .positive { color: var(--success); }
-        .negative { color: var(--danger); }
-        
-        /* Charts Row */
-        .charts-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .chart-card {
-            background: var(--white);
-            border-radius: 15px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .chart-card h4 {
-            color: var(--primary-dark);
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-        }
-        
-        canvas {
-            max-height: 300px;
-        }
-        
-        /* Section Cards */
-        .section-card {
-            background: var(--white);
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--accent);
-        }
-        
-        .section-header h4 {
-            color: var(--primary-dark);
-            font-size: 1.1rem;
-        }
-        
-        .btn-sm {
-            background: var(--primary-dark);
-            color: white;
-            padding: 0.4rem 0.8rem;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 0.8rem;
-            transition: all 0.3s;
-        }
-        
-        .btn-sm:hover {
-            background: var(--secondary);
-        }
-        
-        .btn-back {
-            background: var(--secondary);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-        }
-        
-        .btn-back:hover {
-            background: var(--primary-dark);
-            transform: translateX(-3px);
-        }
-        
-        /* Tables */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .data-table th,
-        .data-table td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #E5E7EB;
-        }
-        
-        .data-table th {
-            background: #F9FAFB;
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-        
-        .data-table tr:hover {
-            background: #F9FAFB;
-        }
-        
-        .badge {
-            padding: 0.25rem 0.5rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-        
-        .badge-income { background: #D1FAE5; color: #065F46; }
-        .badge-expense { background: #FEE2E2; color: #991B1B; }
-        .badge-pending { background: #FEF3C7; color: #92400E; }
-        .badge-settled { background: #D1FAE5; color: #065F46; }
-        
-        /* Goal Progress */
-        .goal-item {
-            margin-bottom: 1rem;
-        }
-        
-        .goal-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.25rem;
-            font-size: 0.85rem;
-        }
-        
-        .progress-bar {
-            background: #E5E7EB;
-            border-radius: 10px;
-            height: 6px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            background: var(--success);
-            height: 100%;
-            transition: width 0.3s;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            .sidebar.active {
-                transform: translateX(0);
-            }
-            .main-content {
-                margin-left: 0;
-            }
-            .charts-row {
-                grid-template-columns: 1fr;
-            }
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            .mobile-menu-btn {
-                display: block;
-                position: fixed;
-                top: 1rem;
-                left: 1rem;
-                z-index: 1100;
-                background: var(--primary-dark);
-                color: white;
-                padding: 0.5rem;
-                border-radius: 8px;
-                cursor: pointer;
-            }
-        }
-        
-        @media (min-width: 769px) {
-            .mobile-menu-btn {
-                display: none;
-            }
-        }
-        
-        .mobile-menu-btn {
-            position: fixed;
-            top: 1rem;
-            left: 1rem;
-            z-index: 1100;
-            background: var(--primary-dark);
-            color: white;
-            padding: 0.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-    </style>
+    <title>Dashboard - Finance Tracker</title>
 </head>
 <body>
-    <!-- Mobile Menu Button -->
-    <div class="mobile-menu-btn" onclick="toggleSidebar()">
-        <i class="fas fa-bars"></i>
-    </div>
-    
-    <!-- Sidebar Navigation -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h2>💰 Finance<span>Tracker</span></h2>
-            <p>Manage Your Finances</p>
-        </div>
-        
-        <ul class="nav-menu">
-            <li class="nav-item">
-                <a href="/dashboard" class="nav-link active">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/transactions" class="nav-link">
-                    <i class="fas fa-exchange-alt"></i>
-                    <span>Transactions</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/debts" class="nav-link">
-                    <i class="fas fa-hand-holding-usd"></i>
-                    <span>Debts</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/investments" class="nav-link">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Investments</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/goals" class="nav-link">
-                    <i class="fas fa-bullseye"></i>
-                    <span>Goals</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/budget" class="nav-link">
-                    <i class="fas fa-wallet"></i>
-                    <span>Budget</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/excel/daily" class="nav-link">
-                    <i class="fas fa-file-excel"></i>
-                    <span>Daily Entry</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/reports" class="nav-link">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Reports</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-    
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Top Bar -->
-        <div class="top-bar">
-            <div class="welcome-text">
-                <h3>Welcome back, <span sec:authentication="name"></span>!</h3>
-                <p>Here's your financial overview</p>
-            </div>
-            <div class="user-info">
-                <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            </div>
-        </div>
-        
+    <div layout:fragment="content">
         <!-- Stats Grid -->
         <div class="stats-grid">
             <div class="stat-card">
@@ -490,15 +35,26 @@
             </div>
         </div>
         
-        <!-- Charts Row -->
+        <!-- Charts Row with Real Data -->
         <div class="charts-row">
             <div class="chart-card">
                 <h4><i class="fas fa-chart-pie"></i> Expenses by Category</h4>
                 <canvas id="expenseChart"></canvas>
             </div>
             <div class="chart-card">
-                <h4><i class="fas fa-chart-line"></i> Financial Overview</h4>
-                <canvas id="overviewChart"></canvas>
+                <h4><i class="fas fa-chart-pie"></i> Income by Category</h4>
+                <canvas id="incomeChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="charts-row">
+            <div class="chart-card">
+                <h4><i class="fas fa-chart-line"></i> Weekly Income vs Expense</h4>
+                <canvas id="weeklyChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h4><i class="fas fa-chart-bar"></i> Financial Summary</h4>
+                <canvas id="summaryChart"></canvas>
             </div>
         </div>
         
@@ -523,9 +79,10 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-title">🎯 Active Goals</div>
-                <div class="stat-value">
-                    <span th:text="${stats.activeGoalsCount}"></span>
+                <div class="stat-title">📊 Profit/Loss</div>
+                <div class="stat-value" th:class="${stats.totalProfitLoss >= 0 ? 'positive' : 'negative'}">
+                    <span th:text="${#numbers.formatDecimal(stats.totalProfitLoss, 1, 2)}"></span> TZS
+                    <span th:text="' (' + ${stats.profitLossPercentage} + '%)'" style="font-size: 0.8rem;"></span>
                 </div>
             </div>
         </div>
@@ -551,10 +108,10 @@
                         <td th:text="${t.description}">Description</td>
                         <td th:text="${t.category}">Category</td>
                         <td th:class="${t.type == 'INCOME' ? 'positive' : 'negative'}" 
-                            th:text="(t.type == 'INCOME' ? '+' : '-') + ' ' + t.amount + ' TZS'">Amount</td>
+                            th:text="(t.type == 'INCOME' ? '+' : '-') + ' ' + ${#numbers.formatDecimal(t.amount, 1, 2)} + ' TZS'">Amount</td>
                     </tr>
                     <tr th:if="${recentTransactions.empty}">
-                        <td colspan="4" style="text-align: center;">No transactions yet</td>
+                        <td colspan="4" style="text-align: center;">No transactions yet. <a href="/transactions/add">Add your first transaction!</a></td>
                     </tr>
                 </tbody>
             </table>
@@ -575,85 +132,128 @@
                     <div class="progress-fill" th:style="'width: ' + ${goal.progressPercentage} + '%;'"></div>
                 </div>
             </div>
-            <div th:if="${activeGoals.empty}" style="text-align: center; padding: 2rem; color: var(--text-light);">
+            <div th:if="${activeGoals.empty}" style="text-align: center; padding: 1rem; color: var(--text-light);">
                 <i class="fas fa-flag-checkered"></i>
                 <p>No active goals. <a href="/goals/add">Create your first goal!</a></p>
             </div>
         </div>
         
-        <!-- Back to Dashboard Button (Already on dashboard, but kept for consistency) -->
-        <div style="text-align: center; margin-top: 1rem;">
-            <a href="/dashboard" class="btn-back">
-                <i class="fas fa-arrow-left"></i> Back to Dashboard
-            </a>
-        </div>
-    </div>
-    
-    <script>
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-        }
-        
-        // Expense Chart
-        const expenseCtx = document.getElementById('expenseChart').getContext('2d');
-        const expenseCategories = /*[[${expenseCategories}]]*/ [];
-        const expenseAmounts = /*[[${expenseAmounts}]]*/ [];
-        
-        new Chart(expenseCtx, {
-            type: 'pie',
-            data: {
-                labels: expenseCategories,
-                datasets: [{
-                    data: expenseAmounts,
-                    backgroundColor: [
-                        '#2F6B3F', '#7FB77E', '#F7C85C', '#10B981', '#F59E0B',
-                        '#EF4444', '#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4'
-                    ],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-        
-        // Overview Chart (Income vs Expense trend - mock data)
-        const overviewCtx = document.getElementById('overviewChart').getContext('2d');
-        new Chart(overviewCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                datasets: [
-                    {
-                        label: 'Income',
-                        data: [1200000, 1500000, 1300000, 1800000],
-                        backgroundColor: '#10B981',
-                        borderRadius: 8
+        <script>
+            // Expense Chart - Real Data
+            const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+            const expenseCategories = /*[[${expenseCategories}]]*/ [];
+            const expenseAmounts = /*[[${expenseAmounts}]]*/ [];
+            
+            if(expenseCategories.length > 0) {
+                new Chart(expenseCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: expenseCategories,
+                        datasets: [{
+                            data: expenseAmounts,
+                            backgroundColor: ['#2F6B3F', '#7FB77E', '#F7C85C', '#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4'],
+                            borderWidth: 0
+                        }]
                     },
-                    {
-                        label: 'Expense',
-                        data: [800000, 950000, 700000, 1100000],
-                        backgroundColor: '#EF4444',
-                        borderRadius: 8
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
                     }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        position: 'top'
+                });
+            }
+            
+            // Income Chart - Real Data
+            const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+            const incomeCategories = /*[[${incomeCategories}]]*/ [];
+            const incomeAmounts = /*[[${incomeAmounts}]]*/ [];
+            
+            if(incomeCategories.length > 0) {
+                new Chart(incomeCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: incomeCategories,
+                        datasets: [{
+                            data: incomeAmounts,
+                            backgroundColor: ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0', '#D1FAE5'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            }
+            
+            // Weekly Chart - Real Data
+            const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+            const weeklyIncome = /*[[${weeklyIncome}]]*/ [0, 0, 0, 0];
+            const weeklyExpense = /*[[${weeklyExpense}]]*/ [0, 0, 0, 0];
+            
+            new Chart(weeklyCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [
+                        {
+                            label: 'Income',
+                            data: weeklyIncome,
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Expense',
+                            data: weeklyExpense,
+                            borderColor: '#EF4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'top' }
                     }
                 }
-            }
-        });
-    </script>
+            });
+            
+            // Summary Chart
+            const summaryCtx = document.getElementById('summaryChart').getContext('2d');
+            new Chart(summaryCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Income', 'Expense', 'Balance'],
+                    datasets: [{
+                        label: 'Amount (TZS)',
+                        data: [
+                            /*[[${stats.totalIncome}]]*/ 0,
+                            /*[[${stats.totalExpense}]]*/ 0,
+                            /*[[${stats.balance}]]*/ 0
+                        ],
+                        backgroundColor: ['#10B981', '#EF4444', '#3B82F6'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'top' }
+                    }
+                }
+            });
+        </script>
+    </div>
 </body>
 </html>

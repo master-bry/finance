@@ -2,52 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Add Debt</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: #FFF6C0;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-        }
-        h1 { color: #2F6B3F; }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        button {
-            background: #2F6B3F;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover { background: #7FB77E; }
-        .error { color: red; font-size: 12px; }
-        .back-link { margin-top: 20px; display: inline-block; }
-    </style>
+    <title>Add Debt - Finance Tracker</title>
 </head>
 <body>
-    <div class="container">
-        <h1>➕ Add New Debt</h1>
+    <div class="form-container">
+        <h2><i class="fas fa-hand-holding-usd"></i> Add New Debt</h2>
         
         <form action="#" th:action="@{/debts/add}" th:object="${debt}" method="post">
             <div class="form-group">
@@ -81,18 +40,12 @@
             
             <div class="form-group">
                 <label>Description</label>
-                <textarea th:field="*{description}" rows="3" placeholder="What is this debt for?"></textarea>
+                <textarea th:field="*{description}" rows="3"></textarea>
             </div>
             
-            <div class="form-group">
-                <label>Notes</label>
-                <textarea th:field="*{notes}" rows="2" placeholder="Additional information..."></textarea>
-            </div>
-            
-            <button type="submit">💾 Save Debt</button>
+            <button type="submit" class="btn-save">💾 Save Debt</button>
+            <a href="/debts" class="btn-back" style="margin-left: 1rem;">Cancel</a>
         </form>
-        
-        <a href="/debts" class="back-link">← Back to Debts</a>
     </div>
 </body>
 </html>
