@@ -1,121 +1,170 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Financial Goals</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goals - Finance Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-dark: #2F6B3F;
+            --secondary: #7FB77E;
+            --accent: #F7C85C;
+            --background: #FFF6C0;
+            --white: #FFFFFF;
+            --success: #10B981;
+            --danger: #EF4444;
+            --sidebar-width: 280px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--background); }
+        
+        .sidebar {
+            position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #1a4d2a 100%);
+            color: white; padding: 1.5rem; overflow-y: auto;
+        }
+        .sidebar-header { text-align: center; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 1.5rem; }
+        .sidebar-header h2 span { color: var(--accent); }
+        .nav-menu { list-style: none; }
+        .nav-item { margin-bottom: 0.5rem; }
+        .nav-link { display: flex; align-items: center; padding: 0.75rem 1rem; color: white; text-decoration: none; border-radius: 10px; gap: 12px; transition: all 0.3s; }
+        .nav-link:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
+        .nav-link.active { background: var(--accent); color: var(--primary-dark); font-weight: bold; }
+        
+        .main-content { margin-left: var(--sidebar-width); padding: 1.5rem; min-height: 100vh; }
+        .top-bar {
+            background: var(--white); border-radius: 15px; padding: 1rem 1.5rem; margin-bottom: 1.5rem;
+            display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .logout-btn { background: var(--danger); color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; }
+        
+        .btn-add {
+            background: var(--primary-dark);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        
+        .section-card {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent);
+        }
+        
+        .goal-item { margin-bottom: 1.5rem; }
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        .progress-bar {
+            background: #E5E7EB;
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+        .progress-fill {
+            background: var(--success);
+            height: 100%;
+            transition: width 0.3s;
+        }
+        .btn-sm {
+            padding: 0.3rem 0.7rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            margin: 0 2px;
+            display: inline-block;
+        }
+        .btn-progress { background: var(--accent); color: #333; }
+        .btn-complete { background: var(--success); color: white; }
+        .btn-delete { background: var(--danger); color: white; }
+        
+        .alert-success { background: #D1FAE5; color: #065F46; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
+        
+        .mobile-menu-btn { position: fixed; top: 1rem; left: 1rem; z-index: 1100; background: var(--primary-dark); color: white; padding: 0.5rem; border-radius: 8px; cursor: pointer; display: none; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .mobile-menu-btn { display: block; }
+        }
+    </style>
 </head>
 <body>
-    <div layout:fragment="content">
-        <h1>🎯 Financial Goals</h1>
-        
-        <div class="header-actions">
-            <a href="/goals/add" class="btn-add">➕ Add New Goal</a>
-            <a href="/dashboard" class="btn-back">← Back to Dashboard</a>
+    <div class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header"><h2>💰 Finance<span>Tracker</span></h2><p>Manage Your Finances</p></div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+            <li class="nav-item"><a href="/transactions" class="nav-link"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+            <li class="nav-item"><a href="/debts" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Debts</a></li>
+            <li class="nav-item"><a href="/investments" class="nav-link"><i class="fas fa-chart-line"></i> Investments</a></li>
+            <li class="nav-item"><a href="/goals" class="nav-link active"><i class="fas fa-bullseye"></i> Goals</a></li>
+            <li class="nav-item"><a href="/budget" class="nav-link"><i class="fas fa-wallet"></i> Budget</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="top-bar">
+            <div><h3>🎯 Financial Goals</h3><p>Track your savings targets</p></div>
+            <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
         
-        <!-- Messages -->
-        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+        <div th:if="${success}" class="alert-success" th:text="${success}"></div>
         
-        <!-- Summary Stats -->
-        <div th:if="${summary != null}" class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">Total Goals</div>
-                <div class="stat-value" th:text="${summary.totalGoals}">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Active Goals</div>
-                <div class="stat-value" th:text="${summary.activeGoals}">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Completed</div>
-                <div class="stat-value" th:text="${summary.completedGoals}">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Total Progress</div>
-                <div class="stat-value" th:text="${summary.completionPercentage} + '%'">0%</div>
-            </div>
-        </div>
+        <a href="/goals/add" class="btn-add"><i class="fas fa-plus"></i> Add Goal</a>
         
-        <!-- Active Goals Section -->
-        <h3 class="section-title">📍 Active Goals</h3>
-        <div th:if="${!activeGoals.empty}" class="goals-grid">
-            <div th:each="goal : ${activeGoals}" class="goal-card">
+        <div class="section-card">
+            <div class="section-header"><h4><i class="fas fa-bullseye"></i> Active Goals</h4></div>
+            <div th:each="goal : ${activeGoals}" class="goal-item">
                 <div class="goal-header">
-                    <h4 class="goal-name" th:text="${goal.name}">Goal Name</h4>
-                    <span class="goal-category" th:text="${goal.category}">Category</span>
+                    <span th:text="${goal.name}"></span>
+                    <span th:text="${#numbers.formatDecimal(goal.currentAmount, 1, 0)} + ' / ' + ${#numbers.formatDecimal(goal.targetAmount, 1, 0)} + ' TZS'"></span>
                 </div>
-                
-                <div class="goal-progress">
-                    <div class="progress-bar">
-                        <div class="progress-fill" th:style="'width: ' + ${goal.progressPercentage} + '%;'"></div>
-                    </div>
-                    <div class="progress-text">
-                        <span th:text="${goal.progressPercentage} + '% complete'">0% complete</span>
-                        <span th:if="${goal.dueDate != null}" th:text="${#temporals.format(goal.dueDate, 'yyyy-MM-dd')}">Due Date</span>
-                    </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" th:style="'width: ' + ${goal.progressPercentage} + '%;'"></div>
                 </div>
-                
-                <div class="goal-amount">
-                    <span class="amount-current" th:text="'TZS ' + ${goal.currentAmount}">TZS 0</span>
-                    <span class="amount-target" th:text="' / TZS ' + ${goal.targetAmount}">/ TZS 0</span>
-                </div>
-                
-                <div class="goal-status status-active">⏳ In Progress</div>
-                
-                <div th:if="${goal.description != null}" style="font-size: 13px; color: #666; margin: 10px 0;">
-                    <strong>Description:</strong> <span th:text="${goal.description}"></span>
-                </div>
-                
-                <div class="goal-actions">
-                    <a th:href="'/goals/edit/' + ${goal.id}" class="btn-action btn-action-edit">✏️ Edit</a>
-                    <form th:action="@{/goals/delete/{id}(id=${goal.id})}" method="post" class="delete-form">
-                        <button type="submit" class="btn-action btn-action-delete" 
-                                onclick="return confirm('Delete this goal?')">🗑️ Delete</button>
-                    </form>
+                <div style="margin-top: 0.5rem;">
+                    <a th:href="'/goals/progress/' + ${goal.id}" class="btn-sm btn-progress"><i class="fas fa-plus"></i> Add Progress</a>
+                    <a th:href="'/goals/mark/' + ${goal.id}" class="btn-sm btn-complete"><i class="fas fa-check"></i> Mark Complete</a>
+                    <a th:href="'/goals/delete/' + ${goal.id}" class="btn-sm btn-delete" onclick="return confirm('Delete this goal?')"><i class="fas fa-trash"></i> Delete</a>
                 </div>
             </div>
-        </div>
-        <div th:if="${activeGoals.empty}" class="empty-state">
-            <p>📝 No active goals yet</p>
-            <a href="/goals/add" class="btn-add">Create Your First Goal</a>
+            <div th:if="${activeGoals.empty}" style="text-align: center; padding: 1rem;">No active goals. <a href="/goals/add">Create your first goal!</a></div>
         </div>
         
-        <!-- Completed Goals Section -->
-        <h3 class="section-title" th:if="${!goals.empty}">✅ Completed Goals</h3>
-        <div th:if="${!goals.empty}" class="goals-grid">
-            <div th:each="goal : ${goals}" th:if="${goal.achieved}" class="goal-card">
+        <div class="section-card">
+            <div class="section-header"><h4><i class="fas fa-trophy"></i> Completed Goals</h4></div>
+            <div th:each="goal : ${completedGoals}" class="goal-item" style="border-left: 3px solid var(--success); padding-left: 1rem;">
                 <div class="goal-header">
-                    <h4 class="goal-name" th:text="${goal.name}">Goal Name</h4>
-                    <span class="goal-category" th:text="${goal.category}">Category</span>
+                    <span th:text="${goal.name}"></span>
+                    <span class="positive">✓ Achieved!</span>
                 </div>
-                
-                <div class="goal-progress">
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 100%;"></div>
-                    </div>
-                    <div class="progress-text">
-                        <span>100% complete</span>
-                        <span th:if="${goal.completedDate != null}" th:text="${#temporals.format(goal.completedDate, 'yyyy-MM-dd')}">Completed</span>
-                    </div>
-                </div>
-                
-                <div class="goal-amount">
-                    <span class="amount-current" th:text="'TZS ' + ${goal.currentAmount}">TZS 0</span>
-                    <span class="amount-target" th:text="' / TZS ' + ${goal.targetAmount}">/ TZS 0</span>
-                </div>
-                
-                <div class="goal-status status-completed">✓ Completed</div>
-                
-                <div class="goal-actions">
-                    <form th:action="@{/goals/delete/{id}(id=${goal.id})}" method="post" class="delete-form">
-                        <button type="submit" class="btn-action btn-action-delete" 
-                                onclick="return confirm('Delete this goal?')">🗑️ Delete</button>
-                    </form>
-                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
             </div>
+            <div th:if="${completedGoals.empty}" style="text-align: center; padding: 1rem;">No completed goals yet.</div>
         </div>
     </div>
+    
+    <script>
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+    </script>
 </body>
 </html>

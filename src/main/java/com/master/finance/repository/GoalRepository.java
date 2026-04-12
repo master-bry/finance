@@ -8,12 +8,10 @@ import java.util.List;
 
 @Repository
 public interface GoalRepository extends MongoRepository<Goal, String> {
+    
     @Query("{ 'userId': ?0, 'deleted': false }")
     List<Goal> findByUserIdAndDeletedFalse(String userId);
     
     @Query("{ 'userId': ?0, 'achieved': false, 'deleted': false }")
     List<Goal> findByUserIdAndAchievedFalseAndDeletedFalse(String userId);
-    
-    @Query("{ 'userId': ?0, 'priority': ?1, 'deleted': false }")
-    List<Goal> findByUserIdAndPriorityAndDeletedFalse(String userId, String priority);
 }
