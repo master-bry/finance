@@ -24,6 +24,10 @@ public class Debt {
     private String phoneNumber;
     private String notes;
     
+    // Soft delete fields
+    private boolean deleted = false;
+    private LocalDateTime deletedAt;
+    
     public static class PaymentRecord {
         private LocalDateTime paymentDate;
         private Double amountPaid;
@@ -33,7 +37,6 @@ public class Debt {
             this.paymentDate = LocalDateTime.now();
         }
         
-        // Getters and Setters
         public LocalDateTime getPaymentDate() { return paymentDate; }
         public void setPaymentDate(LocalDateTime paymentDate) { this.paymentDate = paymentDate; }
         public Double getAmountPaid() { return amountPaid; }
@@ -96,4 +99,10 @@ public class Debt {
     
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+    
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
+    
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 }

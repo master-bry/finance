@@ -28,6 +28,10 @@ public class Transaction {
     private LocalDateTime date;
     private String notes;
     
+    // Soft delete fields
+    private boolean deleted = false;
+    private LocalDateTime deletedAt;
+    
     public Transaction() {
         this.date = LocalDateTime.now();
     }
@@ -56,6 +60,12 @@ public class Transaction {
     
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+    
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
+    
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
     
     public String getFormattedDate() {
         return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));

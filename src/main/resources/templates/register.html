@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Finance Tracker</title>
+    <style>
+        :root {
+            --primary-dark: #2F6B3F;
+            --secondary: #7FB77E;
+            --accent: #F7C85C;
+            --background: #FFF6C0;
+            --white: #FFFFFF;
+            --danger: #EF4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--background) 0%, #FFE8A0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .register-container {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        h1 {
+            color: var(--primary-dark);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #6B7280;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(247, 200, 92, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-dark);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .login-link a {
+            color: var(--primary-dark);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .alert-error {
+            background: #FEE2E2;
+            color: #991B1B;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--danger);
+        }
+        
+        .logo {
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo">💰</div>
+        <h1>Create Account</h1>
+        <p class="subtitle">Start tracking your finances today</p>
+        
+        <div th:if="${error}" class="alert-error" th:text="${error}"></div>
+        
+        <form action="/register" method="post" th:object="${user}">
+            <div class="row">
+                <div class="form-group">
+                    <label for="username">Username *</label>
+                    <input type="text" id="username" name="username" th:field="*{username}" required>
+                </div>
+                <div class="form-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" name="fullName" th:field="*{fullName}">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" th:field="*{email}" required>
+            </div>
+            
+            <div class="row">
+                <div class="form-group">
+                    <label for="password">Password *</label>
+                    <input type="password" id="password" name="password" th:field="*{password}" required>
+                </div>
+                <div class="form-group">
+                    <label for="phoneNumber">Phone Number</label>
+                    <input type="tel" id="phoneNumber" name="phoneNumber" th:field="*{phoneNumber}">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn">Create Account</button>
+        </form>
+        
+        <div class="login-link">
+            Already have an account? <a href="/login">Login here</a>
+        </div>
+    </div>
+</body>
+</html>

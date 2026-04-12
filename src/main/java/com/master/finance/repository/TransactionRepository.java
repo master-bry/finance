@@ -9,13 +9,18 @@ import java.util.List;
 
 @Repository
 public interface TransactionRepository extends MongoRepository<Transaction, String> {
-    List<Transaction> findByUserIdOrderByDateDesc(String userId);
-    List<Transaction> findByUserIdAndType(String userId, String type);
-    List<Transaction> findByUserIdAndDateBetween(String userId, LocalDateTime start, LocalDateTime end);
+    @Query("{ 'userId': ?0, 'deleted': false }")
+    List<Transaction> findByUserIdAndDeletedFalseOrderByDateDesc(String userId);
     
-    @Query("{ 'userId': ?0, 'date': { $gte: ?1, $lte: ?2 } }")
-    List<Transaction> findTransactionsBetweenDates(String userId, LocalDateTime start, LocalDateTime end);
+    @Query("{ 'userId': ?0, 'type': ?1, 'deleted': false }")
+    List<Transaction> findByUserIdAndTypeAndDeletedFalse(String userId, String type);
     
-    @Query(value = "{ 'userId': ?0, 'type': 'EXPENSE' }", fields = "{ 'category': 1, 'amount': 1 }")
-    List<Transaction> findExpensesByUserId(String userId);
+    @Query("{ 'userId': ?0, 'date': { $gte: ?1, $lte: ?2 }, 'deleted': false }")
+    List<Transaction> findByUserIdAndDateBetweenAndDeletedFalse(String userId, LocalDateTime start, LocalDateTime end);
+    
+    @Query("{ 'userId': ?0, 'deleted': false }")
+    List<Transaction> findTransactionsByUserIdAndDeletedFalse(String userId);
+    
+    @Query(value = "{ 'userId': ?0, 'type': 'EXPENSE', 'deleted': false }", fields = "{ 'category': 1, 'amount': 1 }")
+    List<Transaction> findExpensesByUserIdAndDeletedFalse(String userId);
 }

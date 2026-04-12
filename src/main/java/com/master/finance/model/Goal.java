@@ -23,13 +23,16 @@ public class Goal {
     private List<Milestone> milestones = new ArrayList<>();
     private List<DailyProgress> dailyProgress = new ArrayList<>();
     
+    // Soft delete fields
+    private boolean deleted = false;
+    private LocalDateTime deletedAt;
+    
     public static class Milestone {
         private String name;
         private Double targetAmount;
         private boolean completed;
         private LocalDateTime completedDate;
         
-        // Getters and Setters
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }
         public Double getTargetAmount() { return targetAmount; }
@@ -46,7 +49,6 @@ public class Goal {
         private String notes;
         private boolean markedComplete;
         
-        // Getters and Setters
         public LocalDateTime getDate() { return date; }
         public void setDate(LocalDateTime date) { this.date = date; }
         public Double getAmount() { return amount; }
@@ -112,4 +114,10 @@ public class Goal {
     
     public List<DailyProgress> getDailyProgress() { return dailyProgress; }
     public void setDailyProgress(List<DailyProgress> dailyProgress) { this.dailyProgress = dailyProgress; }
+    
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
+    
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 }
