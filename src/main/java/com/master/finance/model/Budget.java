@@ -21,6 +21,10 @@ public class Budget {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
+    // Soft delete fields
+    private boolean deleted = false;
+    private LocalDateTime deletedAt;
+    
     public static class CategoryBudget {
         private Double planned;
         private Double actual;
@@ -33,8 +37,10 @@ public class Budget {
         
         public Double getPlanned() { return planned; }
         public void setPlanned(Double planned) { this.planned = planned; }
+        
         public Double getActual() { return actual; }
         public void setActual(Double actual) { this.actual = actual; }
+        
         public String getNotes() { return notes; }
         public void setNotes(String notes) { this.notes = notes; }
         
@@ -46,6 +52,12 @@ public class Budget {
             if (this.planned == 0) return 0.0;
             return (this.getVariance() / this.planned) * 100;
         }
+        
+        public String getStatus() {
+            if (getVariance() > 0) return "OVER";
+            if (getVariance() < 0) return "UNDER";
+            return "ON_TRACK";
+        }
     }
     
     public Budget() {
@@ -55,10 +67,20 @@ public class Budget {
         this.totalIncome = 0.0;
         this.totalExpense = 0.0;
         this.savingsTarget = 0.0;
+        this.categoryBudgets = new HashMap<>();
     }
     
     public boolean isOverBudget() {
         return this.totalExpense > this.totalIncome;
+    }
+    
+    public Double getSavingsRate() {
+        if (this.totalIncome == 0) return 0.0;
+        return (this.actualSavings / this.totalIncome) * 100;
+    }
+    
+    public Double getSavingsGap() {
+        return this.savingsTarget - this.actualSavings;
     }
     
     // Getters and Setters
@@ -94,4 +116,10 @@ public class Budget {
     
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
+    
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 }

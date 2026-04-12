@@ -24,6 +24,10 @@ public class Investment {
     private String notes;
     private List<InvestmentTransaction> transactions = new ArrayList<>();
     
+    // Soft delete fields
+    private boolean deleted = false;
+    private LocalDateTime deletedAt;
+    
     public static class InvestmentTransaction {
         private LocalDateTime date;
         private String type; // "DEPOSIT", "WITHDRAWAL", "INTEREST", "DIVIDEND"
@@ -34,7 +38,6 @@ public class Investment {
             this.date = LocalDateTime.now();
         }
         
-        // Getters and Setters
         public LocalDateTime getDate() { return date; }
         public void setDate(LocalDateTime date) { this.date = date; }
         public String getType() { return type; }
@@ -104,4 +107,10 @@ public class Investment {
     
     public List<InvestmentTransaction> getTransactions() { return transactions; }
     public void setTransactions(List<InvestmentTransaction> transactions) { this.transactions = transactions; }
+    
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
+    
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 }

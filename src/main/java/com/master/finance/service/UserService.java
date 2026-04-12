@@ -22,6 +22,8 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
         user.setEnabled(true);
+        user.setDeleted(false);
+        user.setRole("USER");
         return userRepository.save(user);
     }
     
@@ -31,6 +33,10 @@ public class UserService {
     
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+    
+    public Optional<User> findById(String id) {
+        return userRepository.findById(id);
     }
     
     public boolean existsByUsername(String username) {
@@ -73,5 +79,56 @@ public class UserService {
             user.getNotifications().clear();
             userRepository.save(user);
         });
+    }
+    
+    public User updateProfile(String userId, User updatedUser) {
+        return userRepository.findById(userId).map(user -> {
+            user.setFullName(updatedUser.getFullName());
+            user.setPhoneNumber(updatedUser.getPhoneNumber());
+            user.setCurrency(updatedUser.getCurrency());
+            return userRepository.save(user);
+        }).orElseThrow();
+    }
+    
+    public void changePassword(String userId, String newPassword) {
+        userRepository.findById(userId).ifPresent(user -> {
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+        });
+    }
+    
+    public void softDeleteUser(String userId) {
+        userRepository.findById(userId).ifPresent(user -> {
+            user.setDeleted(true);
+            user.setDeletedAt(LocalDateTime.now());
+            user.setEnabled(false);
+            userRepository.save(user);
+        });
+    }
+    
+    public void enableUser(String userId) {
+        userRepository.findById(userId).ifPresent(user -> {
+            user.setEnabled(true);
+            userRepository.save(user);
+        });
+    }
+    
+    public void disableUser(String userId) {
+        userRepository.findById(userId).ifPresent(user -> {
+            user.setEnabled(false);
+            userRepository.save(user);
+        });
+    }
+    
+    public List<User> getAllActiveUsers() {
+        return userRepository.findAll().stream()
+                .filter(user -> !user.isDeleted() && user.isEnabled())
+                .toList();
+    }
+    
+    public long getTotalUsersCount() {
+        return userRepository.findAll().stream()
+                .filter(user -> !user.isDeleted())
+                .count();
     }
 }

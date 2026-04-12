@@ -28,7 +28,10 @@ public class User {
     private LocalDateTime lastLogin;
     private List<String> notifications = new ArrayList<>();
     
-    // Constructors
+    // Soft delete fields
+    private boolean deleted = false;
+    private LocalDateTime deletedAt;
+    
     public User() {
         this.createdAt = LocalDateTime.now();
     }
@@ -69,4 +72,10 @@ public class User {
     
     public List<String> getNotifications() { return notifications; }
     public void setNotifications(List<String> notifications) { this.notifications = notifications; }
+    
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
+    
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 }

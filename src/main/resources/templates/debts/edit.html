@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Debt - Finance Tracker</title>
+    <style>
+        /* Same styles as add.html */
+        :root {
+            --primary-dark: #2F6B3F;
+            --secondary: #7FB77E;
+            --accent: #F7C85C;
+            --background: #FFF6C0;
+            --white: #FFFFFF;
+            --danger: #EF4444;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: var(--primary-dark);
+            color: white;
+            padding: 1rem 2rem;
+        }
+        
+        .navbar-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo { font-size: 1.5rem; font-weight: bold; }
+        .logo span { color: var(--accent); }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .form-container {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        h1 { color: var(--primary-dark); margin-bottom: 1.5rem; }
+        
+        .form-group { margin-bottom: 1.5rem; }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+        }
+        
+        .btn-primary { background: var(--primary-dark); color: white; }
+        .btn-primary:hover { background: var(--secondary); }
+        .btn-secondary { background: #9CA3AF; color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-settled { background: #D1FAE5; color: #065F46; }
+        .status-partial { background: #FEF3C7; color: #92400E; }
+        .status-pending { background: #FEE2E2; color: #991B1B; }
+        
+        .payment-history {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #F9FAFB;
+            border-radius: 10px;
+        }
+        
+        .payment-history h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .payment-history ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .payment-history li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        @media (max-width: 640px) {
+            .row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="logo">💰 Finance<span>Tracker</span></div>
+            <div class="nav-links">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/transactions">Transactions</a>
+                <a href="/debts">Debts</a>
+                <a href="/investments">Investments</a>
+                <a href="/goals">Goals</a>
+                <a href="/budget">Budget</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="form-container">
+            <h1>✏️ Edit Debt</h1>
+            
+            <form action="#" th:action="@{/debts/edit/{id}(id=${debt.id})}" th:object="${debt}" method="post">
+                <div class="form-group">
+                    <label for="personName">Person Name *</label>
+                    <input type="text" id="personName" th:field="*{personName}" required>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label for="type">Type *</label>
+                        <select id="type" th:field="*{type}" required>
+                            <option value="OWED_TO_ME">💰 Owed to me</option>
+                            <option value="I_OWE">💸 I owe</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="amount">Amount *</label>
+                        <input type="number" step="0.01" id="amount" th:field="*{amount}" required>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label for="remainingAmount">Remaining Amount</label>
+                        <input type="number" step="0.01" id="remainingAmount" th:field="*{remainingAmount}" readonly style="background: #F3F4F6;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status" th:field="*{status}">
+                            <option value="PENDING">Pending</option>
+                            <option value="PARTIAL">Partial</option>
+                            <option value="SETTLED">Settled</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone Number</label>
+                        <input type="tel" id="phoneNumber" th:field="*{phoneNumber}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dueDate">Due Date</label>
+                        <input type="date" id="dueDate" th:field="*{dueDate}">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" th:field="*{description}" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" th:field="*{notes}" rows="2"></textarea>
+                </div>
+                
+                <div th:if="${!debt.paymentHistory.empty}" class="payment-history">
+                    <h3>📜 Payment History</h3>
+                    <ul>
+                        <li th:each="payment : ${debt.paymentHistory}">
+                            📅 <span th:text="${#temporals.format(payment.paymentDate, 'yyyy-MM-dd HH:mm')}"></span> - 
+                            Paid <strong th:text="${payment.amountPaid}"></strong> TZS -
+                            <span th:text="${payment.notes}"></span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                    <a href="/debts" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
