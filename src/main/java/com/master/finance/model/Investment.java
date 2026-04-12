@@ -26,10 +26,6 @@ public class Investment {
     private boolean deleted = false;
     private LocalDateTime deletedAt;
     
-    // Soft delete fields
-    private boolean deleted = false;
-    private LocalDateTime deletedAt;
-    
     public static class InvestmentTransaction {
         private LocalDateTime date;
         private String type;

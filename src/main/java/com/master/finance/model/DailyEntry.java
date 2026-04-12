@@ -14,20 +14,64 @@ public class DailyEntry {
     private String id;
     private String userId;
     private LocalDateTime date;
+    private Double openingBalance;
     private Double totalIncome;
     private Double totalExpense;
     private Double savings;
+    private Double closingBalance;
+    private List<ExpenseItem> expenses = new ArrayList<>();
+    private List<IncomeItem> incomes = new ArrayList<>();
     private Map<String, Double> expensesByCategory = new HashMap<>();
     private Map<String, Boolean> goalsCompleted = new HashMap<>();
-    private List<String> notes = new ArrayList<>();
-    private String mood; // "HAPPY", "NEUTRAL", "STRESSED"
+    private String notes;
+    private String mood;
     private boolean completed;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    
-    // Soft delete fields
     private boolean deleted = false;
     private LocalDateTime deletedAt;
+    
+    @Document
+    public static class ExpenseItem {
+        private String description;
+        private Double amount;
+        private String category;
+        private LocalDateTime time;
+        
+        public ExpenseItem() {
+            this.time = LocalDateTime.now();
+        }
+        
+        public String getDescription() { return description; }
+        public void setDescription(String description) { this.description = description; }
+        public Double getAmount() { return amount; }
+        public void setAmount(Double amount) { this.amount = amount; }
+        public String getCategory() { return category; }
+        public void setCategory(String category) { this.category = category; }
+        public LocalDateTime getTime() { return time; }
+        public void setTime(LocalDateTime time) { this.time = time; }
+    }
+    
+    @Document
+    public static class IncomeItem {
+        private String description;
+        private Double amount;
+        private String source;
+        private LocalDateTime time;
+        
+        public IncomeItem() {
+            this.time = LocalDateTime.now();
+        }
+        
+        public String getDescription() { return description; }
+        public void setDescription(String description) { this.description = description; }
+        public Double getAmount() { return amount; }
+        public void setAmount(Double amount) { this.amount = amount; }
+        public String getSource() { return source; }
+        public void setSource(String source) { this.source = source; }
+        public LocalDateTime getTime() { return time; }
+        public void setTime(LocalDateTime time) { this.time = time; }
+    }
     
     public DailyEntry() {
         this.date = LocalDateTime.now();
@@ -37,27 +81,20 @@ public class DailyEntry {
         this.totalIncome = 0.0;
         this.totalExpense = 0.0;
         this.savings = 0.0;
+        this.closingBalance = 0.0;
+        this.openingBalance = 0.0;
+        this.mood = "NEUTRAL";
+        this.expenses = new ArrayList<>();
+        this.incomes = new ArrayList<>();
         this.expensesByCategory = new HashMap<>();
         this.goalsCompleted = new HashMap<>();
-        this.notes = new ArrayList<>();
     }
     
-    // Helper method to calculate savings
-    public void calculateSavings() {
+    public void calculateTotals() {
+        this.totalIncome = incomes.stream().mapToDouble(IncomeItem::getAmount).sum();
+        this.totalExpense = expenses.stream().mapToDouble(ExpenseItem::getAmount).sum();
         this.savings = this.totalIncome - this.totalExpense;
-    }
-    
-    // Helper method to add expense to category
-    public void addExpense(String category, Double amount) {
-        this.expensesByCategory.merge(category, amount, Double::sum);
-        this.totalExpense += amount;
-        calculateSavings();
-    }
-    
-    // Helper method to add income
-    public void addIncome(Double amount) {
-        this.totalIncome += amount;
-        calculateSavings();
+        this.closingBalance = this.openingBalance + this.totalIncome - this.totalExpense;
     }
     
     // Getters and Setters
@@ -70,33 +107,35 @@ public class DailyEntry {
     public LocalDateTime getDate() { return date; }
     public void setDate(LocalDateTime date) { this.date = date; }
     
+    public Double getOpeningBalance() { return openingBalance; }
+    public void setOpeningBalance(Double openingBalance) { this.openingBalance = openingBalance; calculateTotals(); }
+    
     public Double getTotalIncome() { return totalIncome; }
-    public void setTotalIncome(Double totalIncome) { 
-        this.totalIncome = totalIncome;
-        calculateSavings();
-    }
+    public void setTotalIncome(Double totalIncome) { this.totalIncome = totalIncome; calculateTotals(); }
     
     public Double getTotalExpense() { return totalExpense; }
-    public void setTotalExpense(Double totalExpense) { 
-        this.totalExpense = totalExpense;
-        calculateSavings();
-    }
+    public void setTotalExpense(Double totalExpense) { this.totalExpense = totalExpense; calculateTotals(); }
     
     public Double getSavings() { return savings; }
     public void setSavings(Double savings) { this.savings = savings; }
     
+    public Double getClosingBalance() { return closingBalance; }
+    public void setClosingBalance(Double closingBalance) { this.closingBalance = closingBalance; }
+    
+    public List<ExpenseItem> getExpenses() { return expenses; }
+    public void setExpenses(List<ExpenseItem> expenses) { this.expenses = expenses; calculateTotals(); }
+    
+    public List<IncomeItem> getIncomes() { return incomes; }
+    public void setIncomes(List<IncomeItem> incomes) { this.incomes = incomes; calculateTotals(); }
+    
     public Map<String, Double> getExpensesByCategory() { return expensesByCategory; }
-    public void setExpensesByCategory(Map<String, Double> expensesByCategory) { 
-        this.expensesByCategory = expensesByCategory;
-        this.totalExpense = expensesByCategory.values().stream().mapToDouble(Double::doubleValue).sum();
-        calculateSavings();
-    }
+    public void setExpensesByCategory(Map<String, Double> expensesByCategory) { this.expensesByCategory = expensesByCategory; }
     
     public Map<String, Boolean> getGoalsCompleted() { return goalsCompleted; }
     public void setGoalsCompleted(Map<String, Boolean> goalsCompleted) { this.goalsCompleted = goalsCompleted; }
     
-    public List<String> getNotes() { return notes; }
-    public void setNotes(List<String> notes) { this.notes = notes; }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
     
     public String getMood() { return mood; }
     public void setMood(String mood) { this.mood = mood; }

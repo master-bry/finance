@@ -23,9 +23,6 @@ public class ExcelService {
     @Autowired
     private DailyEntryRepository dailyEntryRepository;
     
-    @Autowired
-    private TransactionService transactionService;
-    
     // Process uploaded Excel file and convert to transactions
     public List<Transaction> processExcelFile(MultipartFile file, String userId) {
         List<Transaction> transactions = new ArrayList<>();
@@ -107,7 +104,7 @@ public class ExcelService {
         return transactions;
     }
     
-    // Generate Excel template for daily entry
+    // Generate Excel template for daily entry (NO dummy data)
     public byte[] generateDailyEntryTemplate() {
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Daily Finance Entry");
@@ -135,28 +132,6 @@ public class ExcelService {
                 sheet.setColumnWidth(i, 5000);
             }
             
-            // Add example row
-            Row exampleRow = sheet.createRow(1);
-            exampleRow.createCell(0).setCellValue("2024-01-15");
-            exampleRow.createCell(1).setCellValue("Grocery shopping");
-            exampleRow.createCell(2).setCellValue("Food");
-            exampleRow.createCell(3).setCellValue(50000);
-            exampleRow.createCell(4).setCellValue("EXPENSE");
-            exampleRow.createCell(5).setCellValue("Bought vegetables and fruits");
-            
-            Row exampleRow2 = sheet.createRow(2);
-            exampleRow2.createCell(0).setCellValue("2024-01-15");
-            exampleRow2.createCell(1).setCellValue("Salary payment");
-            exampleRow2.createCell(2).setCellValue("Income");
-            exampleRow2.createCell(3).setCellValue(500000);
-            exampleRow2.createCell(4).setCellValue("INCOME");
-            exampleRow2.createCell(5).setCellValue("Monthly salary");
-            
-            // Auto-size columns
-            for (int i = 0; i < columns.length; i++) {
-                sheet.autoSizeColumn(i);
-            }
-            
             // Write to byte array
             java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
             workbook.write(bos);
@@ -175,9 +150,7 @@ public class ExcelService {
         entry.setCompleted(true);
         entry.setUpdatedAt(LocalDateTime.now());
         entry.setDeleted(false);
-        
-        // Calculate savings
-        entry.setSavings(entry.getTotalIncome() - entry.getTotalExpense());
+        entry.calculateTotals();
         
         return dailyEntryRepository.save(entry);
     }
@@ -208,18 +181,9 @@ public class ExcelService {
         
         double totalIncome = entries.stream().mapToDouble(DailyEntry::getTotalIncome).sum();
         double totalExpense = entries.stream().mapToDouble(DailyEntry::getTotalExpense).sum();
-        double totalSavings = entries.stream().mapToDouble(DailyEntry::getSavings).sum();
+        double totalSavings = entries.stream().mapToDouble(e -> e.getTotalIncome() - e.getTotalExpense()).sum();
         
-        // Calculate average daily spending
         double averageDailySpending = entries.isEmpty() ? 0 : totalExpense / entries.size();
-        
-        // Get mood distribution
-        Map<String, Long> moodDistribution = new HashMap<>();
-        for (DailyEntry entry : entries) {
-            if (entry.getMood() != null) {
-                moodDistribution.merge(entry.getMood(), 1L, Long::sum);
-            }
-        }
         
         Map<String, Object> summary = new HashMap<>();
         summary.put("totalIncome", totalIncome);
@@ -228,7 +192,6 @@ public class ExcelService {
         summary.put("averageDailySpending", averageDailySpending);
         summary.put("daysCompleted", entries.size());
         summary.put("entries", entries);
-        summary.put("moodDistribution", moodDistribution);
         summary.put("year", year);
         summary.put("month", month);
         
@@ -283,55 +246,6 @@ public class ExcelService {
             e.printStackTrace();
             return null;
         }
-    }
-    
-    // Create daily entry from today's transactions
-    public DailyEntry createDailyEntryFromTransactions(String userId) {
-        LocalDateTime today = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
-        LocalDateTime tomorrow = today.plusDays(1);
-        
-        List<Transaction> todayTransactions = transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, today, tomorrow);
-        
-        DailyEntry entry = new DailyEntry();
-        entry.setUserId(userId);
-        entry.setDate(today);
-        
-        double totalIncome = 0;
-        double totalExpense = 0;
-        Map<String, Double> expensesByCategory = new HashMap<>();
-        
-        for (Transaction t : todayTransactions) {
-            if ("INCOME".equals(t.getType())) {
-                totalIncome += t.getAmount();
-            } else {
-                totalExpense += t.getAmount();
-                expensesByCategory.merge(t.getCategory(), t.getAmount(), Double::sum);
-            }
-        }
-        
-        entry.setTotalIncome(totalIncome);
-        entry.setTotalExpense(totalExpense);
-        entry.setExpensesByCategory(expensesByCategory);
-        entry.setSavings(totalIncome - totalExpense);
-        entry.setCompleted(true);
-        
-        return dailyEntryRepository.save(entry);
-    }
-    
-    // Update daily entry
-    public DailyEntry updateDailyEntry(String entryId, DailyEntry updatedEntry) {
-        return dailyEntryRepository.findById(entryId).map(entry -> {
-            entry.setTotalIncome(updatedEntry.getTotalIncome());
-            entry.setTotalExpense(updatedEntry.getTotalExpense());
-            entry.setExpensesByCategory(updatedEntry.getExpensesByCategory());
-            entry.setGoalsCompleted(updatedEntry.getGoalsCompleted());
-            entry.setNotes(updatedEntry.getNotes());
-            entry.setMood(updatedEntry.getMood());
-            entry.setCompleted(updatedEntry.isCompleted());
-            entry.setSavings(entry.getTotalIncome() - entry.getTotalExpense());
-            entry.setUpdatedAt(LocalDateTime.now());
-            return dailyEntryRepository.save(entry);
-        }).orElseThrow(() -> new RuntimeException("Daily entry not found"));
     }
     
     // Delete daily entry (soft delete)

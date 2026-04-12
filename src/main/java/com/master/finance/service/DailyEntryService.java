@@ -24,33 +24,71 @@ public class DailyEntryService {
     @Autowired
     private TransactionRepository transactionRepository;
     
+    // Save daily entry
     public DailyEntry saveDailyEntry(DailyEntry entry, String userId) {
         entry.setUserId(userId);
         entry.setUpdatedAt(LocalDateTime.now());
         entry.setCompleted(true);
         entry.calculateTotals();
+        
+        // Also save each expense as a transaction
+        for (DailyEntry.ExpenseItem expense : entry.getExpenses()) {
+            Transaction transaction = new Transaction();
+            transaction.setUserId(userId);
+            transaction.setDescription(expense.getDescription());
+            transaction.setAmount(expense.getAmount());
+            transaction.setType("EXPENSE");
+            transaction.setCategory(expense.getCategory());
+            transaction.setDate(LocalDateTime.now());
+            transaction.setDeleted(false);
+            transactionRepository.save(transaction);
+        }
+        
+        // Also save each income as a transaction
+        for (DailyEntry.IncomeItem income : entry.getIncomes()) {
+            Transaction transaction = new Transaction();
+            transaction.setUserId(userId);
+            transaction.setDescription(income.getDescription());
+            transaction.setAmount(income.getAmount());
+            transaction.setType("INCOME");
+            transaction.setCategory(income.getSource());
+            transaction.setDate(LocalDateTime.now());
+            transaction.setDeleted(false);
+            transactionRepository.save(transaction);
+        }
+        
         return dailyEntryRepository.save(entry);
     }
     
+    // Get today's entry
     public Optional<DailyEntry> getTodayEntry(String userId) {
-        LocalDateTime today = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
-        return dailyEntryRepository.findByUserIdAndDate(userId, today);
+        LocalDateTime today = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
+        Optional<DailyEntry> entry = dailyEntryRepository.findByUserIdAndDate(userId, today);
+        
+        if (entry.isPresent()) {
+            return entry;
+        }
+        
+        // Create new entry for today
+        DailyEntry newEntry = new DailyEntry();
+        newEntry.setUserId(userId);
+        newEntry.setDate(today);
+        newEntry.setOpeningBalance(getCurrentBalance(userId));
+        return Optional.of(newEntry);
     }
     
+    // Get all user entries
     public List<DailyEntry> getUserEntries(String userId) {
         return dailyEntryRepository.findByUserIdOrderByDateDesc(userId);
     }
     
+    // Delete entry
     public void deleteEntry(String id) {
         dailyEntryRepository.deleteById(id);
     }
     
+    // Get current balance from transactions
     public Double getCurrentBalance(String userId) {
-        Optional<DailyEntry> latestEntry = dailyEntryRepository.findLatestByUserId(userId);
-        if (latestEntry.isPresent()) {
-            return latestEntry.get().getClosingBalance();
-        }
-        // Get from transactions if no daily entry
         List<Transaction> transactions = transactionRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId);
         double totalIncome = transactions.stream()
                 .filter(t -> "INCOME".equals(t.getType()))
@@ -76,10 +114,7 @@ public class DailyEntryService {
             Sheet sheet = workbook.getSheetAt(0);
             
             for (Row row : sheet) {
-                if (row.getRowNum() == 0) continue; // Skip header row
-                
-                // Check if row is empty
-                if (isRowEmpty(row)) continue;
+                if (row.getRowNum() == 0) continue;
                 
                 String type = getCellValueAsString(row.getCell(0));
                 String description = getCellValueAsString(row.getCell(1));
@@ -91,49 +126,25 @@ public class DailyEntryService {
                         DailyEntry.ExpenseItem expense = new DailyEntry.ExpenseItem();
                         expense.setDescription(description);
                         expense.setAmount(amount);
-                        expense.setCategory(category != null && !category.isEmpty() ? category : "Other");
+                        expense.setCategory(category);
                         entry.getExpenses().add(expense);
-                        
-                        // Also save as transaction
-                        Transaction transaction = new Transaction();
-                        transaction.setUserId(userId);
-                        transaction.setDescription(description);
-                        transaction.setAmount(amount);
-                        transaction.setType("EXPENSE");
-                        transaction.setCategory(category != null && !category.isEmpty() ? category : "Other");
-                        transaction.setDate(LocalDateTime.now());
-                        transaction.setDeleted(false);
-                        transactionRepository.save(transaction);
-                        
                     } else if ("INCOME".equalsIgnoreCase(type)) {
                         DailyEntry.IncomeItem income = new DailyEntry.IncomeItem();
                         income.setDescription(description);
                         income.setAmount(amount);
-                        income.setSource(category != null && !category.isEmpty() ? category : "Other");
+                        income.setSource(category);
                         entry.getIncomes().add(income);
-                        
-                        // Also save as transaction
-                        Transaction transaction = new Transaction();
-                        transaction.setUserId(userId);
-                        transaction.setDescription(description);
-                        transaction.setAmount(amount);
-                        transaction.setType("INCOME");
-                        transaction.setCategory(category != null && !category.isEmpty() ? category : "Other");
-                        transaction.setDate(LocalDateTime.now());
-                        transaction.setDeleted(false);
-                        transactionRepository.save(transaction);
                     }
                 }
             }
             
             entry.calculateTotals();
+            return saveDailyEntry(entry, userId);
             
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Failed to process Excel file: " + e.getMessage());
         }
-        
-        return dailyEntryRepository.save(entry);
     }
     
     // Generate Excel template
@@ -141,7 +152,6 @@ public class DailyEntryService {
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Daily Entry");
             
-            // Create header row
             Row headerRow = sheet.createRow(0);
             String[] columns = {"Type (INCOME/EXPENSE)", "Description", "Amount (TZS)", "Category/Source"};
             
@@ -151,10 +161,6 @@ public class DailyEntryService {
             headerStyle.setFont(headerFont);
             headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-            headerStyle.setBorderBottom(BorderStyle.THIN);
-            headerStyle.setBorderTop(BorderStyle.THIN);
-            headerStyle.setBorderLeft(BorderStyle.THIN);
-            headerStyle.setBorderRight(BorderStyle.THIN);
             
             for (int i = 0; i < columns.length; i++) {
                 Cell cell = headerRow.createCell(i);
@@ -163,7 +169,6 @@ public class DailyEntryService {
                 sheet.setColumnWidth(i, 5000);
             }
             
-            // Write to byte array
             java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
             workbook.write(bos);
             return bos.toByteArray();
@@ -174,55 +179,23 @@ public class DailyEntryService {
         }
     }
     
-    // Helper method to check if row is empty
-    private boolean isRowEmpty(Row row) {
-        if (row == null) return true;
-        for (int i = 0; i < 4; i++) {
-            Cell cell = row.getCell(i);
-            if (cell != null && cell.getCellType() != CellType.BLANK) {
-                String value = getCellValueAsString(cell);
-                if (value != null && !value.trim().isEmpty()) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    // Helper method to get cell value as string
     private String getCellValueAsString(Cell cell) {
         if (cell == null) return "";
         switch (cell.getCellType()) {
-            case STRING:
-                return cell.getStringCellValue();
-            case NUMERIC:
-                if (DateUtil.isCellDateFormatted(cell)) {
-                    return cell.getLocalDateTimeCellValue().toString();
-                }
-                return String.valueOf((long) cell.getNumericCellValue());
-            case BOOLEAN:
-                return String.valueOf(cell.getBooleanCellValue());
-            case FORMULA:
-                return cell.getCellFormula();
-            default:
-                return "";
+            case STRING: return cell.getStringCellValue();
+            case NUMERIC: return String.valueOf((long) cell.getNumericCellValue());
+            default: return "";
         }
     }
     
-    // Helper method to get cell value as double
     private Double getCellValueAsDouble(Cell cell) {
         if (cell == null) return 0.0;
         switch (cell.getCellType()) {
-            case NUMERIC:
-                return cell.getNumericCellValue();
+            case NUMERIC: return cell.getNumericCellValue();
             case STRING:
-                try {
-                    return Double.parseDouble(cell.getStringCellValue());
-                } catch (NumberFormatException e) {
-                    return 0.0;
-                }
-            default:
-                return 0.0;
+                try { return Double.parseDouble(cell.getStringCellValue()); }
+                catch (NumberFormatException e) { return 0.0; }
+            default: return 0.0;
         }
     }
 }
