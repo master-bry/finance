@@ -16,17 +16,59 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class ExcelService {
-    
-    @Autowired
-    private TransactionRepository transactionRepository;
+public class DailyEntryService {
     
     @Autowired
     private DailyEntryRepository dailyEntryRepository;
     
-    // Process uploaded Excel file
-    public List<Transaction> processExcelFile(MultipartFile file, String userId) {
-        List<Transaction> transactions = new ArrayList<>();
+    @Autowired
+    private TransactionRepository transactionRepository;
+    
+    public DailyEntry saveDailyEntry(DailyEntry entry, String userId) {
+        entry.setUserId(userId);
+        entry.setUpdatedAt(LocalDateTime.now());
+        entry.setCompleted(true);
+        entry.calculateTotals();
+        return dailyEntryRepository.save(entry);
+    }
+    
+    public Optional<DailyEntry> getTodayEntry(String userId) {
+        LocalDateTime today = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
+        return dailyEntryRepository.findByUserIdAndDate(userId, today);
+    }
+    
+    public List<DailyEntry> getUserEntries(String userId) {
+        return dailyEntryRepository.findByUserIdOrderByDateDesc(userId);
+    }
+    
+    public void deleteEntry(String id) {
+        dailyEntryRepository.deleteById(id);
+    }
+    
+    public Double getCurrentBalance(String userId) {
+        Optional<DailyEntry> latestEntry = dailyEntryRepository.findLatestByUserId(userId);
+        if (latestEntry.isPresent()) {
+            return latestEntry.get().getClosingBalance();
+        }
+        // Get from transactions if no daily entry
+        List<Transaction> transactions = transactionRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId);
+        double totalIncome = transactions.stream()
+                .filter(t -> "INCOME".equals(t.getType()))
+                .mapToDouble(Transaction::getAmount)
+                .sum();
+        double totalExpense = transactions.stream()
+                .filter(t -> "EXPENSE".equals(t.getType()))
+                .mapToDouble(Transaction::getAmount)
+                .sum();
+        return totalIncome - totalExpense;
+    }
+    
+    // Process Excel file
+    public DailyEntry processExcelFile(MultipartFile file, String userId, Double openingBalance) {
+        DailyEntry entry = new DailyEntry();
+        entry.setUserId(userId);
+        entry.setDate(LocalDateTime.now());
+        entry.setOpeningBalance(openingBalance);
         
         try (InputStream inputStream = file.getInputStream();
              Workbook workbook = new XSSFWorkbook(inputStream)) {
@@ -36,45 +78,66 @@ public class ExcelService {
             for (Row row : sheet) {
                 if (row.getRowNum() == 0) continue; // Skip header row
                 
-                // Check if row is empty (all cells null or empty)
+                // Check if row is empty
                 if (isRowEmpty(row)) continue;
                 
-                Transaction transaction = new Transaction();
-                transaction.setUserId(userId);
-                
-                // Get cell values safely
                 String type = getCellValueAsString(row.getCell(0));
                 String description = getCellValueAsString(row.getCell(1));
                 Double amount = getCellValueAsDouble(row.getCell(2));
                 String category = getCellValueAsString(row.getCell(3));
                 
-                // Only process if description and amount are valid
                 if (description != null && !description.isEmpty() && amount != null && amount > 0) {
-                    transaction.setDescription(description);
-                    transaction.setAmount(amount);
-                    transaction.setCategory(category != null && !category.isEmpty() ? category : "Other");
-                    transaction.setType("EXPENSE".equalsIgnoreCase(type) ? "EXPENSE" : "INCOME");
-                    transaction.setDate(LocalDateTime.now());
-                    transaction.setDeleted(false);
-                    transactions.add(transaction);
+                    if ("EXPENSE".equalsIgnoreCase(type)) {
+                        DailyEntry.ExpenseItem expense = new DailyEntry.ExpenseItem();
+                        expense.setDescription(description);
+                        expense.setAmount(amount);
+                        expense.setCategory(category != null && !category.isEmpty() ? category : "Other");
+                        entry.getExpenses().add(expense);
+                        
+                        // Also save as transaction
+                        Transaction transaction = new Transaction();
+                        transaction.setUserId(userId);
+                        transaction.setDescription(description);
+                        transaction.setAmount(amount);
+                        transaction.setType("EXPENSE");
+                        transaction.setCategory(category != null && !category.isEmpty() ? category : "Other");
+                        transaction.setDate(LocalDateTime.now());
+                        transaction.setDeleted(false);
+                        transactionRepository.save(transaction);
+                        
+                    } else if ("INCOME".equalsIgnoreCase(type)) {
+                        DailyEntry.IncomeItem income = new DailyEntry.IncomeItem();
+                        income.setDescription(description);
+                        income.setAmount(amount);
+                        income.setSource(category != null && !category.isEmpty() ? category : "Other");
+                        entry.getIncomes().add(income);
+                        
+                        // Also save as transaction
+                        Transaction transaction = new Transaction();
+                        transaction.setUserId(userId);
+                        transaction.setDescription(description);
+                        transaction.setAmount(amount);
+                        transaction.setType("INCOME");
+                        transaction.setCategory(category != null && !category.isEmpty() ? category : "Other");
+                        transaction.setDate(LocalDateTime.now());
+                        transaction.setDeleted(false);
+                        transactionRepository.save(transaction);
+                    }
                 }
             }
             
-            // Save all transactions
-            if (!transactions.isEmpty()) {
-                transactionRepository.saveAll(transactions);
-            }
+            entry.calculateTotals();
             
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Failed to process Excel file: " + e.getMessage());
         }
         
-        return transactions;
+        return dailyEntryRepository.save(entry);
     }
     
-    // Generate EMPTY Excel template (no dummy data)
-    public byte[] generateDailyEntryTemplate() {
+    // Generate Excel template
+    public byte[] generateExcelTemplate() {
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Daily Entry");
             
@@ -100,9 +163,6 @@ public class ExcelService {
                 sheet.setColumnWidth(i, 5000);
             }
             
-            // Add empty rows for user to fill (no dummy data)
-            // Just leave empty rows - user will add their own data
-            
             // Write to byte array
             java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
             workbook.write(bos);
@@ -112,29 +172,6 @@ public class ExcelService {
             e.printStackTrace();
             return null;
         }
-    }
-    
-    // Save daily entry
-    public DailyEntry saveDailyEntry(DailyEntry entry, String userId) {
-        entry.setUserId(userId);
-        entry.setUpdatedAt(LocalDateTime.now());
-        entry.setCompleted(true);
-        entry.calculateTotals();
-        return dailyEntryRepository.save(entry);
-    }
-    
-    // Get daily entries for a month
-    public List<DailyEntry> getMonthlyEntries(String userId, int year, int month) {
-        LocalDateTime startDate = LocalDateTime.of(year, month, 1, 0, 0);
-        LocalDateTime endDate = startDate.plusMonths(1);
-        return dailyEntryRepository.findByUserIdAndDateBetween(userId, startDate, endDate);
-    }
-    
-    // Check if today's entry is completed
-    public boolean isTodayEntryCompleted(String userId) {
-        LocalDateTime today = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
-        Optional<DailyEntry> entry = dailyEntryRepository.findByUserIdAndDate(userId, today);
-        return entry.isPresent() && entry.get().isCompleted();
     }
     
     // Helper method to check if row is empty
@@ -152,7 +189,7 @@ public class ExcelService {
         return true;
     }
     
-    // Helper methods
+    // Helper method to get cell value as string
     private String getCellValueAsString(Cell cell) {
         if (cell == null) return "";
         switch (cell.getCellType()) {
@@ -172,6 +209,7 @@ public class ExcelService {
         }
     }
     
+    // Helper method to get cell value as double
     private Double getCellValueAsDouble(Cell cell) {
         if (cell == null) return 0.0;
         switch (cell.getCellType()) {

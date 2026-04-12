@@ -42,10 +42,11 @@
             width: 100%; padding: 0.75rem; border: 2px solid #E5E7EB; border-radius: 10px; font-size: 1rem;
         }
         .btn-save { background: var(--primary-dark); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 10px; cursor: pointer; width: 100%; }
+        .btn-save:hover { background: #7FB77E; }
         .btn-back { background: #6B7280; color: white; padding: 0.75rem 1.5rem; border-radius: 10px; text-decoration: none; display: inline-block; margin-top: 1rem; text-align: center; width: 100%; }
         
         .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+        .alert-error { background: #FEE2E2; color: #991B1B; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
         
         .mobile-menu-btn { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 1100; background: var(--primary-dark); color: white; padding: 0.5rem; border-radius: 8px; cursor: pointer; }
         @media (max-width: 768px) {
@@ -53,6 +54,7 @@
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; }
             .mobile-menu-btn { display: block; }
+            .row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -73,35 +75,39 @@
     
     <div class="main-content">
         <div class="top-bar">
-            <div><h3>➕ Add Goal</h3><p>Set a financial target</p></div>
+            <div><h3>➕ Add New Goal</h3><p>Set a financial target</p></div>
             <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
+        
+        <div th:if="${error}" class="alert-error" th:text="${error}"></div>
         
         <div class="form-container">
             <form action="/goals/add" method="post">
                 <div class="form-group">
                     <label>Goal Name *</label>
-                    <input type="text" name="name" required placeholder="e.g., Buy a car, Save for vacation">
+                    <input type="text" name="name" required placeholder="e.g., Buy a car, Save for vacation, Emergency fund">
                 </div>
                 
                 <div class="row">
                     <div class="form-group">
                         <label>Category *</label>
                         <select name="category" required>
-                            <option value="SAVINGS">Savings</option>
-                            <option value="PURCHASE">Purchase</option>
-                            <option value="TRAVEL">Travel</option>
-                            <option value="INVESTMENT">Investment</option>
-                            <option value="DEBT_PAYMENT">Debt Payment</option>
-                            <option value="OTHER">Other</option>
+                            <option value="SAVINGS">💰 Savings</option>
+                            <option value="PURCHASE">🛍️ Purchase</option>
+                            <option value="TRAVEL">✈️ Travel</option>
+                            <option value="INVESTMENT">📈 Investment</option>
+                            <option value="DEBT_PAYMENT">💸 Debt Payment</option>
+                            <option value="EDUCATION">📚 Education</option>
+                            <option value="HEALTHCARE">🏥 Healthcare</option>
+                            <option value="OTHER">📌 Other</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Priority</label>
                         <select name="priority">
-                            <option value="HIGH">High</option>
-                            <option value="MEDIUM" selected>Medium</option>
-                            <option value="LOW">Low</option>
+                            <option value="HIGH">🔴 High</option>
+                            <option value="MEDIUM" selected>🟡 Medium</option>
+                            <option value="LOW">🟢 Low</option>
                         </select>
                     </div>
                 </div>
@@ -119,7 +125,7 @@
                 
                 <div class="form-group">
                     <label>Description</label>
-                    <textarea name="description" rows="3"></textarea>
+                    <textarea name="description" rows="3" placeholder="Describe your goal..."></textarea>
                 </div>
                 
                 <button type="submit" class="btn-save"><i class="fas fa-save"></i> Save Goal</button>

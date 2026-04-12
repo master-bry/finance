@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Update Progress - Finance Tracker</title>
+    <title>Daily Entry History - Finance Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -32,22 +32,26 @@
         }
         .logout-btn { background: #EF4444; color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; }
         
-        .form-container {
-            background: white; border-radius: 15px; padding: 2rem; max-width: 500px; margin: 0 auto;
+        .section-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
         }
-        .info-box {
-            background: #F9FAFB; padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem;
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #E5E7EB; }
+        .data-table th { background: #F9FAFB; font-weight: 600; }
+        .income { color: #10B981; }
+        .expense { color: #EF4444; }
+        .btn-delete { color: #EF4444; text-decoration: none; }
+        .btn-back {
+            background: #6B7280;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 1rem;
         }
-        .form-group { margin-bottom: 1.5rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-        .form-group input {
-            width: 100%; padding: 0.75rem; border: 2px solid #E5E7EB; border-radius: 10px; font-size: 1rem;
-        }
-        .btn-save { background: var(--primary-dark); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 10px; cursor: pointer; width: 100%; }
-        .btn-save:hover { background: #7FB77E; }
-        .btn-back { background: #6B7280; color: white; padding: 0.75rem 1.5rem; border-radius: 10px; text-decoration: none; display: inline-block; margin-top: 1rem; text-align: center; width: 100%; }
-        
-        .alert-error { background: #FEE2E2; color: #991B1B; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
         
         .mobile-menu-btn { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 1100; background: var(--primary-dark); color: white; padding: 0.5rem; border-radius: 8px; cursor: pointer; }
         @media (max-width: 768px) {
@@ -68,39 +72,41 @@
             <li class="nav-item"><a href="/transactions" class="nav-link"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
             <li class="nav-item"><a href="/debts" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Debts</a></li>
             <li class="nav-item"><a href="/investments" class="nav-link"><i class="fas fa-chart-line"></i> Investments</a></li>
-            <li class="nav-item"><a href="/goals" class="nav-link active"><i class="fas fa-bullseye"></i> Goals</a></li>
+            <li class="nav-item"><a href="/goals" class="nav-link"><i class="fas fa-bullseye"></i> Goals</a></li>
             <li class="nav-item"><a href="/budget" class="nav-link"><i class="fas fa-wallet"></i> Budget</a></li>
+            <li class="nav-item"><a href="/excel/daily" class="nav-link active"><i class="fas fa-file-excel"></i> Daily Entry</a></li>
         </ul>
     </div>
     
     <div class="main-content">
         <div class="top-bar">
-            <div><h3>📈 Update Goal Progress</h3></div>
+            <div><h3>📅 Daily Entry History</h3></div>
             <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
         
-        <div th:if="${error}" class="alert-error" th:text="${error}"></div>
+        <a href="/excel/daily" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Today</a>
         
-        <div class="form-container">
-            <div class="info-box">
-                <p><strong>🎯 Goal:</strong> <span th:text="${goal.name}"></span></p>
-                <p><strong>🎯 Target:</strong> <span th:text="${#numbers.formatDecimal(goal.targetAmount, 1, 2)}"></span> TZS</p>
-                <p><strong>📊 Current:</strong> <span th:text="${#numbers.formatDecimal(goal.currentAmount, 1, 2)}"></span> TZS</p>
-                <p><strong>📈 Remaining:</strong> <span th:text="${#numbers.formatDecimal(goal.remainingAmount, 1, 2)}"></span> TZS</p>
-                <div class="progress-bar" style="background: #E5E7EB; border-radius: 10px; height: 8px; margin-top: 0.5rem;">
-                    <div class="progress-fill" th:style="'width: ' + ${goal.progressPercentage} + '%; background: #10B981; height: 100%; border-radius: 10px;'"></div>
-                </div>
-                <p style="margin-top: 0.5rem;">Progress: <span th:text="${#numbers.formatDecimal(goal.progressPercentage, 1, 1)}"></span>%</p>
-            </div>
-            
-            <form th:action="@{/goals/progress/{id}(id=${goal.id})}" method="post">
-                <div class="form-group">
-                    <label>Amount to Add (TZS) *</label>
-                    <input type="number" step="0.01" name="amount" required placeholder="Enter amount">
-                </div>
-                <button type="submit" class="btn-save"><i class="fas fa-save"></i> Update Progress</button>
-                <a href="/goals" class="btn-back"><i class="fas fa-arrow-left"></i> Cancel</a>
-            </form>
+        <div class="section-card">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Income</th>
+                        <th>Expense</th>
+                        <th>Savings</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="entry : ${history}">
+                        <td th:text="${#temporals.format(entry.date, 'yyyy-MM-dd')}">Date</td>
+                        <td class="income" th:text="'+ ' + ${#numbers.formatDecimal(entry.totalIncome, 1, 2)} + ' TZS'">Income</td>
+                        <td class="expense" th:text="'- ' + ${#numbers.formatDecimal(entry.totalExpense, 1, 2)} + ' TZS'">Expense</td>
+                        <td th:text="${#numbers.formatDecimal(entry.totalIncome - entry.totalExpense, 1, 2)} + ' TZS'">Savings</td>
+                        <td><a th:href="'/excel/delete/' + ${entry.id}" class="btn-delete" onclick="return confirm('Delete this entry?')"><i class="fas fa-trash"></i> Delete</a></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
     

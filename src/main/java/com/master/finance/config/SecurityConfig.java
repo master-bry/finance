@@ -27,7 +27,7 @@ public class SecurityConfig {
                                 "/test-login/**", "/check-user", "/set-password/**", 
                                 "/reencode-password", "/generate-hash", "/update-my-password",
                                 "/dashboard", "/transactions/**", "/debts/**", "/investments/**", 
-                                "/goals/**", "/budget/**").permitAll()
+                                "/goals/**", "/budget/**","/daily-entry/**", "/reports/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form

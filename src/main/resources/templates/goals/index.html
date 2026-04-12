@@ -2,7 +2,6 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Goals - Finance Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -35,7 +34,7 @@
         .main-content { margin-left: var(--sidebar-width); padding: 1.5rem; min-height: 100vh; }
         .top-bar {
             background: var(--white); border-radius: 15px; padding: 1rem 1.5rem; margin-bottom: 1.5rem;
-            display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
         }
         .logout-btn { background: var(--danger); color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; }
         
@@ -48,6 +47,7 @@
             display: inline-block;
             margin-bottom: 1rem;
         }
+        .btn-add:hover { background: var(--secondary); }
         
         .section-card {
             background: var(--white);
@@ -97,7 +97,7 @@
         
         .alert-success { background: #D1FAE5; color: #065F46; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
         
-        .mobile-menu-btn { position: fixed; top: 1rem; left: 1rem; z-index: 1100; background: var(--primary-dark); color: white; padding: 0.5rem; border-radius: 8px; cursor: pointer; display: none; }
+        .mobile-menu-btn { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 1100; background: var(--primary-dark); color: white; padding: 0.5rem; border-radius: 8px; cursor: pointer; }
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
@@ -118,6 +118,8 @@
             <li class="nav-item"><a href="/investments" class="nav-link"><i class="fas fa-chart-line"></i> Investments</a></li>
             <li class="nav-item"><a href="/goals" class="nav-link active"><i class="fas fa-bullseye"></i> Goals</a></li>
             <li class="nav-item"><a href="/budget" class="nav-link"><i class="fas fa-wallet"></i> Budget</a></li>
+            <li class="nav-item"><a href="/excel/daily" class="nav-link" th:classappend="${currentPage == 'daily' ? 'active' : ''}"><i class="fas fa-calendar-day"></i> Daily Entry</a></li>
+            <li class="nav-item"><a href="/reports" class="nav-link" th:classappend="${currentPage == 'reports' ? 'active' : ''}"><i class="fas fa-chart-bar"></i> Reports</a></li>
         </ul>
     </div>
     
@@ -129,10 +131,16 @@
         
         <div th:if="${success}" class="alert-success" th:text="${success}"></div>
         
-        <a href="/goals/add" class="btn-add"><i class="fas fa-plus"></i> Add Goal</a>
+        <a href="/goals/add" class="btn-add"><i class="fas fa-plus"></i> Add New Goal</a>
         
         <div class="section-card">
-            <div class="section-header"><h4><i class="fas fa-bullseye"></i> Active Goals</h4></div>
+            <div class="section-header"><h4><i class="fas fa-bullseye"></i> Active Goals (<span th:text="${activeGoals.size()}"></span>)</h4></div>
+            
+            <div th:if="${activeGoals.empty}" style="text-align: center; padding: 2rem; color: #6B7280;">
+                <i class="fas fa-flag-checkered" style="font-size: 3rem;"></i>
+                <p>No active goals. Click "Add New Goal" to get started!</p>
+            </div>
+            
             <div th:each="goal : ${activeGoals}" class="goal-item">
                 <div class="goal-header">
                     <span th:text="${goal.name}"></span>
@@ -141,25 +149,32 @@
                 <div class="progress-bar">
                     <div class="progress-fill" th:style="'width: ' + ${goal.progressPercentage} + '%;'"></div>
                 </div>
-                <div style="margin-top: 0.5rem;">
-                    <a th:href="'/goals/progress/' + ${goal.id}" class="btn-sm btn-progress"><i class="fas fa-plus"></i> Add Progress</a>
-                    <a th:href="'/goals/mark/' + ${goal.id}" class="btn-sm btn-complete"><i class="fas fa-check"></i> Mark Complete</a>
-                    <a th:href="'/goals/delete/' + ${goal.id}" class="btn-sm btn-delete" onclick="return confirm('Delete this goal?')"><i class="fas fa-trash"></i> Delete</a>
+                <div style="margin-top: 0.75rem;">
+    <a th:href="'/goals/progress/' + ${goal.id}" class="btn-sm btn-progress"><i class="fas fa-plus-circle"></i> Add Progress</a>
+    <a th:href="'/goals/edit/' + ${goal.id}" class="btn-sm btn-edit" style="background: #3B82F6; color: white;"><i class="fas fa-edit"></i> Edit</a>
+    <a th:href="'/goals/mark/' + ${goal.id}" class="btn-sm btn-complete"><i class="fas fa-check-circle"></i> Mark Complete</a>
+    <a th:href="'/goals/delete/' + ${goal.id}" class="btn-sm btn-delete" onclick="return confirm('Delete this goal?')"><i class="fas fa-trash"></i> Delete</a>
+</div>
+                <div th:if="${goal.targetDate}" style="margin-top: 0.5rem; font-size: 0.8rem; color: #6B7280;">
+                    <i class="fas fa-calendar"></i> Target Date: <span th:text="${#temporals.format(goal.targetDate, 'yyyy-MM-dd')}"></span>
                 </div>
             </div>
-            <div th:if="${activeGoals.empty}" style="text-align: center; padding: 1rem;">No active goals. <a href="/goals/add">Create your first goal!</a></div>
         </div>
         
         <div class="section-card">
-            <div class="section-header"><h4><i class="fas fa-trophy"></i> Completed Goals</h4></div>
+            <div class="section-header"><h4><i class="fas fa-trophy"></i> Completed Goals (<span th:text="${completedGoals.size()}"></span>)</h4></div>
+            
             <div th:each="goal : ${completedGoals}" class="goal-item" style="border-left: 3px solid var(--success); padding-left: 1rem;">
                 <div class="goal-header">
                     <span th:text="${goal.name}"></span>
                     <span class="positive">✓ Achieved!</span>
                 </div>
                 <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #6B7280;">
+                    <i class="fas fa-calendar-check"></i> Completed: <span th:text="${#temporals.format(goal.achievedDate, 'yyyy-MM-dd')}"></span>
+                </div>
             </div>
-            <div th:if="${completedGoals.empty}" style="text-align: center; padding: 1rem;">No completed goals yet.</div>
+            <div th:if="${completedGoals.empty}" style="text-align: center; padding: 1rem; color: #6B7280;">No completed goals yet. Keep working towards your targets!</div>
         </div>
     </div>
     

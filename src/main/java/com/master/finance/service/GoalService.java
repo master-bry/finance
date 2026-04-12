@@ -27,6 +27,10 @@ public class GoalService {
     }
     
     public Goal saveGoal(Goal goal) {
+        if (goal.getCurrentAmount() == null) {
+            goal.setCurrentAmount(0.0);
+        }
+        goal.setAchieved(false);
         goal.setDeleted(false);
         return goalRepository.save(goal);
     }
@@ -48,9 +52,10 @@ public class GoalService {
     
     public Goal updateProgress(String goalId, Double amount) {
         Goal goal = goalRepository.findById(goalId).orElseThrow();
-        goal.setCurrentAmount(goal.getCurrentAmount() + amount);
+        double newAmount = goal.getCurrentAmount() + amount;
+        goal.setCurrentAmount(newAmount);
         
-        if (goal.getCurrentAmount() >= goal.getTargetAmount()) {
+        if (newAmount >= goal.getTargetAmount()) {
             goal.setAchieved(true);
             goal.setAchievedDate(LocalDateTime.now());
         }

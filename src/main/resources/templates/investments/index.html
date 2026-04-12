@@ -122,7 +122,8 @@
             <li class="nav-item"><a href="/investments" class="nav-link active"><i class="fas fa-chart-line"></i> Investments</a></li>
             <li class="nav-item"><a href="/goals" class="nav-link"><i class="fas fa-bullseye"></i> Goals</a></li>
             <li class="nav-item"><a href="/budget" class="nav-link"><i class="fas fa-wallet"></i> Budget</a></li>
-        </ul>
+            <li class="nav-item"><a href="/excel/daily" class="nav-link" th:classappend="${currentPage == 'daily' ? 'active' : ''}"><i class="fas fa-calendar-day"></i> Daily Entry</a></li>
+            <li class="nav-item"><a href="/reports" class="nav-link" th:classappend="${currentPage == 'reports' ? 'active' : ''}"><i class="fas fa-chart-bar"></i> Reports</a></li></ul>
     </div>
     
     <div class="main-content">

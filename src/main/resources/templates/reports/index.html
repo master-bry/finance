@@ -2,7 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Budget - Finance Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Finance Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -36,17 +37,7 @@
             background: var(--white); border-radius: 15px; padding: 1rem 1.5rem; margin-bottom: 1.5rem;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .logout-btn { background: #EF4444; color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; }
-        
-        .btn-edit {
-            background: var(--primary-dark);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            text-decoration: none;
-            border-radius: 10px;
-            display: inline-block;
-            margin-bottom: 1rem;
-        }
+        .logout-btn { background: var(--danger); color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; }
         
         .section-card {
             background: var(--white);
@@ -62,28 +53,20 @@
             padding-bottom: 0.5rem;
             border-bottom: 2px solid var(--accent);
         }
-        
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
         .stat-card {
-            background: var(--white);
+            background: #F9FAFB;
             padding: 1rem;
-            border-radius: 15px;
+            border-radius: 10px;
             text-align: center;
         }
-        .stat-value { font-size: 1.5rem; font-weight: bold; }
-        
-        .data-table { width: 100%; border-collapse: collapse; }
-        .data-table th, .data-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #E5E7EB; }
-        .data-table th { background: #F9FAFB; font-weight: 600; }
-        .over-budget { color: var(--danger); font-weight: bold; }
-        .under-budget { color: var(--success); }
-        
-        .alert-success { background: #D1FAE5; color: #065F46; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
+        .positive { color: var(--success); }
+        .negative { color: var(--danger); }
         
         .mobile-menu-btn { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 1100; background: var(--primary-dark); color: white; padding: 0.5rem; border-radius: 8px; cursor: pointer; }
         @media (max-width: 768px) {
@@ -105,49 +88,57 @@
             <li class="nav-item"><a href="/debts" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Debts</a></li>
             <li class="nav-item"><a href="/investments" class="nav-link"><i class="fas fa-chart-line"></i> Investments</a></li>
             <li class="nav-item"><a href="/goals" class="nav-link"><i class="fas fa-bullseye"></i> Goals</a></li>
-            <li class="nav-item"><a href="/budget" class="nav-link active"><i class="fas fa-wallet"></i> Budget</a></li>
-            <li class="nav-item"><a href="/excel/daily" class="nav-link" th:classappend="${currentPage == 'daily' ? 'active' : ''}"><i class="fas fa-calendar-day"></i> Daily Entry</a></li>
-            <li class="nav-item"><a href="/reports" class="nav-link" th:classappend="${currentPage == 'reports' ? 'active' : ''}"><i class="fas fa-chart-bar"></i> Reports</a></li>
+            <li class="nav-item"><a href="/budget" class="nav-link"><i class="fas fa-wallet"></i> Budget</a></li>
+            <li class="nav-item"><a href="/daily-entry" class="nav-link"><i class="fas fa-calendar-day"></i> Daily Entry</a></li>
+            <li class="nav-item"><a href="/reports" class="nav-link active"><i class="fas fa-chart-bar"></i> Reports</a></li>
         </ul>
     </div>
     
     <div class="main-content">
         <div class="top-bar">
-            <div><h3>📋 Monthly Budget</h3><p>Plan and track your spending for <span th:text="${currentMonth}"></span></p></div>
+            <div><h3>📊 Financial Reports</h3><p>View your financial analysis</p></div>
             <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
         
-        <div th:if="${success}" class="alert-success" th:text="${success}"></div>
-        
-        <a href="/budget/edit" class="btn-edit"><i class="fas fa-edit"></i> Edit Budget</a>
-        
+        <!-- Monthly Report -->
         <div class="section-card">
-            <div class="section-header"><h4><i class="fas fa-chart-line"></i> Budget Summary</h4></div>
+            <div class="section-header">
+                <h4><i class="fas fa-calendar"></i> Monthly Report - April 2024</h4>
+            </div>
             <div class="stats-grid">
-                <div class="stat-card"><div>💰 Planned Income</div><div class="stat-value"><span th:text="${#numbers.formatDecimal(budget.totalIncome, 1, 2)}"></span> TZS</div></div>
-                <div class="stat-card"><div>💸 Planned Expenses</div><div class="stat-value"><span th:text="${#numbers.formatDecimal(budget.totalExpense, 1, 2)}"></span> TZS</div></div>
-                <div class="stat-card"><div>🎯 Savings Target</div><div class="stat-value"><span th:text="${#numbers.formatDecimal(budget.savingsTarget, 1, 2)}"></span> TZS</div></div>
+                <div class="stat-card"><div>💰 Total Income</div><div class="positive"><span th:text="${#numbers.formatDecimal(monthlyReport.totalIncome, 1, 2)}"></span> TZS</div></div>
+                <div class="stat-card"><div>💸 Total Expense</div><div class="negative"><span th:text="${#numbers.formatDecimal(monthlyReport.totalExpense, 1, 2)}"></span> TZS</div></div>
+                <div class="stat-card"><div>📊 Savings</div><th:block th:if="${monthlyReport.balance >= 0}"><span class="positive"><span th:text="${#numbers.formatDecimal(monthlyReport.balance, 1, 2)}"></span> TZS</span></th:block></div>
+                <div class="stat-card"><div>📈 Savings Rate</div><div class="positive"><span th:text="${#numbers.formatDecimal(monthlyReport.savingsRate, 1, 2)}"></span>%</div></div>
             </div>
         </div>
         
+        <!-- Debt Report -->
         <div class="section-card">
-            <div class="section-header"><h4><i class="fas fa-list"></i> Category Breakdown</h4></div>
-            <table class="data-table">
-                <thead><tr><th>Category</th><th>Planned (TZS)</th><th>Actual (TZS)</th><th>Variance</th><th>Status</th></tr></thead>
-                <tbody>
-                    <tr th:each="entry : ${budget.categoryBudgets}">
-                        <td th:text="${entry.key}">Category</td>
-                        <td th:text="${#numbers.formatDecimal(entry.value.planned, 1, 2)}">Planned</td>
-                        <td th:text="${#numbers.formatDecimal(entry.value.actual, 1, 2)}">Actual</td>
-                        <td th:class="${entry.value.variance > 0 ? 'over-budget' : 'under-budget'}" th:text="${#numbers.formatDecimal(entry.value.variance, 1, 2)}">Variance</td>
-                        <td>
-                            <span th:if="${entry.value.variance > 0}" style="color: #EF4444;">⚠️ Over</span>
-                            <span th:if="${entry.value.variance < 0}" style="color: #10B981;">✅ Under</span>
-                            <span th:if="${entry.value.variance == 0}" style="color: #6B7280;">On Track</span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="section-header">
+                <h4><i class="fas fa-hand-holding-usd"></i> Debt Summary</h4>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><div>💰 Owed to Me</div><div class="positive"><span th:text="${#numbers.formatDecimal(debtReport.totalOwedToMe, 1, 2)}"></span> TZS</div></div>
+                <div class="stat-card"><div>💸 I Owe</div><div class="negative"><span th:text="${#numbers.formatDecimal(debtReport.totalIOwe, 1, 2)}"></span> TZS</div></div>
+                <div class="stat-card"><div>⚖️ Net Position</div><th:block th:if="${debtReport.netPosition >= 0}"><span class="positive"><span th:text="${#numbers.formatDecimal(debtReport.netPosition, 1, 2)}"></span> TZS</span></th:block></div>
+            </div>
+        </div>
+        
+        <!-- Investment Report -->
+        <div class="section-card">
+            <div class="section-header">
+                <h4><i class="fas fa-chart-line"></i> Investment Summary</h4>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><div>💰 Total Invested</div><div><span th:text="${#numbers.formatDecimal(investmentReport.totalInvested, 1, 2)}"></span> TZS</div></div>
+                <div class="stat-card"><div>📈 Current Value</div><div><span th:text="${#numbers.formatDecimal(investmentReport.totalCurrentValue, 1, 2)}"></span> TZS</div></div>
+                <div class="stat-card"><div>📊 Profit/Loss</div><th:block th:if="${investmentReport.totalProfitLoss >= 0}"><span class="positive"><span th:text="${#numbers.formatDecimal(investmentReport.totalProfitLoss, 1, 2)}"></span> TZS</span></th:block></div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 1rem;">
+            <p>More detailed reports coming soon...</p>
         </div>
     </div>
     

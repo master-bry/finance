@@ -110,7 +110,6 @@
             padding: 0.75rem;
             border-bottom: 1px solid #E5E7EB;
         }
-        .entry-item:hover { background: #F9FAFB; }
         .delete-btn { color: var(--danger); text-decoration: none; margin-left: 1rem; }
         
         .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
@@ -140,7 +139,8 @@
             <li class="nav-item"><a href="/investments" class="nav-link"><i class="fas fa-chart-line"></i> Investments</a></li>
             <li class="nav-item"><a href="/goals" class="nav-link"><i class="fas fa-bullseye"></i> Goals</a></li>
             <li class="nav-item"><a href="/budget" class="nav-link"><i class="fas fa-wallet"></i> Budget</a></li>
-            <li class="nav-item"><a href="/excel/daily" class="nav-link active"><i class="fas fa-file-excel"></i> Daily Entry</a></li>
+            <li class="nav-item"><a href="/daily-entry" class="nav-link active"><i class="fas fa-calendar-day"></i> Daily Entry</a></li>
+            <li class="nav-item"><a href="/reports" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
         </ul>
     </div>
     
@@ -181,7 +181,7 @@
         <!-- Add Expense Form -->
         <div class="form-card">
             <div class="form-title"><i class="fas fa-shopping-cart"></i> Add Expense</div>
-            <form action="/excel/add-expense" method="post">
+            <form action="/daily-entry/add-expense" method="post">
                 <div class="row">
                     <div class="form-group">
                         <input type="text" name="description" placeholder="What did you buy?" required>
@@ -215,7 +215,7 @@
         <!-- Add Income Form -->
         <div class="form-card">
             <div class="form-title"><i class="fas fa-money-bill-wave"></i> Add Income</div>
-            <form action="/excel/add-income" method="post">
+            <form action="/daily-entry/add-income" method="post">
                 <div class="row">
                     <div class="form-group">
                         <input type="text" name="description" placeholder="Income source" required>
@@ -242,29 +242,6 @@
             </form>
         </div>
         
-        <!-- Excel Upload -->
-        <div class="form-card">
-            <div class="form-title"><i class="fas fa-file-excel"></i> Upload Excel File</div>
-            <form action="/excel/upload" method="post" enctype="multipart/form-data">
-                <div class="row">
-                    <div class="form-group">
-                        <input type="number" step="0.01" name="openingBalance" placeholder="Opening Balance (TZS)" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="file" name="file" accept=".xlsx, .xls" required>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <button type="submit" class="btn-submit" style="background: #217346;"><i class="fas fa-upload"></i> Upload Excel</button>
-                    </div>
-                    <div class="form-group">
-                        <a href="/excel/download-template" class="btn-submit" style="background: #217346; display: block; text-align: center; text-decoration: none;"><i class="fas fa-download"></i> Download Template</a>
-                    </div>
-                </div>
-            </form>
-        </div>
-        
         <!-- Today's Expenses List -->
         <div class="entry-list">
             <div class="form-title"><i class="fas fa-list"></i> Today's Expenses</div>
@@ -276,7 +253,7 @@
                 </div>
                 <div>
                     <span class="expense" th:text="'- ' + ${#numbers.formatDecimal(exp.amount, 1, 2)} + ' TZS'"></span>
-                    <a th:href="'/excel/delete-expense/' + ${stat.index}" class="delete-btn" onclick="return confirm('Delete this expense?')"><i class="fas fa-trash"></i></a>
+                    <a th:href="'/daily-entry/delete-expense/' + ${stat.index}" class="delete-btn" onclick="return confirm('Delete this expense?')"><i class="fas fa-trash"></i></a>
                 </div>
             </div>
         </div>
@@ -292,13 +269,9 @@
                 </div>
                 <div>
                     <span class="income" th:text="'+ ' + ${#numbers.formatDecimal(inc.amount, 1, 2)} + ' TZS'"></span>
-                    <a th:href="'/excel/delete-income/' + ${stat.index}" class="delete-btn" onclick="return confirm('Delete this income?')"><i class="fas fa-trash"></i></a>
+                    <a th:href="'/daily-entry/delete-income/' + ${stat.index}" class="delete-btn" onclick="return confirm('Delete this income?')"><i class="fas fa-trash"></i></a>
                 </div>
             </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 1rem;">
-            <a href="/excel/history" class="btn-submit" style="background: #6B7280; text-decoration: none; display: inline-block; width: auto; padding: 0.75rem 2rem;"><i class="fas fa-history"></i> View History</a>
         </div>
     </div>
     

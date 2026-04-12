@@ -5,9 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Finance Tracker</title>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -29,7 +27,7 @@
             min-height: 100vh;
         }
         
-        /* Sidebar */
+        /* Sidebar Navigation */
         .sidebar {
             position: fixed;
             left: 0;
@@ -39,6 +37,8 @@
             background: linear-gradient(135deg, var(--primary-dark) 0%, #1a4d2a 100%);
             color: white;
             padding: 1.5rem;
+            transition: all 0.3s;
+            z-index: 1000;
             overflow-y: auto;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         }
@@ -50,10 +50,28 @@
             margin-bottom: 1.5rem;
         }
         
-        .sidebar-header h2 span { color: var(--accent); }
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
         
-        .nav-menu { list-style: none; }
-        .nav-item { margin-bottom: 0.5rem; }
+        .sidebar-header h2 span {
+            color: var(--accent);
+        }
+        
+        .sidebar-header p {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+        
         .nav-link {
             display: flex;
             align-items: center;
@@ -61,11 +79,25 @@
             color: white;
             text-decoration: none;
             border-radius: 10px;
-            gap: 12px;
             transition: all 0.3s;
+            gap: 12px;
         }
-        .nav-link:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
-        .nav-link.active { background: var(--accent); color: var(--primary-dark); font-weight: bold; }
+        
+        .nav-link i {
+            width: 24px;
+            font-size: 1.2rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+        
+        .nav-link.active {
+            background: var(--accent);
+            color: var(--primary-dark);
+            font-weight: bold;
+        }
         
         /* Main Content */
         .main-content {
@@ -86,7 +118,22 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         
-        .welcome-text h3 { color: var(--primary-dark); margin-bottom: 0.25rem; }
+        .welcome-text h3 {
+            color: var(--primary-dark);
+            margin-bottom: 0.25rem;
+        }
+        
+        .welcome-text p {
+            color: #6B7280;
+            font-size: 0.85rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
         .logout-btn {
             background: var(--danger);
             color: white;
@@ -111,8 +158,17 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         
-        .stat-title { color: #6B7280; font-size: 0.8rem; margin-bottom: 0.5rem; }
-        .stat-value { font-size: 1.8rem; font-weight: bold; }
+        .stat-title {
+            color: #6B7280;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
         .positive { color: var(--success); }
         .negative { color: var(--danger); }
         
@@ -131,10 +187,17 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         
-        .chart-card h4 { color: var(--primary-dark); margin-bottom: 1rem; }
-        canvas { max-height: 300px; }
+        .chart-card h4 {
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
         
-        /* Section Card */
+        canvas {
+            max-height: 300px;
+        }
+        
+        /* Section Cards */
         .section-card {
             background: var(--white);
             border-radius: 15px;
@@ -172,7 +235,10 @@
             border-bottom: 1px solid #E5E7EB;
         }
         
-        .data-table th { background: #F9FAFB; font-weight: 600; }
+        .data-table th {
+            background: #F9FAFB;
+            font-weight: 600;
+        }
         
         /* Goal Progress */
         .goal-item { margin-bottom: 1rem; }
@@ -219,12 +285,8 @@
     </style>
 </head>
 <body>
-    <!-- Mobile Menu Button -->
-    <div class="mobile-menu-btn" onclick="toggleSidebar()">
-        <i class="fas fa-bars"></i>
-    </div>
+    <div class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
     
-    <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2>💰 Finance<span>Tracker</span></h2>
@@ -237,12 +299,12 @@
             <li class="nav-item"><a href="/investments" class="nav-link"><i class="fas fa-chart-line"></i> Investments</a></li>
             <li class="nav-item"><a href="/goals" class="nav-link"><i class="fas fa-bullseye"></i> Goals</a></li>
             <li class="nav-item"><a href="/budget" class="nav-link"><i class="fas fa-wallet"></i> Budget</a></li>
+            <li class="nav-item"><a href="/excel/daily" class="nav-link"><i class="fas fa-calendar-day"></i> Daily Entry</a></li>
+            <li class="nav-item"><a href="/reports" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
         </ul>
     </div>
     
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- Top Bar -->
         <div class="top-bar">
             <div class="welcome-text">
                 <h3>Welcome back, <span sec:authentication="name"></span>!</h3>
@@ -252,10 +314,6 @@
                 <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>
-        
-        <!-- Alert Messages -->
-        <div th:if="${success}" style="background: #D1FAE5; color: #065F46; padding: 1rem; border-radius: 10px; margin-bottom: 1rem;" th:text="${success}"></div>
-        <div th:if="${error}" style="background: #FEE2E2; color: #991B1B; padding: 1rem; border-radius: 10px; margin-bottom: 1rem;" th:text="${error}"></div>
         
         <!-- Stats Grid -->
         <div class="stats-grid">
@@ -358,11 +416,9 @@
     </div>
     
     <script>
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-        }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
         
-        // Charts
+        // Charts with real data
         const expenseCtx = document.getElementById('expenseChart').getContext('2d');
         const expenseCategories = /*[[${expenseCategories}]]*/ [];
         const expenseAmounts = /*[[${expenseAmounts}]]*/ [];
