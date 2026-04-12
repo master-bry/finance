@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Budget</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #FFF6C0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2F6B3F;
+            margin-top: 0;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background: #2F6B3F;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .category-input {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .category-input:hover {
+            border-color: #2F6B3F;
+            box-shadow: 0 2px 8px rgba(47, 107, 63, 0.1);
+        }
+        
+        .category-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2F6B3F;
+        }
+        .category-emoji {
+            margin-right: 5px;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #2F6B3F;
+            box-shadow: 0 0 5px rgba(47, 107, 63, 0.3);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .btn-save {
+            background: #2F6B3F;
+            color: white;
+            flex: 1;
+        }
+        .btn-save:hover {
+            background: #7FB77E;
+        }
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-cancel:hover {
+            background: #5a6268;
+        }
+        
+        .info-box {
+            background: #e7f5f0;
+            border-left: 4px solid #2F6B3F;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .total-budgets {
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .total-label {
+            color: #666;
+            font-size: 14px;
+        }
+        .total-amount {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2F6B3F;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✏️ Edit Monthly Budget</h1>
+        
+        <div class="info-box">
+            💡 Set your budget for each category. The system will track your spending and alert you if you exceed your limits.
+        </div>
+        
+        <form action="#" th:action="@{/budget/save}" th:object="${budget}" method="post">
+            <!-- Budget Categories -->
+            <div class="section">
+                <h3 class="section-title">💰 Budget Categories</h3>
+                
+                <div class="category-grid">
+                    <div class="category-input">
+                        <label class="category-label"><span class="category-emoji">🛒</span>Groceries</label>
+                        <input type="number" step="0.01" th:field="*{categoryBudgets['Groceries'].amount}" 
+                               placeholder="0.00" value="0">
+                    </div>
+                    <div class="category-input">
+                        <label class="category-label"><span class="category-emoji">🚗</span>Transportation</label>
+                        <input type="number" step="0.01" th:field="*{categoryBudgets['Transportation'].amount}" 
+                               placeholder="0.00" value="0">
+                    </div>
+                    <div class="category-input">
+                        <label class="category-label"><span class="category-emoji">🏠</span>Utilities</label>
+                        <input type="number" step="0.01" th:field="*{categoryBudgets['Utilities'].amount}" 
+                               placeholder="0.00" value="0">
+                    </div>
+                    <div class="category-input">
+                        <label class="category-label"><span class="category-emoji">🍽️</span>Dining Out</label>
+                        <input type="number" step="0.01" th:field="*{categoryBudgets['Dining Out'].amount}" 
+                               placeholder="0.00" value="0">
+                    </div>
+                    <div class="category-input">
+                        <label class="category-label"><span class="category-emoji">🎬</span>Entertainment</label>
+                        <input type="number" step="0.01" th:field="*{categoryBudgets['Entertainment'].amount}" 
+                               placeholder="0.00" value="0">
+                    </div>
+                    <div class="category-input">
+                        <label class="category-label"><span class="category-emoji">💊</span>Healthcare</label>
+                        <input type="number" step="0.01" th:field="*{categoryBudgets['Healthcare'].amount}" 
+                               placeholder="0.00" value="0">
+                    </div>
+                    <div class="category-input">
+                        <label class="category-label"><span class="category-emoji">🎓</span>Education</label>
+                        <input type="number" step="0.01" th:field="*{categoryBudgets['Education'].amount}" 
+                               placeholder="0.00" value="0">
+                    </div>
+                    <div class="category-input">
+                        <label class="category-label"><span class="category-emoji">👔</span>Clothing</label>
+                        <input type="number" step="0.01" th:field="*{categoryBudgets['Clothing'].amount}" 
+                               placeholder="0.00" value="0">
+                    </div>
+                    <div class="category-input">
+                        <label class="category-label"><span class="category-emoji">🏋️</span>Fitness</label>
+                        <input type="number" step="0.01" th:field="*{categoryBudgets['Fitness'].amount}" 
+                               placeholder="0.00" value="0">
+                    </div>
+                    <div class="category-input">
+                        <label class="category-label"><span class="category-emoji">📌</span>Other</label>
+                        <input type="number" step="0.01" th:field="*{categoryBudgets['Other'].amount}" 
+                               placeholder="0.00" value="0">
+                    </div>
+                </div>
+                
+                <div class="total-budgets">
+                    <div class="total-label">Total Budgeted</div>
+                    <div class="total-amount">TZS <span id="totalBudget">0</span></div>
+                </div>
+            </div>
+            
+            <!-- Additional Options -->
+            <div class="section">
+                <h3 class="section-title">⚙️ Budget Settings</h3>
+                
+                <div class="form-group">
+                    <label>Monthly Income Target (Optional)</label>
+                    <input type="number" step="0.01" th:field="*{income}" placeholder="0.00">
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" th:field="*{trackingEnabled}">
+                        Enable spending alerts
+                    </label>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="btn-save">💾 Save Budget</button>
+                <a href="/budget" class="btn-cancel">Cancel</a>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        // Update total budget dynamically
+        function updateTotal() {
+            const inputs = document.querySelectorAll('input[type="number"]');
+            let total = 0;
+            inputs.forEach(input => {
+                const name = input.name;
+                if (name.includes('categoryBudgets')) {
+                    total += parseFloat(input.value) || 0;
+                }
+            });
+            document.getElementById('totalBudget').textContent = total.toFixed(2);
+        }
+        
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', updateTotal);
+        });
+        
+        updateTotal();
+    </script>
+</body>
+</html>

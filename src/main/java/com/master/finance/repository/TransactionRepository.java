@@ -9,6 +9,7 @@ import java.util.List;
 
 @Repository
 public interface TransactionRepository extends MongoRepository<Transaction, String> {
+    
     @Query("{ 'userId': ?0, 'deleted': false }")
     List<Transaction> findByUserIdAndDeletedFalseOrderByDateDesc(String userId);
     
@@ -17,10 +18,4 @@ public interface TransactionRepository extends MongoRepository<Transaction, Stri
     
     @Query("{ 'userId': ?0, 'date': { $gte: ?1, $lte: ?2 }, 'deleted': false }")
     List<Transaction> findByUserIdAndDateBetweenAndDeletedFalse(String userId, LocalDateTime start, LocalDateTime end);
-    
-    @Query("{ 'userId': ?0, 'deleted': false }")
-    List<Transaction> findTransactionsByUserIdAndDeletedFalse(String userId);
-    
-    @Query(value = "{ 'userId': ?0, 'type': 'EXPENSE', 'deleted': false }", fields = "{ 'category': 1, 'amount': 1 }")
-    List<Transaction> findExpensesByUserIdAndDeletedFalse(String userId);
 }

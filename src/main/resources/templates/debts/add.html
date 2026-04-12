@@ -2,219 +2,97 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Debt - Finance Tracker</title>
+    <title>Add Debt</title>
     <style>
-        :root {
-            --primary-dark: #2F6B3F;
-            --secondary: #7FB77E;
-            --accent: #F7C85C;
-            --background: #FFF6C0;
-            --white: #FFFFFF;
-            --danger: #EF4444;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--background);
-            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #FFF6C0;
         }
-        
-        .navbar {
-            background: var(--primary-dark);
-            color: white;
-            padding: 1rem 2rem;
-        }
-        
-        .navbar-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo { font-size: 1.5rem; font-weight: bold; }
-        .logo span { color: var(--accent); }
-        
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-        }
-        
         .container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 0 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
         }
-        
-        .form-container {
-            background: var(--white);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
-        
-        h1 {
-            color: var(--primary-dark);
-            margin-bottom: 1.5rem;
-        }
-        
+        h1 { color: #2F6B3F; }
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 15px;
         }
-        
         label {
             display: block;
-            margin-bottom: 0.5rem;
-            color: #374151;
-            font-weight: 500;
+            margin-bottom: 5px;
+            font-weight: bold;
         }
-        
         input, select, textarea {
             width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #E5E7EB;
-            border-radius: 10px;
-            font-size: 1rem;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
-        
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-        
-        .btn {
-            flex: 1;
-            padding: 0.75rem;
+        button {
+            background: #2F6B3F;
+            color: white;
+            padding: 10px 20px;
             border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
+            border-radius: 5px;
             cursor: pointer;
-            text-decoration: none;
-            text-align: center;
         }
-        
-        .btn-primary {
-            background: var(--primary-dark);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: var(--secondary);
-        }
-        
-        .btn-secondary {
-            background: #9CA3AF;
-            color: white;
-        }
-        
-        .error-message {
-            color: var(--danger);
-            font-size: 0.85rem;
-            margin-top: 0.25rem;
-        }
-        
-        .row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        
-        @media (max-width: 640px) {
-            .row {
-                grid-template-columns: 1fr;
-            }
-        }
+        button:hover { background: #7FB77E; }
+        .error { color: red; font-size: 12px; }
+        .back-link { margin-top: 20px; display: inline-block; }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-container">
-            <div class="logo">💰 Finance<span>Tracker</span></div>
-            <div class="nav-links">
-                <a href="/dashboard">Dashboard</a>
-                <a href="/transactions">Transactions</a>
-                <a href="/debts">Debts</a>
-                <a href="/investments">Investments</a>
-                <a href="/goals">Goals</a>
-                <a href="/budget">Budget</a>
-            </div>
-        </div>
-    </nav>
-    
     <div class="container">
-        <div class="form-container">
-            <h1>➕ Add New Debt</h1>
+        <h1>➕ Add New Debt</h1>
+        
+        <form action="#" th:action="@{/debts/add}" th:object="${debt}" method="post">
+            <div class="form-group">
+                <label>Person Name *</label>
+                <input type="text" th:field="*{personName}" required placeholder="Enter person's name">
+            </div>
             
-            <form action="#" th:action="@{/debts/add}" th:object="${debt}" method="post">
-                <div class="form-group">
-                    <label for="personName">Person Name *</label>
-                    <input type="text" id="personName" th:field="*{personName}" required placeholder="Enter person's name">
-                    <div th:if="${#fields.hasErrors('personName')}" th:errors="*{personName}" class="error-message"></div>
-                </div>
-                
-                <div class="row">
-                    <div class="form-group">
-                        <label for="type">Type *</label>
-                        <select id="type" th:field="*{type}" required>
-                            <option value="">Select type</option>
-                            <option value="OWED_TO_ME">💰 Owed to me (Someone owes me money)</option>
-                            <option value="I_OWE">💸 I owe (I owe someone money)</option>
-                        </select>
-                        <div th:if="${#fields.hasErrors('type')}" th:errors="*{type}" class="error-message"></div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="amount">Amount *</label>
-                        <input type="number" step="0.01" id="amount" th:field="*{amount}" required placeholder="0.00">
-                        <div th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}" class="error-message"></div>
-                    </div>
-                </div>
-                
-                <div class="row">
-                    <div class="form-group">
-                        <label for="phoneNumber">Phone Number</label>
-                        <input type="tel" id="phoneNumber" th:field="*{phoneNumber}" placeholder="Optional">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="dueDate">Due Date</label>
-                        <input type="date" id="dueDate" th:field="*{dueDate}">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea id="description" th:field="*{description}" rows="3" placeholder="What is this debt for?"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="notes">Additional Notes</label>
-                    <textarea id="notes" th:field="*{notes}" rows="2" placeholder="Any additional information..."></textarea>
-                </div>
-                
-                <div class="btn-group">
-                    <button type="submit" class="btn btn-primary">💾 Save Debt</button>
-                    <a href="/debts" class="btn btn-secondary">❌ Cancel</a>
-                </div>
-            </form>
-        </div>
+            <div class="form-group">
+                <label>Type *</label>
+                <select th:field="*{type}" required>
+                    <option value="">Select type</option>
+                    <option value="OWED_TO_ME">💰 Owed to me (Someone owes me money)</option>
+                    <option value="I_OWE">💸 I owe (I owe someone money)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Amount *</label>
+                <input type="number" step="0.01" th:field="*{amount}" required placeholder="0.00">
+            </div>
+            
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="text" th:field="*{phoneNumber}" placeholder="Optional">
+            </div>
+            
+            <div class="form-group">
+                <label>Due Date</label>
+                <input type="date" th:field="*{dueDate}">
+            </div>
+            
+            <div class="form-group">
+                <label>Description</label>
+                <textarea th:field="*{description}" rows="3" placeholder="What is this debt for?"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea th:field="*{notes}" rows="2" placeholder="Additional information..."></textarea>
+            </div>
+            
+            <button type="submit">💾 Save Debt</button>
+        </form>
+        
+        <a href="/debts" class="back-link">← Back to Debts</a>
     </div>
 </body>
 </html>

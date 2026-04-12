@@ -15,14 +15,14 @@ public class Debt {
     private String type; // "OWED_TO_ME" or "I_OWE"
     private Double amount;
     private Double remainingAmount;
-    private String status; // "FULL", "PARTIAL", "PENDING", "SETTLED"
+    private String status; // "PENDING", "PARTIAL", "SETTLED"
     private String description;
     private LocalDateTime dueDate;
     private LocalDateTime dateGiven;
     private LocalDateTime lastUpdated;
-    private List<PaymentRecord> paymentHistory = new ArrayList<>();
     private String phoneNumber;
     private String notes;
+    private List<PaymentRecord> paymentHistory = new ArrayList<>();
     
     // Soft delete fields
     private boolean deleted = false;
@@ -49,6 +49,7 @@ public class Debt {
         this.dateGiven = LocalDateTime.now();
         this.lastUpdated = LocalDateTime.now();
         this.status = "PENDING";
+        this.remainingAmount = 0.0;
         this.paymentHistory = new ArrayList<>();
     }
     
@@ -68,7 +69,7 @@ public class Debt {
     public Double getAmount() { return amount; }
     public void setAmount(Double amount) { 
         this.amount = amount;
-        if (this.remainingAmount == null) {
+        if (this.remainingAmount == null || this.remainingAmount == 0) {
             this.remainingAmount = amount;
         }
     }
@@ -91,14 +92,14 @@ public class Debt {
     public LocalDateTime getLastUpdated() { return lastUpdated; }
     public void setLastUpdated(LocalDateTime lastUpdated) { this.lastUpdated = lastUpdated; }
     
-    public List<PaymentRecord> getPaymentHistory() { return paymentHistory; }
-    public void setPaymentHistory(List<PaymentRecord> paymentHistory) { this.paymentHistory = paymentHistory; }
-    
     public String getPhoneNumber() { return phoneNumber; }
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
     
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+    
+    public List<PaymentRecord> getPaymentHistory() { return paymentHistory; }
+    public void setPaymentHistory(List<PaymentRecord> paymentHistory) { this.paymentHistory = paymentHistory; }
     
     public boolean isDeleted() { return deleted; }
     public void setDeleted(boolean deleted) { this.deleted = deleted; }

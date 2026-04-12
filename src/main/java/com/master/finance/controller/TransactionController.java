@@ -1,7 +1,7 @@
 package com.master.finance.controller;
 
 import com.master.finance.model.Transaction;
-import com.master.finance.service.TransactionService;
+import com.master.finance.repository.TransactionRepository;
 import com.master.finance.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,13 +11,17 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/transactions")
 public class TransactionController {
     
     @Autowired
-    private TransactionService transactionService;
+    private TransactionRepository transactionRepository;
     
     @Autowired
     private UserService userService;
@@ -25,7 +29,27 @@ public class TransactionController {
     @GetMapping
     public String listTransactions(Authentication authentication, Model model) {
         String userId = getUserId(authentication);
-        model.addAttribute("transactions", transactionService.getUserTransactions(userId));
+        List<Transaction> transactions = transactionRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId);
+        
+        // Calculate stats
+        double totalIncome = transactions.stream()
+                .filter(t -> "INCOME".equals(t.getType()))
+                .mapToDouble(Transaction::getAmount)
+                .sum();
+        
+        double totalExpense = transactions.stream()
+                .filter(t -> "EXPENSE".equals(t.getType()))
+                .mapToDouble(Transaction::getAmount)
+                .sum();
+        
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalIncome", totalIncome);
+        stats.put("totalExpense", totalExpense);
+        stats.put("balance", totalIncome - totalExpense);
+        stats.put("transactionCount", transactions.size());
+        
+        model.addAttribute("transactions", transactions);
+        model.addAttribute("stats", stats);
         return "transactions/index";
     }
     
@@ -50,7 +74,10 @@ public class TransactionController {
         
         String userId = getUserId(authentication);
         transaction.setUserId(userId);
-        transactionService.saveTransaction(transaction);
+        transaction.setDate(LocalDateTime.now());
+        transaction.setDeleted(false);
+        transactionRepository.save(transaction);
+        
         redirectAttributes.addFlashAttribute("success", "Transaction added successfully!");
         return "redirect:/transactions";
     }
@@ -58,7 +85,7 @@ public class TransactionController {
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable String id, Authentication authentication, Model model) {
         String userId = getUserId(authentication);
-        transactionService.getTransaction(id).ifPresent(transaction -> {
+        transactionRepository.findById(id).ifPresent(transaction -> {
             if (transaction.getUserId().equals(userId)) {
                 model.addAttribute("transaction", transaction);
             }
@@ -74,14 +101,18 @@ public class TransactionController {
         String userId = getUserId(authentication);
         transaction.setId(id);
         transaction.setUserId(userId);
-        transactionService.saveTransaction(transaction);
+        transactionRepository.save(transaction);
         redirectAttributes.addFlashAttribute("success", "Transaction updated successfully!");
         return "redirect:/transactions";
     }
     
     @GetMapping("/delete/{id}")
     public String deleteTransaction(@PathVariable String id, RedirectAttributes redirectAttributes) {
-        transactionService.deleteTransaction(id);  // Now this method exists
+        transactionRepository.findById(id).ifPresent(transaction -> {
+            transaction.setDeleted(true);
+            transaction.setDeletedAt(LocalDateTime.now());
+            transactionRepository.save(transaction);
+        });
         redirectAttributes.addFlashAttribute("success", "Transaction deleted successfully!");
         return "redirect:/transactions";
     }

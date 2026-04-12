@@ -2,270 +2,89 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Transaction - Finance Tracker</title>
+    <title>Add Transaction</title>
     <style>
-        :root {
-            --primary-dark: #2F6B3F;
-            --secondary: #7FB77E;
-            --accent: #F7C85C;
-            --background: #FFF6C0;
-            --white: #FFFFFF;
-            --danger: #EF4444;
-            --success: #10B981;
-        }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--background);
-            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #FFF6C0;
         }
-        
-        .navbar {
-            background: var(--primary-dark);
-            color: white;
-            padding: 1rem 2rem;
-        }
-        
-        .navbar-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        
-        .logo { font-size: 1.5rem; font-weight: bold; }
-        .logo span { color: var(--accent); }
-        
-        .nav-links {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-        
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-        
-        .nav-links a:hover { background: var(--secondary); }
-        
         .container {
-            max-width: 700px;
-            margin: 2rem auto;
-            padding: 0 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
         }
-        
-        .form-container {
-            background: var(--white);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            animation: fadeIn 0.5s ease-out;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        h1 {
-            color: var(--primary-dark);
-            margin-bottom: 0.5rem;
-        }
-        
-        .subtitle {
-            color: #6B7280;
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
-        }
-        
+        h1 { color: #2F6B3F; }
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 15px;
         }
-        
         label {
             display: block;
-            margin-bottom: 0.5rem;
-            color: #374151;
-            font-weight: 500;
+            margin-bottom: 5px;
+            font-weight: bold;
         }
-        
-        label .required {
-            color: var(--danger);
-        }
-        
         input, select, textarea {
             width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #E5E7EB;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: all 0.3s;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
-        
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(247, 200, 92, 0.1);
-        }
-        
-        .error-message {
-            color: var(--danger);
-            font-size: 0.8rem;
-            margin-top: 0.25rem;
-        }
-        
-        .input-hint {
-            font-size: 0.75rem;
-            color: #6B7280;
-            margin-top: 0.25rem;
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-        
-        .btn {
-            flex: 1;
-            padding: 0.75rem;
+        button {
+            background: #2F6B3F;
+            color: white;
+            padding: 10px 20px;
             border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
+            border-radius: 5px;
             cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-            transition: all 0.3s;
         }
-        
-        .btn-primary {
-            background: var(--primary-dark);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: var(--secondary);
-            transform: translateY(-2px);
-        }
-        
-        .btn-secondary {
-            background: #9CA3AF;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background: #6B7280;
-            transform: translateY(-2px);
-        }
-        
-        .row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        
-        @media (max-width: 640px) {
-            .row {
-                grid-template-columns: 1fr;
-            }
-            .container { padding: 0 1rem; }
-            .form-container { padding: 1.5rem; }
-        }
+        button:hover { background: #7FB77E; }
+        .error { color: red; font-size: 12px; }
+        .back-link { margin-top: 20px; display: inline-block; }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-container">
-            <div class="logo">💰 Finance<span>Tracker</span></div>
-            <div class="nav-links">
-                <a href="/dashboard">Dashboard</a>
-                <a href="/transactions">Transactions</a>
-                <a href="/debts">Debts</a>
-                <a href="/investments">Investments</a>
-                <a href="/goals">Goals</a>
-                <a href="/budget">Budget</a>
-            </div>
-        </div>
-    </nav>
-    
     <div class="container">
-        <div class="form-container">
-            <h1>➕ Add Transaction</h1>
-            <p class="subtitle">Record your income or expense</p>
+        <h1>➕ Add Transaction</h1>
+        
+        <form action="#" th:action="@{/transactions/add}" th:object="${transaction}" method="post">
+            <div class="form-group">
+                <label>Description *</label>
+                <input type="text" th:field="*{description}" required>
+                <div class="error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+            </div>
             
-            <form action="#" th:action="@{/transactions/add}" th:object="${transaction}" method="post">
-                <div class="form-group">
-                    <label for="description">Description <span class="required">*</span></label>
-                    <input type="text" id="description" th:field="*{description}" required 
-                           placeholder="e.g., Grocery shopping, Salary, Rent">
-                    <div class="input-hint">Enter a clear description (2-100 characters)</div>
-                    <div th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="error-message"></div>
-                </div>
-                
-                <div class="row">
-                    <div class="form-group">
-                        <label for="amount">Amount <span class="required">*</span></label>
-                        <input type="number" step="0.01" id="amount" th:field="*{amount}" required 
-                               placeholder="0.00" min="0.01">
-                        <div class="input-hint">Enter a positive amount</div>
-                        <div th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}" class="error-message"></div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="type">Type <span class="required">*</span></label>
-                        <select id="type" th:field="*{type}" required>
-                            <option value="">Select type</option>
-                            <option value="INCOME">💰 Income - Money coming in</option>
-                            <option value="EXPENSE">💸 Expense - Money going out</option>
-                        </select>
-                        <div th:if="${#fields.hasErrors('type')}" th:errors="*{type}" class="error-message"></div>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="category">Category <span class="required">*</span></label>
-                    <input type="text" id="category" th:field="*{category}" required 
-                           placeholder="e.g., Food, Rent, Salary, Shopping"
-                           list="category-suggestions">
-                    <datalist id="category-suggestions">
-                        <option value="Food & Dining">
-                        <option value="Rent & Utilities">
-                        <option value="Salary">
-                        <option value="Shopping">
-                        <option value="Entertainment">
-                        <option value="Transportation">
-                        <option value="Healthcare">
-                        <option value="Education">
-                        <option value="Investment">
-                        <option value="Other">
-                    </datalist>
-                    <div class="input-hint">Choose or enter a custom category</div>
-                    <div th:if="${#fields.hasErrors('category')}" th:errors="*{category}" class="error-message"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="notes">Notes</label>
-                    <textarea id="notes" th:field="*{notes}" rows="3" 
-                              placeholder="Additional notes about this transaction..."></textarea>
-                </div>
-                
-                <div class="btn-group">
-                    <button type="submit" class="btn btn-primary">💾 Save Transaction</button>
-                    <a href="/transactions" class="btn btn-secondary">❌ Cancel</a>
-                </div>
-            </form>
-        </div>
+            <div class="form-group">
+                <label>Amount *</label>
+                <input type="number" step="0.01" th:field="*{amount}" required>
+                <div class="error" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></div>
+            </div>
+            
+            <div class="form-group">
+                <label>Type *</label>
+                <select th:field="*{type}" required>
+                    <option value="">Select</option>
+                    <option value="INCOME">Income</option>
+                    <option value="EXPENSE">Expense</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Category *</label>
+                <input type="text" th:field="*{category}" required placeholder="e.g., Food, Salary, Rent">
+            </div>
+            
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea th:field="*{notes}" rows="3"></textarea>
+            </div>
+            
+            <button type="submit">Save Transaction</button>
+        </form>
+        
+        <a href="/transactions" class="back-link">← Back to Transactions</a>
     </div>
 </body>
 </html>

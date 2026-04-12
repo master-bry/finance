@@ -20,7 +20,7 @@ public class Transaction {
     private Double amount;
     
     @NotBlank(message = "Type is required")
-    private String type; // INCOME or EXPENSE
+    private String type;
     
     @NotBlank(message = "Category is required")
     private String category;
@@ -28,7 +28,6 @@ public class Transaction {
     private LocalDateTime date;
     private String notes;
     
-    // Soft delete fields
     private boolean deleted = false;
     private LocalDateTime deletedAt;
     

@@ -1,7 +1,7 @@
 package com.master.finance.controller;
 
 import com.master.finance.model.Goal;
-import com.master.finance.service.GoalService;
+import com.master.finance.repository.GoalRepository;
 import com.master.finance.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,13 +11,15 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Controller
 @RequestMapping("/goals")
 public class GoalController {
     
     @Autowired
-    private GoalService goalService;
+    private GoalRepository goalRepository;
     
     @Autowired
     private UserService userService;
@@ -25,9 +27,12 @@ public class GoalController {
     @GetMapping
     public String listGoals(Authentication authentication, Model model) {
         String userId = getUserId(authentication);
-        model.addAttribute("goals", goalService.getUserGoals(userId));
-        model.addAttribute("activeGoals", goalService.getActiveGoals(userId));
-        model.addAttribute("summary", goalService.getGoalsSummary(userId));
+        List<Goal> goals = goalRepository.findByUserIdAndDeletedFalse(userId);
+        
+        model.addAttribute("goals", goals);
+        model.addAttribute("activeGoals", goals.stream().filter(g -> !g.isAchieved()).toList());
+        model.addAttribute("completedGoals", goals.stream().filter(Goal::isAchieved).toList());
+        
         return "goals/index";
     }
     
@@ -52,7 +57,11 @@ public class GoalController {
         
         String userId = getUserId(authentication);
         goal.setUserId(userId);
-        goalService.saveGoal(goal);
+        goal.setAchieved(false);
+        goal.setDeleted(false);
+        goal.setCurrentAmount(0.0);
+        
+        goalRepository.save(goal);
         redirectAttributes.addFlashAttribute("success", "Goal created successfully!");
         return "redirect:/goals";
     }
@@ -60,7 +69,7 @@ public class GoalController {
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable String id, Authentication authentication, Model model) {
         String userId = getUserId(authentication);
-        goalService.getGoal(id).ifPresent(goal -> {
+        goalRepository.findById(id).ifPresent(goal -> {
             if (goal.getUserId().equals(userId)) {
                 model.addAttribute("goal", goal);
             }
@@ -76,21 +85,36 @@ public class GoalController {
         String userId = getUserId(authentication);
         goal.setId(id);
         goal.setUserId(userId);
-        goalService.saveGoal(goal);
+        goalRepository.save(goal);
         redirectAttributes.addFlashAttribute("success", "Goal updated successfully!");
         return "redirect:/goals";
     }
     
+    @GetMapping("/delete/{id}")
+    public String deleteGoal(@PathVariable String id, RedirectAttributes redirectAttributes) {
+        goalRepository.findById(id).ifPresent(goal -> {
+            goal.setDeleted(true);
+            goal.setDeletedAt(LocalDateTime.now());
+            goalRepository.save(goal);
+        });
+        redirectAttributes.addFlashAttribute("success", "Goal deleted successfully!");
+        return "redirect:/goals";
+    }
+    
     @GetMapping("/mark/{id}")
-    public String markGoalComplete(@PathVariable String id, RedirectAttributes redirectAttributes) {
-        goalService.markGoalComplete(id);
-        redirectAttributes.addFlashAttribute("success", "Goal marked as complete! Congratulations!");
+    public String markComplete(@PathVariable String id, RedirectAttributes redirectAttributes) {
+        goalRepository.findById(id).ifPresent(goal -> {
+            goal.setAchieved(true);
+            goal.setAchievedDate(LocalDateTime.now());
+            goalRepository.save(goal);
+        });
+        redirectAttributes.addFlashAttribute("success", "🎉 Congratulations! Goal achieved!");
         return "redirect:/goals";
     }
     
     @GetMapping("/progress/{id}")
     public String showProgressForm(@PathVariable String id, Model model) {
-        goalService.getGoal(id).ifPresent(goal -> model.addAttribute("goal", goal));
+        goalRepository.findById(id).ifPresent(goal -> model.addAttribute("goal", goal));
         return "goals/progress";
     }
     
@@ -99,15 +123,24 @@ public class GoalController {
                                  @RequestParam Double amount,
                                  @RequestParam String notes,
                                  RedirectAttributes redirectAttributes) {
-        goalService.updateProgress(id, amount, notes);
-        redirectAttributes.addFlashAttribute("success", "Progress updated successfully!");
-        return "redirect:/goals";
-    }
-    
-    @GetMapping("/delete/{id}")
-    public String deleteGoal(@PathVariable String id, RedirectAttributes redirectAttributes) {
-        goalService.deleteGoal(id);  // Now this method exists
-        redirectAttributes.addFlashAttribute("success", "Goal deleted successfully!");
+        goalRepository.findById(id).ifPresent(goal -> {
+            goal.setCurrentAmount(goal.getCurrentAmount() + amount);
+            
+            Goal.DailyProgress progress = new Goal.DailyProgress();
+            progress.setDate(LocalDateTime.now());
+            progress.setAmount(amount);
+            progress.setNotes(notes);
+            progress.setMarkedComplete(true);
+            goal.getDailyProgress().add(progress);
+            
+            if (goal.getCurrentAmount() >= goal.getTargetAmount()) {
+                goal.setAchieved(true);
+                goal.setAchievedDate(LocalDateTime.now());
+            }
+            
+            goalRepository.save(goal);
+        });
+        redirectAttributes.addFlashAttribute("success", "Progress updated!");
         return "redirect:/goals";
     }
     
