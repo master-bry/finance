@@ -19,24 +19,61 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--background); }
         
         .sidebar {
-            position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
             background: linear-gradient(135deg, var(--primary-dark) 0%, #1a4d2a 100%);
-            color: white; padding: 1.5rem; overflow-y: auto;
+            color: white;
+            padding: 1.5rem;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         }
-        .sidebar-header { text-align: center; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 1.5rem; }
+        .sidebar-header {
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 1.5rem;
+        }
         .sidebar-header h2 span { color: var(--accent); }
         .nav-menu { list-style: none; }
         .nav-item { margin-bottom: 0.5rem; }
-        .nav-link { display: flex; align-items: center; padding: 0.75rem 1rem; color: white; text-decoration: none; border-radius: 10px; gap: 12px; transition: all 0.3s; }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            gap: 12px;
+            transition: all 0.3s;
+        }
         .nav-link:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
         .nav-link.active { background: var(--accent); color: var(--primary-dark); font-weight: bold; }
         
-        .main-content { margin-left: var(--sidebar-width); padding: 1.5rem; min-height: 100vh; }
-        .top-bar {
-            background: var(--white); border-radius: 15px; padding: 1rem 1.5rem; margin-bottom: 1.5rem;
-            display: flex; justify-content: space-between; align-items: center;
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 1.5rem;
+            min-height: 100vh;
         }
-        .logout-btn { background: var(--danger); color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; }
+        .top-bar {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .logout-btn {
+            background: var(--danger);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+        }
         
         .btn-add {
             background: var(--primary-dark);
@@ -46,14 +83,16 @@
             border-radius: 10px;
             display: inline-block;
             margin-bottom: 1rem;
+            transition: all 0.3s;
         }
-        .btn-add:hover { background: var(--secondary); }
+        .btn-add:hover { background: var(--secondary); transform: translateY(-2px); }
         
         .section-card {
             background: var(--white);
             border-radius: 15px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         .section-header {
             display: flex;
@@ -63,6 +102,7 @@
             padding-bottom: 0.5rem;
             border-bottom: 2px solid var(--accent);
         }
+        .section-header h4 { color: var(--primary-dark); font-size: 1.1rem; }
         
         .goal-item { margin-bottom: 1.5rem; }
         .goal-header {
@@ -90,14 +130,44 @@
             font-size: 0.8rem;
             margin: 0 2px;
             display: inline-block;
+            transition: all 0.3s;
         }
+        .btn-sm:hover { opacity: 0.8; transform: translateY(-1px); }
         .btn-progress { background: var(--accent); color: #333; }
+        .btn-edit { background: #3B82F6; color: white; }
         .btn-complete { background: var(--success); color: white; }
         .btn-delete { background: var(--danger); color: white; }
         
-        .alert-success { background: #D1FAE5; color: #065F46; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
+        .alert-success {
+            background: #D1FAE5;
+            color: #065F46;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--success);
+        }
+        .alert-error {
+            background: #FEE2E2;
+            color: #991B1B;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--danger);
+        }
         
-        .mobile-menu-btn { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 1100; background: var(--primary-dark); color: white; padding: 0.5rem; border-radius: 8px; cursor: pointer; }
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1100;
+            background: var(--primary-dark);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
@@ -110,7 +180,10 @@
     <div class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
     
     <div class="sidebar" id="sidebar">
-        <div class="sidebar-header"><h2>💰 Finance<span>Tracker</span></h2><p>Manage Your Finances</p></div>
+        <div class="sidebar-header">
+            <h2>💰 Finance<span>Tracker</span></h2>
+            <p>Manage Your Finances</p>
+        </div>
         <ul class="nav-menu">
             <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> Dashboard</a></li>
             <li class="nav-item"><a href="/transactions" class="nav-link"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
@@ -118,23 +191,30 @@
             <li class="nav-item"><a href="/investments" class="nav-link"><i class="fas fa-chart-line"></i> Investments</a></li>
             <li class="nav-item"><a href="/goals" class="nav-link active"><i class="fas fa-bullseye"></i> Goals</a></li>
             <li class="nav-item"><a href="/budget" class="nav-link"><i class="fas fa-wallet"></i> Budget</a></li>
-            <li class="nav-item"><a href="/daily-entry" class="nav-link" th:classappend="${currentPage == 'daily' ? 'active' : ''}"><i class="fas fa-calendar-day"></i> Daily Entry</a></li>
-            <li class="nav-item"><a href="/reports" class="nav-link" th:classappend="${currentPage == 'reports' ? 'active' : ''}"><i class="fas fa-chart-bar"></i> Reports</a></li>
+            <li class="nav-item"><a href="/excel/daily" class="nav-link"><i class="fas fa-calendar-day"></i> Daily Entry</a></li>
+            <li class="nav-item"><a href="/reports" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
         </ul>
     </div>
     
     <div class="main-content">
         <div class="top-bar">
-            <div><h3>🎯 Financial Goals</h3><p>Track your savings targets</p></div>
+            <div>
+                <h3>🎯 Financial Goals</h3>
+                <p>Track your savings targets</p>
+            </div>
             <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
         
         <div th:if="${success}" class="alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert-error" th:text="${error}"></div>
         
         <a href="/goals/add" class="btn-add"><i class="fas fa-plus"></i> Add New Goal</a>
         
+        <!-- Active Goals Section -->
         <div class="section-card">
-            <div class="section-header"><h4><i class="fas fa-bullseye"></i> Active Goals (<span th:text="${activeGoals.size()}"></span>)</h4></div>
+            <div class="section-header">
+                <h4><i class="fas fa-bullseye"></i> Active Goals (<span th:text="${activeGoals.size()}"></span>)</h4>
+            </div>
             
             <div th:if="${activeGoals.empty}" style="text-align: center; padding: 2rem; color: #6B7280;">
                 <i class="fas fa-flag-checkered" style="font-size: 3rem;"></i>
@@ -147,39 +227,48 @@
                     <span th:text="|${#numbers.formatDecimal(goal.currentAmount, 1, 0)} / ${#numbers.formatDecimal(goal.targetAmount, 1, 0)} TZS|"></span>
                 </div>
                 <div class="progress-bar">
-                    <div class="progress-fill" th:style="|width: ${goal.progressPercentage}%;|"></div>
+                    <div class="progress-fill" th:style="'width: ' + ${goal.progressPercentage} + '%;'"></div>
                 </div>
                 <div style="margin-top: 0.75rem;">
-    <a th:href="|/goals/progress/${goal.id}|" class="btn-sm btn-progress"><i class="fas fa-plus-circle"></i> Add Progress</a>
-    <a th:href="|/goals/edit/${goal.id}|" class="btn-sm btn-edit" style="background: #3B82F6; color: white;"><i class="fas fa-edit"></i> Edit</a>
-    <a th:href="|/goals/mark/${goal.id}|" class="btn-sm btn-complete"><i class="fas fa-check-circle"></i> Mark Complete</a>
-    <a th:href="|/goals/delete/${goal.id}|" class="btn-sm btn-delete" onclick="return confirm('Delete this goal?')"><i class="fas fa-trash"></i> Delete</a>
-</div>
-                <div th:if="${goal.targetDate}" style="margin-top: 0.5rem; font-size: 0.8rem; color: #6B7280;">
-                    <i class="fas fa-calendar"></i> Target Date: <span th:text="${${goal.targetDate}}"></span>
+                    <a th:href="'/goals/progress/' + ${goal.id}" class="btn-sm btn-progress"><i class="fas fa-plus-circle"></i> Add Progress</a>
+                    <a th:href="'/goals/edit/' + ${goal.id}" class="btn-sm btn-edit"><i class="fas fa-edit"></i> Edit</a>
+                    <a th:href="'/goals/mark/' + ${goal.id}" class="btn-sm btn-complete"><i class="fas fa-check-circle"></i> Mark Complete</a>
+                    <a th:href="'/goals/delete/' + ${goal.id}" class="btn-sm btn-delete" onclick="return confirm('Delete this goal?')"><i class="fas fa-trash"></i> Delete</a>
+                </div>
+                <div th:if="${goal.targetDate != null}" style="margin-top: 0.5rem; font-size: 0.8rem; color: #6B7280;">
+                    <i class="fas fa-calendar"></i> Target Date: <span th:text="${#temporals.format(goal.targetDate, 'yyyy-MM-dd')}"></span>
                 </div>
             </div>
         </div>
         
+        <!-- Completed Goals Section -->
         <div class="section-card">
-            <div class="section-header"><h4><i class="fas fa-trophy"></i> Completed Goals (<span th:text="${completedGoals.size()}"></span>)</h4></div>
+            <div class="section-header">
+                <h4><i class="fas fa-trophy"></i> Completed Goals (<span th:text="${completedGoals.size()}"></span>)</h4>
+            </div>
             
             <div th:each="goal : ${completedGoals}" class="goal-item" style="border-left: 3px solid var(--success); padding-left: 1rem;">
                 <div class="goal-header">
                     <span th:text="${goal.name}"></span>
                     <span class="positive">✓ Achieved!</span>
                 </div>
-                <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
-                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #6B7280;">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%;"></div>
+                </div>
+                <div th:if="${goal.achievedDate != null}" style="margin-top: 0.5rem; font-size: 0.8rem; color: #6B7280;">
                     <i class="fas fa-calendar-check"></i> Completed: <span th:text="${#temporals.format(goal.achievedDate, 'yyyy-MM-dd')}"></span>
                 </div>
             </div>
-            <div th:if="${completedGoals.empty}" style="text-align: center; padding: 1rem; color: #6B7280;">No completed goals yet. Keep working towards your targets!</div>
+            <div th:if="${completedGoals.empty}" style="text-align: center; padding: 1rem; color: #6B7280;">
+                No completed goals yet. Keep working towards your targets!
+            </div>
         </div>
     </div>
     
     <script>
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
     </script>
 </body>
 </html>
