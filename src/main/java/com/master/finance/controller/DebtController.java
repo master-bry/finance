@@ -28,7 +28,7 @@ public class DebtController {
         model.addAttribute("debts", debtService.getUserDebts(userId));
         model.addAttribute("totalOwedToMe", debtService.getTotalOwedToMe(userId));
         model.addAttribute("totalIOwe", debtService.getTotalIOwe(userId));
-        model.addAttribute("netPosition", debtService.getTotalOwedToMe(userId) - debtService.getTotalIOwe(userId));
+        model.addAttribute("netPosition", debtService.getNetPosition(userId));
         return "debts/index";
     }
     
@@ -74,9 +74,33 @@ public class DebtController {
         return "redirect:/debts";
     }
     
+    @GetMapping("/edit/{id}")
+    public String showEditForm(@PathVariable String id, Authentication authentication, Model model) {
+        String userId = getUserId(authentication);
+        debtService.getDebt(id).ifPresent(debt -> {
+            if (debt.getUserId().equals(userId)) {
+                model.addAttribute("debt", debt);
+            }
+        });
+        return "debts/edit";
+    }
+    
+    @PostMapping("/edit/{id}")
+    public String updateDebt(@PathVariable String id,
+                             @Valid @ModelAttribute Debt debt,
+                             Authentication authentication,
+                             RedirectAttributes redirectAttributes) {
+        String userId = getUserId(authentication);
+        debt.setId(id);
+        debt.setUserId(userId);
+        debtService.saveDebt(debt);
+        redirectAttributes.addFlashAttribute("success", "Debt updated successfully!");
+        return "redirect:/debts";
+    }
+    
     @GetMapping("/delete/{id}")
     public String deleteDebt(@PathVariable String id, RedirectAttributes redirectAttributes) {
-        debtService.deleteDebt(id);
+        debtService.deleteDebt(id);  // Now this method exists
         redirectAttributes.addFlashAttribute("success", "Debt deleted successfully!");
         return "redirect:/debts";
     }

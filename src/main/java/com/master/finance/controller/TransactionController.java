@@ -81,7 +81,7 @@ public class TransactionController {
     
     @GetMapping("/delete/{id}")
     public String deleteTransaction(@PathVariable String id, RedirectAttributes redirectAttributes) {
-        transactionService.deleteTransaction(id);
+        transactionService.deleteTransaction(id);  // Now this method exists
         redirectAttributes.addFlashAttribute("success", "Transaction deleted successfully!");
         return "redirect:/transactions";
     }

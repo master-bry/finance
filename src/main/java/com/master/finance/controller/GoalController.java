@@ -27,6 +27,7 @@ public class GoalController {
         String userId = getUserId(authentication);
         model.addAttribute("goals", goalService.getUserGoals(userId));
         model.addAttribute("activeGoals", goalService.getActiveGoals(userId));
+        model.addAttribute("summary", goalService.getGoalsSummary(userId));
         return "goals/index";
     }
     
@@ -56,6 +57,30 @@ public class GoalController {
         return "redirect:/goals";
     }
     
+    @GetMapping("/edit/{id}")
+    public String showEditForm(@PathVariable String id, Authentication authentication, Model model) {
+        String userId = getUserId(authentication);
+        goalService.getGoal(id).ifPresent(goal -> {
+            if (goal.getUserId().equals(userId)) {
+                model.addAttribute("goal", goal);
+            }
+        });
+        return "goals/edit";
+    }
+    
+    @PostMapping("/edit/{id}")
+    public String updateGoal(@PathVariable String id,
+                             @Valid @ModelAttribute Goal goal,
+                             Authentication authentication,
+                             RedirectAttributes redirectAttributes) {
+        String userId = getUserId(authentication);
+        goal.setId(id);
+        goal.setUserId(userId);
+        goalService.saveGoal(goal);
+        redirectAttributes.addFlashAttribute("success", "Goal updated successfully!");
+        return "redirect:/goals";
+    }
+    
     @GetMapping("/mark/{id}")
     public String markGoalComplete(@PathVariable String id, RedirectAttributes redirectAttributes) {
         goalService.markGoalComplete(id);
@@ -81,7 +106,7 @@ public class GoalController {
     
     @GetMapping("/delete/{id}")
     public String deleteGoal(@PathVariable String id, RedirectAttributes redirectAttributes) {
-        goalService.deleteGoal(id);
+        goalService.deleteGoal(id);  // Now this method exists
         redirectAttributes.addFlashAttribute("success", "Goal deleted successfully!");
         return "redirect:/goals";
     }

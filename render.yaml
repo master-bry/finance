@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: finance-tracker
+    env: java
+    buildCommand: ./mvnw clean install
+    startCommand: java -jar target/finance-1.0.0.jar
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
