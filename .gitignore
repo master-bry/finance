@@ -21,3 +21,16 @@ target/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Test and debugging artifacts
+cookies.txt
+*.tmp
+*.bak
+*.swp
+*.swo
+*~
+
+# Project analysis reports (generated for reference)
+PROJECT_ANALYSIS_REPORT.md
+CLEANUP_CHECKLIST.md
+PROJECT_STRUCTURE.md
