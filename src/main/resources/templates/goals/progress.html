@@ -2,8 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Goal - Finance Tracker</title>
+    <title>Update Progress - Finance Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -34,18 +33,20 @@
         .logout-btn { background: #EF4444; color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; }
         
         .form-container {
-            background: white; border-radius: 15px; padding: 2rem; max-width: 600px; margin: 0 auto;
+            background: white; border-radius: 15px; padding: 2rem; max-width: 500px; margin: 0 auto;
+        }
+        .info-box {
+            background: #F9FAFB; padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem;
         }
         .form-group { margin-bottom: 1.5rem; }
         .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-        .form-group input, .form-group select, .form-group textarea {
+        .form-group input {
             width: 100%; padding: 0.75rem; border: 2px solid #E5E7EB; border-radius: 10px; font-size: 1rem;
         }
         .btn-save { background: var(--primary-dark); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 10px; cursor: pointer; width: 100%; }
         .btn-save:hover { background: #7FB77E; }
         .btn-back { background: #6B7280; color: white; padding: 0.75rem 1.5rem; border-radius: 10px; text-decoration: none; display: inline-block; margin-top: 1rem; text-align: center; width: 100%; }
         
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .alert-error { background: #FEE2E2; color: #991B1B; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
         
         .mobile-menu-btn { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 1100; background: var(--primary-dark); color: white; padding: 0.5rem; border-radius: 8px; cursor: pointer; }
@@ -54,7 +55,6 @@
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; }
             .mobile-menu-btn { display: block; }
-            .row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -75,74 +75,30 @@
     
     <div class="main-content">
         <div class="top-bar">
-            <div><h3>✏️ Edit Goal</h3><p>Update your financial goal</p></div>
+            <div><h3>📈 Update Goal Progress</h3></div>
             <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
         
         <div th:if="${error}" class="alert-error" th:text="${error}"></div>
         
         <div class="form-container">
-            <form action="#" th:action="@{/goals/edit/{id}(id=${goal.id})}" th:object="${goal}" method="post">
+            <div class="info-box">
+                <p><strong>🎯 Goal:</strong> <span th:text="${goal.name}"></span></p>
+                <p><strong>🎯 Target:</strong> <span th:text="${#numbers.formatDecimal(goal.targetAmount, 1, 2)}"></span> TZS</p>
+                <p><strong>📊 Current:</strong> <span th:text="${#numbers.formatDecimal(goal.currentAmount, 1, 2)}"></span> TZS</p>
+                <p><strong>📈 Remaining:</strong> <span th:text="${#numbers.formatDecimal(goal.remainingAmount, 1, 2)}"></span> TZS</p>
+                <div class="progress-bar" style="background: #E5E7EB; border-radius: 10px; height: 8px; margin-top: 0.5rem;">
+                    <div class="progress-fill" th:style="'width: ' + ${goal.progressPercentage} + '%; background: #10B981; height: 100%; border-radius: 10px;'"></div>
+                </div>
+                <p style="margin-top: 0.5rem;">Progress: <span th:text="${#numbers.formatDecimal(goal.progressPercentage, 1, 1)}"></span>%</p>
+            </div>
+            
+            <form th:action="@{/goals/progress/{id}(id=${goal.id})}" method="post">
                 <div class="form-group">
-                    <label>Goal Name *</label>
-                    <input type="text" th:field="*{name}" required>
+                    <label>Amount to Add (TZS) *</label>
+                    <input type="number" step="0.01" name="amount" required placeholder="Enter amount">
                 </div>
-                
-                <div class="row">
-                    <div class="form-group">
-                        <label>Category *</label>
-                        <select th:field="*{category}" required>
-                            <option value="SAVINGS">💰 Savings</option>
-                            <option value="PURCHASE">🛍️ Purchase</option>
-                            <option value="TRAVEL">✈️ Travel</option>
-                            <option value="INVESTMENT">📈 Investment</option>
-                            <option value="DEBT_PAYMENT">💸 Debt Payment</option>
-                            <option value="EDUCATION">📚 Education</option>
-                            <option value="HEALTHCARE">🏥 Healthcare</option>
-                            <option value="OTHER">📌 Other</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Priority</label>
-                        <select th:field="*{priority}">
-                            <option value="HIGH">🔴 High</option>
-                            <option value="MEDIUM">🟡 Medium</option>
-                            <option value="LOW">🟢 Low</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="row">
-                    <div class="form-group">
-                        <label>Target Amount *</label>
-                        <input type="number" step="0.01" th:field="*{targetAmount}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Current Amount</label>
-                        <input type="number" step="0.01" th:field="*{currentAmount}" readonly style="background: #F3F4F6;">
-                    </div>
-                </div>
-                
-                <div class="row">
-                    <div class="form-group">
-                        <label>Target Date</label>
-                        <input type="date" th:field="*{targetDate}">
-                    </div>
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select th:field="*{achieved}">
-                            <option th:value="false">In Progress</option>
-                            <option th:value="true">Achieved</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>Description</label>
-                    <textarea th:field="*{description}" rows="3"></textarea>
-                </div>
-                
-                <button type="submit" class="btn-save"><i class="fas fa-save"></i> Save Changes</button>
+                <button type="submit" class="btn-save"><i class="fas fa-save"></i> Update Progress</button>
                 <a href="/goals" class="btn-back"><i class="fas fa-arrow-left"></i> Cancel</a>
             </form>
         </div>

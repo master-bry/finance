@@ -12,17 +12,19 @@ public class Investment {
     private String id;
     private String userId;
     private String name;
-    private String type; // "STOCKS", "REAL_ESTATE", "BUSINESS", "SAVINGS", "CRYPTO", "OTHER"
+    private String type;
     private Double amountInvested;
     private Double currentValue;
     private Double expectedReturn;
-    private String riskLevel; // "LOW", "MEDIUM", "HIGH"
+    private String riskLevel;
     private LocalDateTime startDate;
     private LocalDateTime maturityDate;
-    private String status; // "ACTIVE", "MATURED", "SOLD", "LOSS"
+    private String status;
     private String provider;
     private String notes;
     private List<InvestmentTransaction> transactions = new ArrayList<>();
+    private boolean deleted = false;
+    private LocalDateTime deletedAt;
     
     // Soft delete fields
     private boolean deleted = false;
@@ -30,7 +32,7 @@ public class Investment {
     
     public static class InvestmentTransaction {
         private LocalDateTime date;
-        private String type; // "DEPOSIT", "WITHDRAWAL", "INTEREST", "DIVIDEND"
+        private String type;
         private Double amount;
         private String description;
         
@@ -61,7 +63,7 @@ public class Investment {
     }
     
     public Double getProfitLossPercentage() {
-        if (this.amountInvested == 0) return 0.0;
+        if (this.amountInvested == null || this.amountInvested == 0) return 0.0;
         return (this.getProfitLoss() / this.amountInvested) * 100;
     }
     

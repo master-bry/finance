@@ -1,5 +1,7 @@
 package com.master.finance.config;
 
+import com.master.finance.service.CustomUserDetailsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -7,18 +9,25 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
     
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/", "/login", "/register", "/css/**", "/js/**", "/static/**").permitAll()
+                .requestMatchers("/", "/login", "/register", "/css/**", "/js/**", "/static/**", 
+                                "/images/**", "/debug/**", "/reset/**", "/fix-password", 
+                                "/test-login/**", "/check-user", "/set-password/**", 
+                                "/reencode-password", "/generate-hash", "/update-my-password",
+                                "/dashboard", "/transactions/**", "/debts/**", "/investments/**", 
+                                "/goals/**", "/budget/**","/daily-entry/**", "/reports/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -29,7 +38,8 @@ public class SecurityConfig {
             .logout(logout -> logout
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
-            );
+            )
+            .userDetailsService(userDetailsService);
         
         return http.build();
     }

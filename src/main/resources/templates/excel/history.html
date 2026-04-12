@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Edit Budget - Finance Tracker</title>
+    <title>Daily Entry History - Finance Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -32,28 +32,26 @@
         }
         .logout-btn { background: #EF4444; color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; }
         
-        .form-container {
-            background: white; border-radius: 15px; padding: 2rem; max-width: 800px; margin: 0 auto;
+        .section-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
         }
-        .form-group { margin-bottom: 1.5rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-        .form-group input { width: 100%; padding: 0.75rem; border: 2px solid #E5E7EB; border-radius: 10px; font-size: 1rem; }
-        
-        .category-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 1rem;
-            align-items: center;
-            margin-bottom: 0.75rem;
-            padding: 0.5rem;
-            border-bottom: 1px solid #E5E7EB;
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #E5E7EB; }
+        .data-table th { background: #F9FAFB; font-weight: 600; }
+        .income { color: #10B981; }
+        .expense { color: #EF4444; }
+        .btn-delete { color: #EF4444; text-decoration: none; }
+        .btn-back {
+            background: #6B7280;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 1rem;
         }
-        .category-name { font-weight: bold; }
-        
-        .btn-save { background: var(--primary-dark); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 10px; cursor: pointer; width: 100%; }
-        .btn-back { background: #6B7280; color: white; padding: 0.75rem 1.5rem; border-radius: 10px; text-decoration: none; display: inline-block; margin-top: 1rem; text-align: center; width: 100%; }
-        
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         
         .mobile-menu-btn { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 1100; background: var(--primary-dark); color: white; padding: 0.5rem; border-radius: 8px; cursor: pointer; }
         @media (max-width: 768px) {
@@ -61,7 +59,6 @@
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; }
             .mobile-menu-btn { display: block; }
-            .row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -76,44 +73,33 @@
             <li class="nav-item"><a href="/debts" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Debts</a></li>
             <li class="nav-item"><a href="/investments" class="nav-link"><i class="fas fa-chart-line"></i> Investments</a></li>
             <li class="nav-item"><a href="/goals" class="nav-link"><i class="fas fa-bullseye"></i> Goals</a></li>
-            <li class="nav-item"><a href="/budget" class="nav-link active"><i class="fas fa-wallet"></i> Budget</a></li>
+            <li class="nav-item"><a href="/budget" class="nav-link"><i class="fas fa-wallet"></i> Budget</a></li>
+            <li class="nav-item"><a href="/excel/daily" class="nav-link active"><i class="fas fa-file-excel"></i> Daily Entry</a></li>
+            <li class="nav-item"><a href="/reports" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
         </ul>
     </div>
     
     <div class="main-content">
         <div class="top-bar">
-            <div><h3>✏️ Edit Budget</h3><p>Set your monthly budget</p></div>
+            <div><h3>📅 Daily Entry History</h3></div>
             <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
         
-        <div class="form-container">
-            <form action="/budget/edit" method="post">
-                <div class="row">
-                    <div class="form-group">
-                        <label>Total Monthly Income (TZS)</label>
-                        <input type="number" step="0.01" name="totalIncome" th:value="${budget.totalIncome}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Savings Target (TZS)</label>
-                        <input type="number" step="0.01" name="savingsTarget" th:value="${budget.savingsTarget}">
-                    </div>
-                </div>
-                
-                <h4 style="margin: 1.5rem 0 1rem 0;">Category Budgets</h4>
-                
-                <div th:each="entry : ${budget.categoryBudgets}">
-                    <div class="category-row">
-                        <div class="category-name" th:text="${entry.key}"></div>
-                        <div>
-                            <input type="number" step="0.01" th:name="'planned_' + ${entry.key}" th:value="${entry.value.planned}" placeholder="Amount" style="width: 100%;">
-                        </div>
-                        <div th:text="'Current: ' + ${#numbers.formatDecimal(entry.value.actual, 1, 2)} + ' TZS'" style="color: #6B7280; font-size: 0.85rem;"></div>
-                    </div>
-                </div>
-                
-                <button type="submit" class="btn-save"><i class="fas fa-save"></i> Save Budget</button>
-                <a href="/budget" class="btn-back"><i class="fas fa-arrow-left"></i> Cancel</a>
-            </form>
+        <a href="/excel/daily" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Today</a>
+        
+        <div class="section-card">
+            <table class="data-table">
+                <thead><tr><th>Date</th><th>Income</th><th>Expense</th><th>Savings</th><th>Actions</th></tr></thead>
+                <tbody>
+                    <tr th:each="entry : ${history}">
+                        <td th:text="${#temporals.format(entry.date, 'yyyy-MM-dd')}">Date</td>
+                        <td class="income" th:text="'+ ' + ${#numbers.formatDecimal(entry.totalIncome, 1, 2)} + ' TZS'">Income</td>
+                        <td class="expense" th:text="'- ' + ${#numbers.formatDecimal(entry.totalExpense, 1, 2)} + ' TZS'">Expense</td>
+                        <td th:text="${#numbers.formatDecimal(entry.totalIncome - entry.totalExpense, 1, 2)} + ' TZS'">Savings</td>
+                        <td><a th:href="'/excel/delete/' + ${entry.id}" class="btn-delete" onclick="return confirm('Delete this entry?')"><i class="fas fa-trash"></i> Delete</a></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
     
