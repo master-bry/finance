@@ -118,7 +118,7 @@
             <li class="nav-item"><a href="/investments" class="nav-link"><i class="fas fa-chart-line"></i> Investments</a></li>
             <li class="nav-item"><a href="/goals" class="nav-link active"><i class="fas fa-bullseye"></i> Goals</a></li>
             <li class="nav-item"><a href="/budget" class="nav-link"><i class="fas fa-wallet"></i> Budget</a></li>
-            <li class="nav-item"><a href="/excel/daily" class="nav-link" th:classappend="${currentPage == 'daily' ? 'active' : ''}"><i class="fas fa-calendar-day"></i> Daily Entry</a></li>
+            <li class="nav-item"><a href="/daily-entry" class="nav-link" th:classappend="${currentPage == 'daily' ? 'active' : ''}"><i class="fas fa-calendar-day"></i> Daily Entry</a></li>
             <li class="nav-item"><a href="/reports" class="nav-link" th:classappend="${currentPage == 'reports' ? 'active' : ''}"><i class="fas fa-chart-bar"></i> Reports</a></li>
         </ul>
     </div>
@@ -156,7 +156,7 @@
     <a th:href="|/goals/delete/${goal.id}|" class="btn-sm btn-delete" onclick="return confirm('Delete this goal?')"><i class="fas fa-trash"></i> Delete</a>
 </div>
                 <div th:if="${goal.targetDate}" style="margin-top: 0.5rem; font-size: 0.8rem; color: #6B7280;">
-                    <i class="fas fa-calendar"></i> Target Date: <span th:text="${#temporals.format(goal.targetDate, 'yyyy-MM-dd')}"></span>
+                    <i class="fas fa-calendar"></i> Target Date: <span th:text="${${goal.targetDate}}"></span>
                 </div>
             </div>
         </div>

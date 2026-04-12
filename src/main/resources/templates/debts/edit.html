@@ -1,252 +1,175 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Debt - Finance Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Same styles as add.html */
         :root {
-            --primary-dark: #2F6B3F;
-            --secondary: #7FB77E;
-            --accent: #F7C85C;
-            --background: #FFF6C0;
-            --white: #FFFFFF;
-            --danger: #EF4444;
+            --primary-dark: #2F6B3F; --secondary: #7FB77E; --accent: #F7C85C;
+            --background: #FFF6C0; --white: #FFFFFF; --danger: #EF4444;
+            --success: #10B981; --sidebar-width: 280px;
         }
-        
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--background);
-            min-height: 100vh;
-        }
-        
-        .navbar {
-            background: var(--primary-dark);
-            color: white;
-            padding: 1rem 2rem;
-        }
-        
-        .navbar-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo { font-size: 1.5rem; font-weight: bold; }
-        .logo span { color: var(--accent); }
-        
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
-        
-        .form-container {
-            background: var(--white);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
-        
-        h1 { color: var(--primary-dark); margin-bottom: 1.5rem; }
-        
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--background); }
+        .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: linear-gradient(135deg, var(--primary-dark) 0%, #1a4d2a 100%); color: white; padding: 1.5rem; overflow-y: auto; z-index: 1000; }
+        .sidebar-header { text-align: center; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 1.5rem; }
+        .sidebar-header h2 span { color: var(--accent); }
+        .sidebar-header p { font-size: 0.8rem; opacity: 0.8; }
+        .nav-menu { list-style: none; }
+        .nav-item { margin-bottom: 0.5rem; }
+        .nav-link { display: flex; align-items: center; padding: 0.75rem 1rem; color: white; text-decoration: none; border-radius: 10px; gap: 12px; transition: all 0.3s; }
+        .nav-link:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
+        .nav-link.active { background: var(--accent); color: var(--primary-dark); font-weight: bold; }
+        .main-content { margin-left: var(--sidebar-width); padding: 1.5rem; min-height: 100vh; }
+        .top-bar { background: var(--white); border-radius: 15px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .top-bar h3 { color: var(--primary-dark); }
+        .logout-btn { background: var(--danger); color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; }
+        .form-container { background: var(--white); border-radius: 15px; padding: 2rem; max-width: 700px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+        .form-container h2 { color: var(--primary-dark); margin-bottom: 1.5rem; font-size: 1.3rem; }
         .form-group { margin-bottom: 1.5rem; }
-        
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #374151;
-            font-weight: 500;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #E5E7EB;
-            border-radius: 10px;
-            font-size: 1rem;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-        
-        .btn {
-            flex: 1;
-            padding: 0.75rem;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-        }
-        
+        label { display: block; margin-bottom: 0.5rem; color: #374151; font-weight: 500; }
+        input, select, textarea { width: 100%; padding: 0.75rem; border: 2px solid #E5E7EB; border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .btn-group { display: flex; gap: 1rem; margin-top: 2rem; }
+        .btn { flex: 1; padding: 0.75rem; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; text-decoration: none; text-align: center; transition: all 0.2s; }
         .btn-primary { background: var(--primary-dark); color: white; }
         .btn-primary:hover { background: var(--secondary); }
         .btn-secondary { background: #9CA3AF; color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-        
-        .status-settled { background: #D1FAE5; color: #065F46; }
-        .status-partial { background: #FEF3C7; color: #92400E; }
-        .status-pending { background: #FEE2E2; color: #991B1B; }
-        
-        .payment-history {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: #F9FAFB;
-            border-radius: 10px;
-        }
-        
-        .payment-history h3 {
-            margin-bottom: 0.5rem;
-            font-size: 1rem;
-        }
-        
-        .payment-history ul {
-            list-style: none;
-            padding-left: 0;
-        }
-        
-        .payment-history li {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #E5E7EB;
-        }
-        
-        .row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        
-        @media (max-width: 640px) {
+        /* Payment History */
+        .payment-history { background: #F9FAFB; border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem; }
+        .payment-history h3 { font-size: 1rem; color: var(--primary-dark); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .payment-list { list-style: none; }
+        .payment-list li { padding: 0.6rem 0; border-bottom: 1px solid #E5E7EB; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+        .payment-list li:last-child { border-bottom: none; }
+        .payment-amount { font-weight: 700; color: var(--success); }
+        .payment-date { color: #6B7280; font-size: 0.82rem; }
+        .mobile-menu-btn { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 1100; background: var(--primary-dark); color: white; padding: 0.5rem 0.65rem; border-radius: 8px; cursor: pointer; border: none; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .mobile-menu-btn { display: block; }
             .row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-container">
-            <div class="logo">💰 Finance<span>Tracker</span></div>
-            <div class="nav-links">
-                <a href="/dashboard">Dashboard</a>
-                <a href="/transactions">Transactions</a>
-                <a href="/debts">Debts</a>
-                <a href="/investments">Investments</a>
-                <a href="/goals">Goals</a>
-                <a href="/budget">Budget</a>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header"><h2>💰 Finance<span>Tracker</span></h2><p>Manage Your Finances</p></div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+            <li class="nav-item"><a href="/transactions" class="nav-link"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+            <li class="nav-item"><a href="/debts" class="nav-link active"><i class="fas fa-hand-holding-usd"></i> Debts</a></li>
+            <li class="nav-item"><a href="/investments" class="nav-link"><i class="fas fa-chart-line"></i> Investments</a></li>
+            <li class="nav-item"><a href="/goals" class="nav-link"><i class="fas fa-bullseye"></i> Goals</a></li>
+            <li class="nav-item"><a href="/budget" class="nav-link"><i class="fas fa-wallet"></i> Budget</a></li>
+            <li class="nav-item"><a href="/daily-entry" class="nav-link"><i class="fas fa-calendar-day"></i> Daily Entry</a></li>
+            <li class="nav-item"><a href="/reports" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <div>
+                <h3>✏️ Edit Debt</h3>
+                <p style="color:#6B7280; font-size:0.85rem;" th:text="${pageSubtitle}">Update debt record</p>
             </div>
+            <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
-    </nav>
-    
-    <div class="container">
+
         <div class="form-container">
-            <h1>✏️ Edit Debt</h1>
-            
+            <h2>💳 Edit Details</h2>
             <form action="#" th:action="@{/debts/edit/{id}(id=${debt.id})}" th:object="${debt}" method="post">
+
                 <div class="form-group">
                     <label for="personName">Person Name *</label>
                     <input type="text" id="personName" th:field="*{personName}" required>
                 </div>
-                
+
                 <div class="row">
                     <div class="form-group">
                         <label for="type">Type *</label>
                         <select id="type" th:field="*{type}" required>
-                            <option value="OWED_TO_ME">💰 Owed to me</option>
-                            <option value="I_OWE">💸 I owe</option>
+                            <option value="OWED_TO_ME">💰 Owed to Me</option>
+                            <option value="I_OWE">💸 I Owe</option>
                         </select>
                     </div>
-                    
                     <div class="form-group">
-                        <label for="amount">Amount *</label>
+                        <label for="amount">Original Amount (TZS) *</label>
                         <input type="number" step="0.01" id="amount" th:field="*{amount}" required>
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="form-group">
-                        <label for="remainingAmount">Remaining Amount</label>
-                        <input type="number" step="0.01" id="remainingAmount" th:field="*{remainingAmount}" readonly style="background: #F3F4F6;">
+                        <label for="remainingAmount">Remaining Amount (TZS)</label>
+                        <input type="number" step="0.01" id="remainingAmount" th:field="*{remainingAmount}"
+                               readonly style="background:#F3F4F6; cursor:not-allowed;">
+                        <small style="color:#6B7280; font-size:0.78rem;">Updated automatically via payments</small>
                     </div>
-                    
                     <div class="form-group">
                         <label for="status">Status</label>
                         <select id="status" th:field="*{status}">
-                            <option value="PENDING">Pending</option>
-                            <option value="PARTIAL">Partial</option>
-                            <option value="SETTLED">Settled</option>
+                            <option value="PENDING">⏳ Pending</option>
+                            <option value="PARTIAL">🔶 Partial</option>
+                            <option value="SETTLED">✅ Settled</option>
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="form-group">
                         <label for="phoneNumber">Phone Number</label>
                         <input type="tel" id="phoneNumber" th:field="*{phoneNumber}">
                     </div>
-                    
                     <div class="form-group">
                         <label for="dueDate">Due Date</label>
                         <input type="date" id="dueDate" th:field="*{dueDate}">
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="description">Description</label>
                     <textarea id="description" th:field="*{description}" rows="3"></textarea>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="notes">Notes</label>
                     <textarea id="notes" th:field="*{notes}" rows="2"></textarea>
                 </div>
-                
-                <div th:if="${!debt.paymentHistory.empty}" class="payment-history">
-                    <h3>📜 Payment History</h3>
-                    <ul>
-                        <li th:each="payment : ${debt.paymentHistory}">
-                            📅 <span th:text="${#temporals.format(payment.paymentDate, 'yyyy-MM-dd HH:mm')}"></span> - 
-                            Paid <strong th:text="${payment.amountPaid}"></strong> TZS -
-                            <span th:text="${payment.notes}"></span>
-                        </li>
-                    </ul>
-                </div>
-                
+
                 <div class="btn-group">
-                    <button type="submit" class="btn btn-primary">💾 Save Changes</button>
-                    <a href="/debts" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+                    <a href="/debts" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
                 </div>
             </form>
+
+            <!-- Payment History (read-only) -->
+            <div th:if="${!debt.paymentHistory.empty}" class="payment-history">
+                <h3><i class="fas fa-history"></i> Payment History</h3>
+                <ul class="payment-list">
+                    <li th:each="payment : ${debt.paymentHistory}">
+                        <div>
+                            <span class="payment-date"
+                                  th:text="${#temporals.format(payment.paymentDate, 'dd MMM yyyy HH:mm')}"></span>
+                            <div th:if="${payment.notes}" style="font-size:0.82rem; color:#6B7280;" th:text="${payment.notes}"></div>
+                        </div>
+                        <span class="payment-amount"
+                              th:text="${#numbers.formatDecimal(payment.amountPaid, 1, 0)} + ' TZS'"></span>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
+
+    <script>
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+    </script>
 </body>
 </html>
