@@ -7,7 +7,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -18,7 +17,9 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/", "/login", "/register", "/css/**", "/js/**", "/static/**").permitAll()
+                .requestMatchers("/", "/login", "/register", "/css/**", "/js/**", "/static/**", 
+                                "/debug/**", "/reset/**", "/fix-password", "/test-login/**", 
+                                "/check-user", "/set-password/**", "/reencode-password").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
