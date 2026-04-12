@@ -29,6 +29,8 @@ public class DebtController {
         model.addAttribute("totalOwedToMe", debtService.getTotalOwedToMe(userId));
         model.addAttribute("totalIOwe", debtService.getTotalIOwe(userId));
         model.addAttribute("netPosition", debtService.getNetPosition(userId));
+        model.addAttribute("currentPage", "debts");
+        model.addAttribute("pageSubtitle", "Manage your debts and lending");
         return "debts/index";
     }
     

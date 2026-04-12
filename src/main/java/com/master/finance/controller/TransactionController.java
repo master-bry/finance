@@ -25,7 +25,27 @@ public class TransactionController {
     @GetMapping
     public String listTransactions(Authentication authentication, Model model) {
         String userId = getUserId(authentication);
-        model.addAttribute("transactions", transactionService.getUserTransactions(userId));
+        var transactions = transactionService.getUserTransactions(userId);
+        
+        double totalIncome = transactions.stream()
+            .filter(t -> "INCOME".equals(t.getType()))
+            .mapToDouble(Transaction::getAmount)
+            .sum();
+        double totalExpense = transactions.stream()
+            .filter(t -> "EXPENSE".equals(t.getType()))
+            .mapToDouble(Transaction::getAmount)
+            .sum();
+        
+        java.util.Map<String, Object> stats = new java.util.HashMap<>();
+        stats.put("totalIncome", totalIncome);
+        stats.put("totalExpense", totalExpense);
+        stats.put("balance", totalIncome - totalExpense);
+        stats.put("transactionCount", transactions.size());
+        
+        model.addAttribute("transactions", transactions);
+        model.addAttribute("stats", stats);
+        model.addAttribute("currentPage", "transactions");
+        model.addAttribute("pageSubtitle", "Manage all your income and expenses");
         return "transactions/index";
     }
     
@@ -34,6 +54,7 @@ public class TransactionController {
         if (!model.containsAttribute("transaction")) {
             model.addAttribute("transaction", new Transaction());
         }
+        model.addAttribute("currentPage", "transactions");
         return "transactions/add";
     }
     

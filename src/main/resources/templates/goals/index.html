@@ -144,16 +144,16 @@
             <div th:each="goal : ${activeGoals}" class="goal-item">
                 <div class="goal-header">
                     <span th:text="${goal.name}"></span>
-                    <span th:text="${#numbers.formatDecimal(goal.currentAmount, 1, 0)} + ' / ' + ${#numbers.formatDecimal(goal.targetAmount, 1, 0)} + ' TZS'"></span>
+                    <span th:text="|${#numbers.formatDecimal(goal.currentAmount, 1, 0)} / ${#numbers.formatDecimal(goal.targetAmount, 1, 0)} TZS|"></span>
                 </div>
                 <div class="progress-bar">
-                    <div class="progress-fill" th:style="'width: ' + ${goal.progressPercentage} + '%;'"></div>
+                    <div class="progress-fill" th:style="|width: ${goal.progressPercentage}%;|"></div>
                 </div>
                 <div style="margin-top: 0.75rem;">
-    <a th:href="'/goals/progress/' + ${goal.id}" class="btn-sm btn-progress"><i class="fas fa-plus-circle"></i> Add Progress</a>
-    <a th:href="'/goals/edit/' + ${goal.id}" class="btn-sm btn-edit" style="background: #3B82F6; color: white;"><i class="fas fa-edit"></i> Edit</a>
-    <a th:href="'/goals/mark/' + ${goal.id}" class="btn-sm btn-complete"><i class="fas fa-check-circle"></i> Mark Complete</a>
-    <a th:href="'/goals/delete/' + ${goal.id}" class="btn-sm btn-delete" onclick="return confirm('Delete this goal?')"><i class="fas fa-trash"></i> Delete</a>
+    <a th:href="|/goals/progress/${goal.id}|" class="btn-sm btn-progress"><i class="fas fa-plus-circle"></i> Add Progress</a>
+    <a th:href="|/goals/edit/${goal.id}|" class="btn-sm btn-edit" style="background: #3B82F6; color: white;"><i class="fas fa-edit"></i> Edit</a>
+    <a th:href="|/goals/mark/${goal.id}|" class="btn-sm btn-complete"><i class="fas fa-check-circle"></i> Mark Complete</a>
+    <a th:href="|/goals/delete/${goal.id}|" class="btn-sm btn-delete" onclick="return confirm('Delete this goal?')"><i class="fas fa-trash"></i> Delete</a>
 </div>
                 <div th:if="${goal.targetDate}" style="margin-top: 0.5rem; font-size: 0.8rem; color: #6B7280;">
                     <i class="fas fa-calendar"></i> Target Date: <span th:text="${#temporals.format(goal.targetDate, 'yyyy-MM-dd')}"></span>
