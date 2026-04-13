@@ -134,7 +134,7 @@
                         <input type="text" name="description" placeholder="Income source" required>
                     </div>
                     <div class="form-group">
-                        <input type="number" step="0.01" name="amount" placeholder="Amount (TZS)" required>
+                        <input type="number" step="0.01" name="amount" min="0.01" placeholder="Amount (TZS)" required>
                     </div>
                 </div>
                 <div class="row">
@@ -161,7 +161,7 @@
             <form action="/excel/upload" method="post" enctype="multipart/form-data">
                 <div class="row">
                     <div class="form-group">
-                        <input type="number" step="0.01" name="openingBalance" placeholder="Opening Balance (TZS)" required>
+                        <input type="number" step="0.01" name="openingBalance" min="0.01" placeholder="Opening Balance (TZS)" required>
                     </div>
                     <div class="form-group">
                         <input type="file" name="file" accept=".xlsx, .xls" required>
