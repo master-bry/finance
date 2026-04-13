@@ -25,4 +25,8 @@ public interface DailyEntryRepository extends MongoRepository<DailyEntry, String
     }
 
     List<DailyEntry> findByUserIdAndDeletedFalse(String userId);
+
+    // For recalculating balances from a specific date onward
+    @Query("{ 'userId': ?0, 'date': { $gte: ?1 }, 'deleted': false }")
+    List<DailyEntry> findByUserIdAndDateGreaterThanEqualOrderByDateAsc(String userId, LocalDateTime date);
 }

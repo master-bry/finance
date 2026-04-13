@@ -67,11 +67,13 @@
 </head>
 <body>
     <div layout:fragment="content">
-        <!-- Current Balance -->
+       <!-- Current Balance Card -->
         <div class="balance-card">
-            <div><i class="fas fa-wallet"></i> Current Balance</div>
-            <div class="balance-amount"><span th:text="${#numbers.formatDecimal(currentBalance, 1, 0)}"></span> TZS</div>
-            <div th:text="${#temporals.format(#temporals.createNow(), 'EEEE, MMMM d, yyyy')}"></div>
+           <div><i class="fas fa-wallet"></i> Current Balance</div>
+             <div class="balance-amount">
+                <span th:text="${#numbers.formatDecimal(currentBalance, 1, 0)}"></span> TZS
+            </div>
+           <div th:text="${#temporals.format(#temporals.createNow(), 'EEEE, MMMM d, yyyy')}"></div>
         </div>
         
         <!-- Today's Stats -->

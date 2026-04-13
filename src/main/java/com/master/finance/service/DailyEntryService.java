@@ -3,6 +3,7 @@ package com.master.finance.service;
 import com.master.finance.model.DailyEntry;
 import com.master.finance.model.Transaction;
 import com.master.finance.repository.DailyEntryRepository;
+import com.master.finance.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +18,9 @@ public class DailyEntryService {
     @Autowired
     private DailyEntryRepository dailyEntryRepository;
 
+    @Autowired
+    private TransactionRepository transactionRepository;
+
     /**
      * Get today's entry for the user. Creates a new one if none exists.
      */
@@ -26,7 +30,7 @@ public class DailyEntryService {
                     DailyEntry newEntry = new DailyEntry();
                     newEntry.setUserId(userId);
                     newEntry.setDate(LocalDateTime.now());
-                    newEntry.setOpeningBalance(getCurrentBalance(userId));
+                    newEntry.setOpeningBalance(getBalanceBeforeDate(userId, LocalDateTime.now()));
                     newEntry.calculateTotals();
                     return dailyEntryRepository.save(newEntry);
                 });
@@ -44,9 +48,8 @@ public class DailyEntryService {
      */
     public DailyEntry saveDailyEntry(DailyEntry entry, String userId) {
         if (entry.getId() == null || entry.getId().isEmpty()) {
-            // New entry: set opening balance from previous day's closing
-            Double previousClosing = getPreviousDayClosingBalance(userId);
-            entry.setOpeningBalance(previousClosing);
+            // New entry: opening balance = balance before the entry date
+            entry.setOpeningBalance(getBalanceBeforeDate(userId, entry.getDate()));
         }
         entry.setUserId(userId);
         entry.calculateTotals();
@@ -55,28 +58,37 @@ public class DailyEntryService {
     }
 
     /**
-     * Get current balance (latest closing balance or 0).
+     * Get the current real balance from all transactions (income - expense).
      */
     public Double getCurrentBalance(String userId) {
-        List<DailyEntry> entries = dailyEntryRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId);
-        if (!entries.isEmpty()) {
-            return entries.get(0).getClosingBalance();
-        }
-        return 0.0;
+        List<Transaction> allTransactions = transactionRepository.findByUserIdAndDeletedFalse(userId);
+        double totalIncome = allTransactions.stream()
+                .filter(t -> "INCOME".equals(t.getType()))
+                .mapToDouble(Transaction::getAmount)
+                .sum();
+        double totalExpense = allTransactions.stream()
+                .filter(t -> "EXPENSE".equals(t.getType()))
+                .mapToDouble(Transaction::getAmount)
+                .sum();
+        return totalIncome - totalExpense;
     }
 
     /**
-     * Get closing balance of the most recent entry before today.
+     * Get the balance at the start of a specific day (sum of all transactions before that day).
      */
-    private Double getPreviousDayClosingBalance(String userId) {
-        LocalDateTime todayStart = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
-        List<DailyEntry> allEntries = dailyEntryRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId);
-        for (DailyEntry entry : allEntries) {
-            if (entry.getDate().isBefore(todayStart)) {
-                return entry.getClosingBalance();
-            }
-        }
-        return 0.0;
+    private Double getBalanceBeforeDate(String userId, LocalDateTime date) {
+        LocalDateTime startOfDay = date.withHour(0).withMinute(0).withSecond(0).withNano(0);
+        List<Transaction> transactionsBefore = transactionRepository
+                .findByUserIdAndDateBeforeAndDeletedFalse(userId, startOfDay);
+        double income = transactionsBefore.stream()
+                .filter(t -> "INCOME".equals(t.getType()))
+                .mapToDouble(Transaction::getAmount)
+                .sum();
+        double expense = transactionsBefore.stream()
+                .filter(t -> "EXPENSE".equals(t.getType()))
+                .mapToDouble(Transaction::getAmount)
+                .sum();
+        return income - expense;
     }
 
     /**
@@ -98,7 +110,7 @@ public class DailyEntryService {
     }
 
     /**
-     * Find the DailyEntry for a specific date (user's local date).
+     * Find the DailyEntry for a specific date.
      */
     public Optional<DailyEntry> getEntryByDate(String userId, LocalDateTime date) {
         LocalDateTime start = date.withHour(0).withMinute(0).withSecond(0).withNano(0);
@@ -108,8 +120,7 @@ public class DailyEntryService {
     }
 
     /**
-     * Sync a transaction change (update/delete) to the corresponding DailyEntry.
-     * Called from TransactionService after transaction is updated or deleted.
+     * Sync a transaction change to the corresponding DailyEntry.
      */
     public void syncTransactionToDailyEntry(String userId, Transaction transaction, boolean isDeleted) {
         Optional<DailyEntry> entryOpt = getEntryByDate(userId, transaction.getDate());
@@ -122,7 +133,6 @@ public class DailyEntryService {
             var iterator = entry.getExpenses().iterator();
             while (iterator.hasNext()) {
                 DailyEntry.ExpenseItem item = iterator.next();
-                // Match by description, amount, and category (and approximate time if needed)
                 if (item.getDescription().equals(transaction.getDescription()) &&
                     item.getAmount().equals(transaction.getAmount()) &&
                     item.getCategory().equals(transaction.getCategory())) {
@@ -162,6 +172,26 @@ public class DailyEntryService {
         if (updated) {
             entry.calculateTotals();
             dailyEntryRepository.save(entry);
+            // Recalculate balances for this and future days
+            recalculateBalancesFromDate(userId, transaction.getDate());
+        }
+    }
+
+    /**
+     * Recalculate opening balances for all daily entries from a given date onward.
+     */
+    public void recalculateBalancesFromDate(String userId, LocalDateTime fromDate) {
+        LocalDateTime startOfDay = fromDate.withHour(0).withMinute(0).withSecond(0).withNano(0);
+        List<DailyEntry> entries = dailyEntryRepository
+                .findByUserIdAndDateGreaterThanEqualOrderByDateAsc(userId, startOfDay);
+
+        Double runningBalance = getBalanceBeforeDate(userId, startOfDay);
+
+        for (DailyEntry entry : entries) {
+            entry.setOpeningBalance(runningBalance);
+            entry.calculateTotals();
+            runningBalance = entry.getClosingBalance();
+            dailyEntryRepository.save(entry);
         }
     }
 
@@ -169,7 +199,6 @@ public class DailyEntryService {
      * Process uploaded Excel file (implement as needed).
      */
     public void processExcelFile(MultipartFile file, String userId, Double openingBalance) {
-        // Implement Excel parsing and create DailyEntry + Transactions
         throw new UnsupportedOperationException("Implement Excel processing");
     }
 
@@ -177,7 +206,6 @@ public class DailyEntryService {
      * Generate Excel template.
      */
     public byte[] generateExcelTemplate() {
-        // Return byte array of template
         return new byte[0];
     }
 }

@@ -18,7 +18,7 @@ public class TransactionService {
     private TransactionRepository transactionRepository;
 
     @Autowired
-    private DailyEntryService dailyEntryService; // NEW: for syncing
+    private DailyEntryService dailyEntryService;
 
     public List<Transaction> getUserTransactions(String userId) {
         return transactionRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId);
@@ -36,24 +36,33 @@ public class TransactionService {
         return transactionRepository.save(transaction);
     }
 
-    /**
-     * Soft delete - marks as deleted and syncs removal from DailyEntry.
-     */
+    public Transaction updateTransaction(Transaction transaction) {
+        Transaction existing = transactionRepository.findById(transaction.getId())
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+        transaction.setUserId(existing.getUserId());
+        transaction.setDeleted(existing.isDeleted());
+        transaction.setDeletedAt(existing.getDeletedAt());
+        Transaction saved = transactionRepository.save(transaction);
+
+        dailyEntryService.syncTransactionToDailyEntry(saved.getUserId(), saved, false);
+        dailyEntryService.recalculateBalancesFromDate(saved.getUserId(), saved.getDate());
+        return saved;
+    }
+
     public void deleteTransaction(String id) {
         transactionRepository.findById(id).ifPresent(transaction -> {
             transaction.setDeleted(true);
             transaction.setDeletedAt(LocalDateTime.now());
             transactionRepository.save(transaction);
-            // Sync deletion to DailyEntry
             dailyEntryService.syncTransactionToDailyEntry(transaction.getUserId(), transaction, true);
+            dailyEntryService.recalculateBalancesFromDate(transaction.getUserId(), transaction.getDate());
         });
     }
 
-    // Permanent delete - removes from database completely (and should also remove from DailyEntry if needed)
     public void permanentDeleteTransaction(String id) {
         transactionRepository.findById(id).ifPresent(transaction -> {
-            // Sync removal first (since we still have the data)
             dailyEntryService.syncTransactionToDailyEntry(transaction.getUserId(), transaction, true);
+            dailyEntryService.recalculateBalancesFromDate(transaction.getUserId(), transaction.getDate());
             transactionRepository.deleteById(id);
         });
     }
@@ -95,18 +104,6 @@ public class TransactionService {
                 .forEach(t -> incomeByCategory.merge(t.getCategory(), t.getAmount(), Double::sum));
         return incomeByCategory;
     }
-    public Transaction updateTransaction(Transaction transaction) {
-    Transaction existing = transactionRepository.findById(transaction.getId())
-            .orElseThrow(() -> new RuntimeException("Transaction not found"));
-    transaction.setUserId(existing.getUserId());
-    transaction.setDeleted(existing.isDeleted());
-    transaction.setDeletedAt(existing.getDeletedAt());
-    Transaction saved = transactionRepository.save(transaction);
-
-    // Sync to DailyEntry
-    dailyEntryService.syncTransactionToDailyEntry(saved.getUserId(), saved, false);
-    return saved;
-}
 
     public List<Transaction> getRecentTransactions(String userId, int limit) {
         return transactionRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId)
