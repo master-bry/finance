@@ -272,6 +272,12 @@ body {
     margin-top: 0.25rem;
 }
 
+.input-hint {
+    font-size: 0.78rem;
+    color: var(--gray-400);
+    margin-top: 0.2rem;
+}
+
 /* ============================================
    BUTTONS
    ============================================ */
@@ -337,9 +343,15 @@ body {
    TABLES
    ============================================ */
 
+.table-wrapper {
+    overflow-x: auto;
+    margin-top: 1rem;
+}
+
 .data-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 560px;
 }
 
 .data-table th,
@@ -398,6 +410,41 @@ body {
     color: #1E40AF;
 }
 
+.badge-income {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.badge-expense {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.badge-settled {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.badge-partial {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.badge-pending {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.badge-owed {
+    background: #DBEAFE;
+    color: #1E40AF;
+}
+
+.badge-iowe {
+    background: #FCE7F3;
+    color: #9D174D;
+}
+
 /* ============================================
    PROGRESS BARS
    ============================================ */
@@ -425,6 +472,10 @@ body {
 
 .negative {
     color: var(--danger) !important;
+}
+
+.neutral {
+    color: var(--gray-700) !important;
 }
 
 .text-center {
@@ -535,7 +586,7 @@ body {
     }
     
     .charts-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
     }
     
     .top-bar {
@@ -571,6 +622,7 @@ body {
 
 .chart-card canvas {
     max-height: 300px;
+    width: 100% !important;
 }
 
 /* ============================================
@@ -676,11 +728,44 @@ body {
     color: var(--primary-dark);
 }
 
+.investment-type {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    background: var(--gray-200);
+}
+
+.profit-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.profit-positive {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.profit-negative {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
 .investment-details {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
     margin-bottom: 1rem;
+}
+
+.investment-detail {
+    color: var(--gray-500);
+    font-size: 0.9rem;
+}
+
+.investment-detail strong {
+    color: var(--gray-700);
 }
 
 .investment-actions {
@@ -740,6 +825,20 @@ body {
     border-color: var(--accent);
 }
 
+.btn-filter {
+    background: var(--primary-dark);
+    color: var(--white);
+    padding: 0.5rem 1.25rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-filter:hover {
+    background: var(--secondary);
+}
+
 /* ============================================
    ACTION BUTTONS
    ============================================ */
@@ -782,4 +881,245 @@ body {
 .btn-complete {
     background: var(--success);
     color: var(--white);
+}
+
+.btn-progress {
+    background: var(--accent);
+    color: var(--gray-800);
+}
+
+.btn-update {
+    background: var(--accent);
+    color: var(--gray-800);
+}
+
+.btn-transaction {
+    background: var(--secondary);
+    color: var(--white);
+}
+
+/* ============================================
+   SUMMARY CARDS (Debts Page)
+   ============================================ */
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-card {
+    background: var(--white);
+    border-radius: 15px;
+    padding: 1.25rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.summary-card .label {
+    font-size: 0.82rem;
+    color: var(--gray-500);
+    margin-bottom: 0.5rem;
+}
+
+.summary-card .value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.value.green {
+    color: var(--success);
+}
+
+.value.red {
+    color: var(--danger);
+}
+
+.value.yellow {
+    color: var(--warning);
+}
+
+/* ============================================
+   TOOLBAR
+   ============================================ */
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.btn-add {
+    background: var(--primary-dark);
+    color: var(--white);
+    padding: 0.6rem 1.25rem;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: background 0.2s;
+}
+
+.btn-add:hover {
+    background: var(--secondary);
+}
+
+/* ============================================
+   TABLE CARD
+   ============================================ */
+
+.table-card {
+    background: var(--white);
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow-x: auto;
+}
+
+/* ============================================
+   OVERDUE
+   ============================================ */
+
+.overdue {
+    color: var(--danger);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+/* ============================================
+   CATEGORY BADGE
+   ============================================ */
+
+.category-badge {
+    background: var(--gray-200);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    display: inline-block;
+}
+
+/* ============================================
+   HEADER SECTION
+   ============================================ */
+
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.header-section h1 {
+    color: var(--primary-dark);
+    font-size: 1.5rem;
+}
+
+/* ============================================
+   PAYMENT HISTORY
+   ============================================ */
+
+.payment-history {
+    background: var(--gray-50);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-top: 1.5rem;
+}
+
+.payment-history h3 {
+    font-size: 1rem;
+    color: var(--primary-dark);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.payment-list {
+    list-style: none;
+}
+
+.payment-list li {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--gray-200);
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.payment-list li:last-child {
+    border-bottom: none;
+}
+
+.payment-amount {
+    font-weight: 700;
+    color: var(--success);
+}
+
+.payment-date {
+    color: var(--gray-500);
+    font-size: 0.82rem;
+}
+
+/* ============================================
+   INFO BOX
+   ============================================ */
+
+.info-box {
+    background: var(--gray-50);
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.debt-info {
+    background: var(--gray-50);
+    padding: 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.debt-info p {
+    padding: 0.35rem 0;
+    color: var(--gray-700);
+}
+
+.debt-info strong {
+    color: var(--primary-dark);
+}
+
+.remaining-highlight {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--danger);
+}
+
+/* ============================================
+   CATEGORY BAR
+   ============================================ */
+
+.category-bar-cell {
+    width: 40%;
+}
+
+.bar-bg {
+    background: var(--gray-200);
+    border-radius: 20px;
+    height: 8px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 20px;
+    background: var(--danger);
 }
