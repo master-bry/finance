@@ -200,3 +200,5 @@ Contributions are welcome! Feel free to open issues or submit pull requests for 
 - [Thymeleaf](https://www.thymeleaf.org/)
 - [Chart.js](https://www.chartjs.org/)
 - [Font Awesome](https://fontawesome.com/)
+
+---
