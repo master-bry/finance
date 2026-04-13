@@ -150,7 +150,7 @@ src/main/resources/
 
 | Dashboard | Transactions |
 |-----------|-------------|
-| ![Dashboard](screenshots/dashboard.png) | ![Transactions](screenshots/transactions.png) |
+| ![Dashboard](screenshots/dashboard.png) | ![Transactions](screenshots/transaction.png) |
 
 | Debts | Budget |
 |-------|--------|
