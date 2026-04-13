@@ -59,6 +59,7 @@ public class ExcelController {
         try {
             String userId = getUserId(authentication);
 
+            // 1. Save Transaction
             Transaction transaction = new Transaction();
             transaction.setUserId(userId);
             transaction.setDescription(description);
@@ -69,8 +70,10 @@ public class ExcelController {
             transaction.setDeleted(false);
             transactionService.saveTransaction(transaction);
 
+            // 2. Get or create today's DailyEntry
             DailyEntry entry = dailyEntryService.getOrCreateTodayEntry(userId);
 
+            // 3. Add expense item
             DailyEntry.ExpenseItem expense = new DailyEntry.ExpenseItem();
             expense.setDescription(description);
             expense.setAmount(amount);
@@ -78,7 +81,10 @@ public class ExcelController {
             expense.setTime(LocalDateTime.now());
             entry.getExpenses().add(expense);
 
+            // 4. Save DailyEntry
             dailyEntryService.saveDailyEntry(entry, userId);
+            
+            // 5. Recalculate balances for today and future days
             dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
 
             redirectAttributes.addFlashAttribute("success", "Expense added: " + amount + " TZS");
@@ -99,6 +105,7 @@ public class ExcelController {
         try {
             String userId = getUserId(authentication);
 
+            // 1. Save Transaction
             Transaction transaction = new Transaction();
             transaction.setUserId(userId);
             transaction.setDescription(description);
@@ -109,8 +116,10 @@ public class ExcelController {
             transaction.setDeleted(false);
             transactionService.saveTransaction(transaction);
 
+            // 2. Get or create today's DailyEntry
             DailyEntry entry = dailyEntryService.getOrCreateTodayEntry(userId);
 
+            // 3. Add income item
             DailyEntry.IncomeItem income = new DailyEntry.IncomeItem();
             income.setDescription(description);
             income.setAmount(amount);
@@ -118,7 +127,10 @@ public class ExcelController {
             income.setTime(LocalDateTime.now());
             entry.getIncomes().add(income);
 
+            // 4. Save DailyEntry
             dailyEntryService.saveDailyEntry(entry, userId);
+            
+            // 5. Recalculate balances
             dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
 
             redirectAttributes.addFlashAttribute("success", "Income added: " + amount + " TZS");
@@ -130,8 +142,138 @@ public class ExcelController {
         return "redirect:/excel/daily-entry";
     }
 
-    // ... other methods unchanged (delete, upload, history, etc.) ...
-    // They should also call recalculateBalancesFromDate after changes
+    @GetMapping("/delete-expense/{index}")
+    public String deleteExpense(@PathVariable int index, Authentication authentication, RedirectAttributes redirectAttributes) {
+        try {
+            String userId = getUserId(authentication);
+            DailyEntry entry = dailyEntryService.getTodayEntry(userId).orElse(null);
+
+            if (entry != null && index < entry.getExpenses().size()) {
+                DailyEntry.ExpenseItem expense = entry.getExpenses().get(index);
+                
+                // Find and soft delete the corresponding transaction
+                List<Transaction> todayTransactions = transactionService.getTransactionsByDateRange(
+                        userId, 
+                        LocalDateTime.now().withHour(0).withMinute(0).withSecond(0),
+                        LocalDateTime.now().withHour(23).withMinute(59).withSecond(59));
+                
+                for (Transaction t : todayTransactions) {
+                    if (t.getDescription().equals(expense.getDescription()) &&
+                        t.getAmount().equals(expense.getAmount()) &&
+                        "EXPENSE".equals(t.getType())) {
+                        transactionService.deleteTransaction(t.getId());
+                        break;
+                    }
+                }
+                
+                entry.getExpenses().remove(index);
+                entry.calculateTotals();
+                dailyEntryService.saveDailyEntry(entry, userId);
+                dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
+                redirectAttributes.addFlashAttribute("success", "Expense removed");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error removing expense");
+        }
+        return "redirect:/excel/daily-entry";
+    }
+
+    @GetMapping("/delete-income/{index}")
+    public String deleteIncome(@PathVariable int index, Authentication authentication, RedirectAttributes redirectAttributes) {
+        try {
+            String userId = getUserId(authentication);
+            DailyEntry entry = dailyEntryService.getTodayEntry(userId).orElse(null);
+
+            if (entry != null && index < entry.getIncomes().size()) {
+                DailyEntry.IncomeItem income = entry.getIncomes().get(index);
+                
+                // Find and soft delete the corresponding transaction
+                List<Transaction> todayTransactions = transactionService.getTransactionsByDateRange(
+                        userId, 
+                        LocalDateTime.now().withHour(0).withMinute(0).withSecond(0),
+                        LocalDateTime.now().withHour(23).withMinute(59).withSecond(59));
+                
+                for (Transaction t : todayTransactions) {
+                    if (t.getDescription().equals(income.getDescription()) &&
+                        t.getAmount().equals(income.getAmount()) &&
+                        "INCOME".equals(t.getType())) {
+                        transactionService.deleteTransaction(t.getId());
+                        break;
+                    }
+                }
+                
+                entry.getIncomes().remove(index);
+                entry.calculateTotals();
+                dailyEntryService.saveDailyEntry(entry, userId);
+                dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
+                redirectAttributes.addFlashAttribute("success", "Income removed");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error removing income");
+        }
+        return "redirect:/excel/daily-entry";
+    }
+
+    @PostMapping("/upload")
+    public String uploadExcel(@RequestParam("file") MultipartFile file,
+                              @RequestParam Double openingBalance,
+                              Authentication authentication,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            String userId = getUserId(authentication);
+            dailyEntryService.processExcelFile(file, userId, openingBalance);
+            dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
+            redirectAttributes.addFlashAttribute("success", "Excel file processed successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error processing Excel: " + e.getMessage());
+        }
+        return "redirect:/excel/daily-entry";
+    }
+
+    @GetMapping("/download-template")
+    public ResponseEntity<byte[]> downloadTemplate() {
+        byte[] template = dailyEntryService.generateExcelTemplate();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=daily_entry_template.xlsx")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(template);
+    }
+
+    @GetMapping("/history")
+    public String viewHistory(Authentication authentication, Model model) {
+        String userId = getUserId(authentication);
+        List<DailyEntry> history = dailyEntryService.getUserEntries(userId);
+        model.addAttribute("history", history);
+        model.addAttribute("currentPage", "daily");
+        model.addAttribute("pageSubtitle", "Daily Entry History");
+        model.addAttribute("title", "History");
+        return "excel/history";
+    }
+
+    @GetMapping("/delete/{id}")
+    public String deleteEntry(@PathVariable String id, Authentication authentication, RedirectAttributes redirectAttributes) {
+        try {
+            String userId = getUserId(authentication);
+            DailyEntry entry = dailyEntryService.getEntryById(id).orElse(null);
+            if (entry != null && entry.getUserId().equals(userId)) {
+                // Soft delete all transactions for that day
+                LocalDateTime start = entry.getDate().withHour(0).withMinute(0).withSecond(0);
+                LocalDateTime end = entry.getDate().withHour(23).withMinute(59).withSecond(59);
+                List<Transaction> dayTransactions = transactionService.getTransactionsByDateRange(userId, start, end);
+                for (Transaction t : dayTransactions) {
+                    transactionService.deleteTransaction(t.getId());
+                }
+                dailyEntryService.deleteEntry(id);
+                dailyEntryService.recalculateBalancesFromDate(userId, entry.getDate());
+                redirectAttributes.addFlashAttribute("success", "Entry and associated transactions deleted");
+            } else {
+                redirectAttributes.addFlashAttribute("error", "Entry not found or access denied");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error deleting entry: " + e.getMessage());
+        }
+        return "redirect:/excel/history";
+    }
 
     private String getUserId(Authentication authentication) {
         return userService.findByUsername(authentication.getName())

@@ -99,6 +99,13 @@ public class DailyEntryService {
     }
 
     /**
+     * Get a single entry by ID.
+     */
+    public Optional<DailyEntry> getEntryById(String id) {
+        return dailyEntryRepository.findById(id).filter(e -> !e.isDeleted());
+    }
+
+    /**
      * Soft delete an entry.
      */
     public void deleteEntry(String id) {
