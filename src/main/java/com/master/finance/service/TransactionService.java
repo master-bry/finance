@@ -4,8 +4,8 @@ import com.master.finance.model.Transaction;
 import com.master.finance.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,18 +13,21 @@ import java.util.Optional;
 
 @Service
 public class TransactionService {
-    
+
     @Autowired
     private TransactionRepository transactionRepository;
-    
+
+    @Autowired
+    private DailyEntryService dailyEntryService; // NEW: for syncing
+
     public List<Transaction> getUserTransactions(String userId) {
         return transactionRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId);
     }
-    
+
     public Optional<Transaction> getTransaction(String id) {
         return transactionRepository.findById(id);
     }
-    
+
     public Transaction saveTransaction(Transaction transaction) {
         if (transaction.getDate() == null) {
             transaction.setDate(LocalDateTime.now());
@@ -32,25 +35,50 @@ public class TransactionService {
         transaction.setDeleted(false);
         return transactionRepository.save(transaction);
     }
-    
-    // Soft delete - marks as deleted but keeps in database
+
+    /**
+     * Update an existing transaction and sync to DailyEntry.
+     */
+    public Transaction updateTransaction(Transaction transaction) {
+        // Ensure it exists and preserve userId
+        Transaction existing = transactionRepository.findById(transaction.getId())
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+        transaction.setUserId(existing.getUserId());
+        transaction.setDeleted(existing.isDeleted());
+        transaction.setDeletedAt(existing.getDeletedAt());
+        Transaction saved = transactionRepository.save(transaction);
+
+        // Sync to DailyEntry (update)
+        dailyEntryService.syncTransactionToDailyEntry(saved.getUserId(), saved, false);
+        return saved;
+    }
+
+    /**
+     * Soft delete - marks as deleted and syncs removal from DailyEntry.
+     */
     public void deleteTransaction(String id) {
         transactionRepository.findById(id).ifPresent(transaction -> {
             transaction.setDeleted(true);
             transaction.setDeletedAt(LocalDateTime.now());
             transactionRepository.save(transaction);
+            // Sync deletion to DailyEntry
+            dailyEntryService.syncTransactionToDailyEntry(transaction.getUserId(), transaction, true);
         });
     }
-    
-    // Permanent delete - removes from database completely
+
+    // Permanent delete - removes from database completely (and should also remove from DailyEntry if needed)
     public void permanentDeleteTransaction(String id) {
-        transactionRepository.deleteById(id);
+        transactionRepository.findById(id).ifPresent(transaction -> {
+            // Sync removal first (since we still have the data)
+            dailyEntryService.syncTransactionToDailyEntry(transaction.getUserId(), transaction, true);
+            transactionRepository.deleteById(id);
+        });
     }
-    
+
     public List<Transaction> getTransactionsByDateRange(String userId, LocalDateTime start, LocalDateTime end) {
         return transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end);
     }
-    
+
     public Double getTotalIncome(String userId, LocalDateTime start, LocalDateTime end) {
         return transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end)
                 .stream()
@@ -58,7 +86,7 @@ public class TransactionService {
                 .mapToDouble(Transaction::getAmount)
                 .sum();
     }
-    
+
     public Double getTotalExpense(String userId, LocalDateTime start, LocalDateTime end) {
         return transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end)
                 .stream()
@@ -66,62 +94,55 @@ public class TransactionService {
                 .mapToDouble(Transaction::getAmount)
                 .sum();
     }
-    
+
     public Map<String, Double> getExpenseByCategory(String userId, LocalDateTime start, LocalDateTime end) {
         Map<String, Double> expensesByCategory = new HashMap<>();
-        
         transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end)
                 .stream()
                 .filter(t -> "EXPENSE".equals(t.getType()))
                 .forEach(t -> expensesByCategory.merge(t.getCategory(), t.getAmount(), Double::sum));
-        
         return expensesByCategory;
     }
-    
+
     public Map<String, Double> getIncomeByCategory(String userId, LocalDateTime start, LocalDateTime end) {
         Map<String, Double> incomeByCategory = new HashMap<>();
-        
         transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end)
                 .stream()
                 .filter(t -> "INCOME".equals(t.getType()))
                 .forEach(t -> incomeByCategory.merge(t.getCategory(), t.getAmount(), Double::sum));
-        
         return incomeByCategory;
     }
-    
+
     public List<Transaction> getRecentTransactions(String userId, int limit) {
         return transactionRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId)
                 .stream()
                 .limit(limit)
                 .toList();
     }
-    
+
     public Map<String, Object> getMonthlySummary(String userId, int year, int month) {
         LocalDateTime startDate = LocalDateTime.of(year, month, 1, 0, 0);
         LocalDateTime endDate = startDate.plusMonths(1);
-        
         List<Transaction> transactions = transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, startDate, endDate);
-        
+
         double totalIncome = transactions.stream()
                 .filter(t -> "INCOME".equals(t.getType()))
                 .mapToDouble(Transaction::getAmount)
                 .sum();
-        
         double totalExpense = transactions.stream()
                 .filter(t -> "EXPENSE".equals(t.getType()))
                 .mapToDouble(Transaction::getAmount)
                 .sum();
-        
+
         Map<String, Object> summary = new HashMap<>();
         summary.put("totalIncome", totalIncome);
         summary.put("totalExpense", totalExpense);
         summary.put("balance", totalIncome - totalExpense);
         summary.put("transactionCount", transactions.size());
         summary.put("transactions", transactions);
-        
         return summary;
     }
-    
+
     public List<Transaction> searchTransactions(String userId, String keyword) {
         return transactionRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId)
                 .stream()
@@ -129,11 +150,11 @@ public class TransactionService {
                             t.getCategory().toLowerCase().contains(keyword.toLowerCase()))
                 .toList();
     }
-    
+
     public List<Transaction> filterByType(String userId, String type) {
         return transactionRepository.findByUserIdAndTypeAndDeletedFalse(userId, type);
     }
-    
+
     public void saveAll(List<Transaction> transactions) {
         transactionRepository.saveAll(transactions);
     }

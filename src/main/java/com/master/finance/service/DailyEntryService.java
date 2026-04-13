@@ -1,6 +1,7 @@
 package com.master.finance.service;
 
 import com.master.finance.model.DailyEntry;
+import com.master.finance.model.Transaction;
 import com.master.finance.repository.DailyEntryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -97,7 +98,75 @@ public class DailyEntryService {
     }
 
     /**
-     * Process uploaded Excel file (implementation depends on your logic).
+     * Find the DailyEntry for a specific date (user's local date).
+     */
+    public Optional<DailyEntry> getEntryByDate(String userId, LocalDateTime date) {
+        LocalDateTime start = date.withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime end = date.withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+        List<DailyEntry> entries = dailyEntryRepository.findByUserIdAndDateBetween(userId, start, end);
+        return entries.isEmpty() ? Optional.empty() : Optional.of(entries.get(0));
+    }
+
+    /**
+     * Sync a transaction change (update/delete) to the corresponding DailyEntry.
+     * Called from TransactionService after transaction is updated or deleted.
+     */
+    public void syncTransactionToDailyEntry(String userId, Transaction transaction, boolean isDeleted) {
+        Optional<DailyEntry> entryOpt = getEntryByDate(userId, transaction.getDate());
+        if (entryOpt.isEmpty()) return;
+
+        DailyEntry entry = entryOpt.get();
+        boolean updated = false;
+
+        if ("EXPENSE".equals(transaction.getType())) {
+            var iterator = entry.getExpenses().iterator();
+            while (iterator.hasNext()) {
+                DailyEntry.ExpenseItem item = iterator.next();
+                // Match by description, amount, and category (and approximate time if needed)
+                if (item.getDescription().equals(transaction.getDescription()) &&
+                    item.getAmount().equals(transaction.getAmount()) &&
+                    item.getCategory().equals(transaction.getCategory())) {
+
+                    if (isDeleted) {
+                        iterator.remove();
+                    } else {
+                        item.setDescription(transaction.getDescription());
+                        item.setAmount(transaction.getAmount());
+                        item.setCategory(transaction.getCategory());
+                    }
+                    updated = true;
+                    break;
+                }
+            }
+        } else if ("INCOME".equals(transaction.getType())) {
+            var iterator = entry.getIncomes().iterator();
+            while (iterator.hasNext()) {
+                DailyEntry.IncomeItem item = iterator.next();
+                if (item.getDescription().equals(transaction.getDescription()) &&
+                    item.getAmount().equals(transaction.getAmount()) &&
+                    item.getSource().equals(transaction.getCategory())) {
+
+                    if (isDeleted) {
+                        iterator.remove();
+                    } else {
+                        item.setDescription(transaction.getDescription());
+                        item.setAmount(transaction.getAmount());
+                        item.setSource(transaction.getCategory());
+                    }
+                    updated = true;
+                    break;
+                }
+            }
+        }
+
+        if (updated) {
+            entry.calculateTotals();
+            dailyEntryRepository.save(entry);
+        }
+    }
+
+    /**
+     * Process uploaded Excel file (implement as needed).
      */
     public void processExcelFile(MultipartFile file, String userId, Double openingBalance) {
         // Implement Excel parsing and create DailyEntry + Transactions
