@@ -3,7 +3,10 @@ package com.master.finance.service;
 import com.master.finance.model.Debt;
 import com.master.finance.repository.DebtRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +17,7 @@ public class DebtService {
     @Autowired
     private DebtRepository debtRepository;
 
-    // ─── READ ─────────────────────────────────────────────────────────────────
+    // ─── NON-PAGINATED READS ──────────────────────────────────────────────────
 
     public List<Debt> getUserDebts(String userId) {
         return debtRepository.findByUserIdAndDeletedFalse(userId);
@@ -32,11 +35,36 @@ public class DebtService {
         return debtRepository.findById(id).filter(d -> !d.isDeleted());
     }
 
-    // ─── CREATE ───────────────────────────────────────────────────────────────
+    // ─── PAGINATED READS ──────────────────────────────────────────────────────
+
+    public Page<Debt> getUserDebtsPaged(String userId, Pageable pageable) {
+        return debtRepository.findByUserIdAndDeletedFalse(userId, pageable);
+    }
+
+    public Page<Debt> getUserDebtsByType(String userId, String type, Pageable pageable) {
+        return debtRepository.findByUserIdAndTypeAndDeletedFalse(userId, type, pageable);
+    }
+
+    public Page<Debt> getUserDebtsByStatus(String userId, String status, Pageable pageable) {
+        return debtRepository.findByUserIdAndStatusAndDeletedFalse(userId, status, pageable);
+    }
 
     /**
-     * Use for NEW debts only.  Sets deleted=false, initialises remainingAmount.
+     * Combined filter: if type is provided, filter by type; else if status provided, filter by status;
+     * otherwise return all.
      */
+    public Page<Debt> getUserDebtsFiltered(String userId, String type, String status, Pageable pageable) {
+        if (type != null && !type.isEmpty()) {
+            return getUserDebtsByType(userId, type, pageable);
+        } else if (status != null && !status.isEmpty()) {
+            return getUserDebtsByStatus(userId, status, pageable);
+        } else {
+            return getUserDebtsPaged(userId, pageable);
+        }
+    }
+
+    // ─── CREATE ───────────────────────────────────────────────────────────────
+
     public Debt saveDebt(Debt debt) {
         debt.setLastUpdated(LocalDateTime.now());
         debt.setDeleted(false);
@@ -48,10 +76,6 @@ public class DebtService {
 
     // ─── UPDATE ───────────────────────────────────────────────────────────────
 
-    /**
-     * Use for EDITING existing debts.
-     * Loads the stored record first so paymentHistory / deleted flag are not wiped.
-     */
     public Debt updateDebt(Debt incoming) {
         return debtRepository.findById(incoming.getId()).map(existing -> {
             existing.setPersonName(incoming.getPersonName());
@@ -62,7 +86,6 @@ public class DebtService {
             existing.setPhoneNumber(incoming.getPhoneNumber());
             existing.setNotes(incoming.getNotes());
 
-            // Only update status / remainingAmount if explicitly supplied and debt not settled via payments
             if (incoming.getStatus() != null) {
                 existing.setStatus(incoming.getStatus());
             }
@@ -85,7 +108,6 @@ public class DebtService {
         });
     }
 
-    /** Permanent delete — removes from DB entirely. */
     public void permanentDeleteDebt(String id) {
         debtRepository.deleteById(id);
     }
