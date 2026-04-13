@@ -1,373 +1,30 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Investments - Finance Tracker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-dark: #2F6B3F;
-            --secondary: #7FB77E;
-            --accent: #F7C85C;
-            --background: #FFF6C0;
-            --white: #FFFFFF;
-            --success: #10B981;
-            --danger: #EF4444;
-            --sidebar-width: 280px;
-        }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--background);
-            min-height: 100vh;
-        }
-        
-        /* Sidebar Navigation */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: var(--sidebar-width);
-            height: 100vh;
-            background: linear-gradient(135deg, var(--primary-dark) 0%, #1a4d2a 100%);
-            color: white;
-            padding: 1.5rem;
-            transition: all 0.3s;
-            z-index: 1000;
-            overflow-y: auto;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-        }
-        
-        .sidebar-header {
-            text-align: center;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            margin-bottom: 1.5rem;
-        }
-        
-        .sidebar-header h2 {
-            font-size: 1.5rem;
-            margin-bottom: 0.25rem;
-        }
-        
-        .sidebar-header h2 span {
-            color: var(--accent);
-        }
-        
-        .sidebar-header p {
-            font-size: 0.8rem;
-            opacity: 0.8;
-        }
-        
-        .nav-menu {
-            list-style: none;
-        }
-        
-        .nav-item {
-            margin-bottom: 0.5rem;
-        }
-        
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            color: white;
-            text-decoration: none;
-            border-radius: 10px;
-            transition: all 0.3s;
-            gap: 12px;
-        }
-        
-        .nav-link i {
-            width: 24px;
-            font-size: 1.2rem;
-        }
-        
-        .nav-link:hover {
-            background: rgba(255,255,255,0.1);
-            transform: translateX(5px);
-        }
-        
-        .nav-link.active {
-            background: var(--accent);
-            color: var(--primary-dark);
-            font-weight: bold;
-        }
-        
-        /* Main Content */
-        .main-content {
-            margin-left: var(--sidebar-width);
-            padding: 1.5rem;
-            min-height: 100vh;
-        }
-        
-        /* Top Bar */
-        .top-bar {
-            background: var(--white);
-            border-radius: 15px;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .welcome-text h3 {
-            color: var(--primary-dark);
-            margin-bottom: 0.25rem;
-        }
-        
-        .welcome-text p {
-            color: #6B7280;
-            font-size: 0.85rem;
-        }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .logout-btn {
-            background: #EF4444;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            text-decoration: none;
-        }
-        
-        .container {
-            margin: 0;
-            padding: 0;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .stat-card {
-            background: var(--white);
-            padding: 1.5rem;
-            border-radius: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
-        
-        .stat-title {
-            color: #6B7280;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-        }
-        
-        .positive { color: var(--success); }
-        .negative { color: var(--danger); }
-        
-        .action-btn {
-            display: inline-block;
-            background: var(--primary-dark);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            text-decoration: none;
-            border-radius: 10px;
-            margin-bottom: 1.5rem;
-            transition: all 0.3s;
-        }
-        
-        .action-btn:hover {
-            background: var(--secondary);
-            transform: translateY(-2px);
-        }
-        
-        .investment-card {
-            background: var(--white);
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-        }
-        
-        .investment-card:hover {
-            transform: translateX(5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-        
-        .investment-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            flex-wrap: wrap;
-            margin-bottom: 1rem;
-        }
-        
-        .investment-name {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--primary-dark);
-        }
-        
-        .investment-type {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            background: #E5E7EB;
-        }
-        
-        .profit-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-        
-        .profit-positive { background: #D1FAE5; color: #065F46; }
-        .profit-negative { background: #FEE2E2; color: #991B1B; }
-        
-        .investment-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-        
-        .investment-detail {
-            color: #6B7280;
-            font-size: 0.9rem;
-        }
-        
-        .investment-detail strong {
-            color: #374151;
-        }
-        
-        .progress-bar {
-            background: #E5E7EB;
-            border-radius: 10px;
-            height: 8px;
-            overflow: hidden;
-            margin: 0.5rem 0;
-        }
-        
-        .progress-fill {
-            background: var(--success);
-            height: 100%;
-            transition: width 0.3s;
-        }
-        
-        .investment-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-            flex-wrap: wrap;
-        }
-        
-        .btn-small {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.85rem;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-        
-        .btn-update {
-            background: var(--accent);
-            color: #374151;
-        }
-        
-        .btn-transaction {
-            background: var(--secondary);
-            color: white;
-        }
-        
-        .btn-edit {
-            background: #3B82F6;
-            color: white;
-        }
-        
-        .btn-delete {
-            background: var(--danger);
-            color: white;
-        }
-        
-        .btn-small:hover { opacity: 0.8; transform: translateY(-1px); }
-        
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            background: var(--white);
-            border-radius: 20px;
-            color: #6B7280;
-        }
-        
-        @media (max-width: 768px) {
-            .navbar-container { flex-direction: column; }
-            .nav-links { justify-content: center; }
-            .stats-grid { grid-template-columns: 1fr; }
-            .container { padding: 0 1rem; }
-        }
-    </style>
+    <title>Investments</title>
 </head>
 <body>
-    <div class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
-    
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h2>💰 Finance<span>Tracker</span></h2>
-            <p>Manage Your Finances</p>
-        </div>
-        <ul class="nav-menu">
-            <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-            <li class="nav-item"><a href="/transactions" class="nav-link"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
-            <li class="nav-item"><a href="/debts" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Debts</a></li>
-            <li class="nav-item"><a href="/investments" class="nav-link active"><i class="fas fa-chart-line"></i> Investments</a></li>
-            <li class="nav-item"><a href="/goals" class="nav-link"><i class="fas fa-bullseye"></i> Goals</a></li>
-            <li class="nav-item"><a href="/budget" class="nav-link"><i class="fas fa-wallet"></i> Budget</a></li>
-            <li class="nav-item"><a href="/daily-entry" class="nav-link"><i class="fas fa-calendar-day"></i> Daily Entry</a></li>
-            <li class="nav-item"><a href="/reports" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
-        </ul>
-    </div>
-    
-    <div class="main-content">
-        <div class="top-bar">
-            <div class="welcome-text">
-                <h3>Welcome back, <span sec:authentication="name"></span>!</h3>
-                <p>Manage your investments and portfolio</p>
-            </div>
-            <div class="user-info">
-                <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            </div>
-        </div>
-        
-        <div class="container">
+    <div layout:fragment="content">
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-title">💰 Total Invested</div>
-                <div class="stat-value"><span th:text="${#numbers.formatDecimal(totalInvested, 1, 2)}"></span> TZS</div>
+                <div class="stat-value" th:text="${#numbers.formatDecimal(totalInvested, 1, 0)} + ' TZS'">0 TZS</div>
             </div>
             <div class="stat-card">
                 <div class="stat-title">📈 Current Value</div>
-                <div class="stat-value"><span th:text="${#numbers.formatDecimal(totalCurrentValue, 1, 2)}"></span> TZS</div>
+                <div class="stat-value" th:text="${#numbers.formatDecimal(totalCurrentValue, 1, 0)} + ' TZS'">0 TZS</div>
             </div>
             <div class="stat-card">
                 <div class="stat-title">📊 Total Profit/Loss</div>
                 <div class="stat-value" th:class="${totalProfitLoss >= 0 ? 'positive' : 'negative'}">
-                    <span th:text="${#numbers.formatDecimal(totalProfitLoss, 1, 2)}"></span> TZS
+                    <span th:text="${#numbers.formatDecimal(totalProfitLoss, 1, 0)}"></span> TZS
                 </div>
             </div>
         </div>
         
-        <a href="/investments/add" class="action-btn">📈 Add New Investment</a>
+        <a href="/investments/add" class="btn-add">📈 Add New Investment</a>
         
         <div th:each="inv : ${investments}" class="investment-card">
             <div class="investment-header">
@@ -375,20 +32,20 @@
                 <div>
                     <span class="investment-type" th:text="${inv.type}"></span>
                     <span class="profit-badge" th:class="${inv.profitLoss >= 0 ? 'profit-positive' : 'profit-negative'}" 
-                          th:text="${#numbers.formatDecimal(inv.profitLossPercentage, 1, 2)} + '%'"></span>
+                          th:text="${#numbers.formatDecimal(inv.profitLossPercentage, 1, 1)} + '%'"></span>
                 </div>
             </div>
             
             <div class="investment-details">
                 <div class="investment-detail">
-                    <strong>Invested:</strong> <span th:text="${#numbers.formatDecimal(inv.amountInvested, 1, 2)}"></span> TZS
+                    <strong>Invested:</strong> <span th:text="${#numbers.formatDecimal(inv.amountInvested, 1, 0)}"></span> TZS
                 </div>
                 <div class="investment-detail">
-                    <strong>Current Value:</strong> <span th:text="${#numbers.formatDecimal(inv.currentValue, 1, 2)}"></span> TZS
+                    <strong>Current Value:</strong> <span th:text="${#numbers.formatDecimal(inv.currentValue, 1, 0)}"></span> TZS
                 </div>
                 <div class="investment-detail">
                     <strong>Profit/Loss:</strong> <span th:class="${inv.profitLoss >= 0 ? 'positive' : 'negative'}" 
-                          th:text="${#numbers.formatDecimal(inv.profitLoss, 1, 2)}"></span> TZS
+                          th:text="${#numbers.formatDecimal(inv.profitLoss, 1, 0)}"></span> TZS
                 </div>
                 <div class="investment-detail">
                     <strong>Risk Level:</strong> <span th:text="${inv.riskLevel}"></span>
@@ -396,27 +53,22 @@
             </div>
             
             <div class="progress-bar">
-                <div class="progress-fill" th:style="'width: ' + ${inv.currentValue / inv.amountInvested * 100} + '%;'"></div>
+                <div class="progress-fill" th:style="'width: ' + ${(inv.currentValue / inv.amountInvested) * 100} + '%;'"></div>
             </div>
             
             <div class="investment-actions">
-                <a th:href="'/investments/update-value/' + ${inv.id}" class="btn-small btn-update">💰 Update Value</a>
-                <a th:href="'/investments/add-transaction/' + ${inv.id}" class="btn-small btn-transaction">📝 Add Transaction</a>
-                <a th:href="'/investments/edit/' + ${inv.id}" class="btn-small btn-edit">✏️ Edit</a>
-                <a th:href="'/investments/delete/' + ${inv.id}" class="btn-small btn-delete" onclick="return confirm('Are you sure?')">🗑️ Delete</a>
+                <a th:href="'/investments/update-value/' + ${inv.id}" class="btn-xs btn-update">💰 Update Value</a>
+                <a th:href="'/investments/add-transaction/' + ${inv.id}" class="btn-xs btn-transaction">📝 Add Transaction</a>
+                <a th:href="'/investments/edit/' + ${inv.id}" class="btn-xs btn-edit">✏️ Edit</a>
+                <a th:href="'/investments/delete/' + ${inv.id}" class="btn-xs btn-delete" onclick="return confirm('Are you sure?')">🗑️ Delete</a>
             </div>
         </div>
         
         <div th:if="${investments.empty}" class="empty-state">
+            <i class="fas fa-chart-line"></i>
             <p>No investments recorded yet.</p>
             <p><a href="/investments/add" style="color: var(--primary-dark);">Click here</a> to add your first investment.</p>
         </div>
-        </div>
     </div>
-    
-    <script>
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active') ; }
-    </script>
 </body>
-</html>
 </html>
