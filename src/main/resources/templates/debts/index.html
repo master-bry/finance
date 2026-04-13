@@ -1,106 +1,75 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Debts - Finance Tracker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <style>
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 1.5rem;
-            flex-wrap: wrap;
-        }
-        .pagination a, .pagination span {
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            text-decoration: none;
-            background: var(--white);
-            color: var(--primary-dark);
-            border: 1px solid var(--gray-300);
-            min-width: 2.5rem;
-            text-align: center;
-        }
-        .pagination a:hover {
-            background: var(--primary-dark);
-            color: white;
-        }
-        .pagination .active {
-            background: var(--primary-dark);
-            color: white;
-            font-weight: bold;
-        }
-        .pagination .disabled {
-            opacity: 0.5;
-            pointer-events: none;
-        }
-        .page-size-selector {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-left: 1rem;
-        }
-        .page-size-selector select {
-            padding: 0.4rem;
-            border-radius: 6px;
-            border: 1px solid var(--gray-300);
-        }
-    </style>
+    <title>Debts</title>
+    
+    <!-- Page-specific styles -->
+    <th:block layout:fragment="styles">
+        <style>
+            .pagination {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 0.5rem;
+                margin-top: 1.5rem;
+                flex-wrap: wrap;
+            }
+            .pagination a, .pagination span {
+                padding: 0.5rem 0.75rem;
+                border-radius: 6px;
+                text-decoration: none;
+                background: var(--white);
+                color: var(--primary-dark);
+                border: 1px solid var(--gray-300);
+                min-width: 2.5rem;
+                text-align: center;
+            }
+            .pagination a:hover {
+                background: var(--primary-dark);
+                color: white;
+            }
+            .pagination .active {
+                background: var(--primary-dark);
+                color: white;
+                font-weight: bold;
+            }
+            .pagination .disabled {
+                opacity: 0.5;
+                pointer-events: none;
+            }
+            .page-size-selector {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                margin-left: 1rem;
+            }
+            .page-size-selector select {
+                padding: 0.4rem;
+                border-radius: 6px;
+                border: 1px solid var(--gray-300);
+            }
+        </style>
+    </th:block>
 </head>
 <body>
-    <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-    
-    <!-- Sidebar (same as before) -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h2>💰 Finance<span>Tracker</span></h2>
-            <p>Manage Your Finances</p>
-        </div>
-        <ul class="nav-menu">
-            <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-            <li class="nav-item"><a href="/transactions" class="nav-link"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
-            <li class="nav-item"><a href="/debts" class="nav-link active"><i class="fas fa-hand-holding-usd"></i> Debts</a></li>
-            <li class="nav-item"><a href="/investments" class="nav-link"><i class="fas fa-chart-line"></i> Investments</a></li>
-            <li class="nav-item"><a href="/goals" class="nav-link"><i class="fas fa-bullseye"></i> Goals</a></li>
-            <li class="nav-item"><a href="/budget" class="nav-link"><i class="fas fa-wallet"></i> Budget</a></li>
-            <li class="nav-item"><a href="/excel/daily" class="nav-link"><i class="fas fa-calendar-day"></i> Daily Entry</a></li>
-            <li class="nav-item"><a href="/reports" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
-        </ul>
-    </div>
-    
-    <div class="main-content">
-        <div class="top-bar">
-            <div class="welcome-text">
-                <h3>Welcome back, <span sec:authentication="name">User</span>!</h3>
-                <p th:text="${pageSubtitle}">Manage your debts and lending</p>
-            </div>
-            <div class="user-info">
-                <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            </div>
-        </div>
-        
-        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
-        
+    <div layout:fragment="content">
         <!-- Summary Cards -->
         <div class="summary-grid">
             <div class="summary-card">
                 <div class="label">💰 Owed to Me</div>
-                <div class="value green" th:text="${#numbers.formatDecimal(totalOwedToMe, 1, 0)} + ' TZS'">0 TZS</div>
+                <div class="value green" th:text="${#numbers.formatDecimal(totalOwedToMe, 1, 0) + ' TZS'}">0 TZS</div>
             </div>
             <div class="summary-card">
                 <div class="label">💸 I Owe</div>
-                <div class="value red" th:text="${#numbers.formatDecimal(totalIOwe, 1, 0)} + ' TZS'">0 TZS</div>
+                <div class="value red" th:text="${#numbers.formatDecimal(totalIOwe, 1, 0) + ' TZS'}">0 TZS</div>
             </div>
             <div class="summary-card">
                 <div class="label">⚖️ Net Position</div>
-                <div class="value" th:class="${netPosition >= 0 ? 'green' : 'red'}"
-                     th:text="${#numbers.formatDecimal(netPosition, 1, 0)} + ' TZS'">0 TZS</div>
+                <div class="value" th:classappend="${netPosition >= 0 ? 'green' : 'red'}"
+                     th:text="${#numbers.formatDecimal(netPosition, 1, 0) + ' TZS'}">0 TZS</div>
             </div>
             <div class="summary-card">
                 <div class="label">📋 Total Records</div>
@@ -138,15 +107,15 @@
             </form>
         </div>
 
-        <!-- Table -->
+        <!-- Table Card -->
         <div class="table-card">
-            <div th:if="${debts.empty}" class="empty-state">
+            <div th:if="${debts == null or debts.empty}" class="empty-state">
                 <i class="fas fa-hand-holding-usd"></i>
                 <p>No debt records found.</p>
                 <p><a href="/debts/add" style="color: var(--primary-dark);">Add your first record</a></p>
             </div>
 
-            <table class="data-table" th:if="${!debts.empty}">
+            <table class="data-table" th:if="${debts != null and !debts.empty}">
                 <thead>
                     <tr>
                         <th>Person</th>
@@ -161,25 +130,26 @@
                 <tbody>
                     <tr th:each="debt : ${debts}">
                         <td>
-                            <strong th:text="${debt.personName}"></strong>
+                            <strong th:text="${debt.personName}">Person</strong>
                             <div th:if="${debt.phoneNumber}" style="font-size:0.78rem; color:#6B7280;" th:text="${debt.phoneNumber}"></div>
                         </td>
                         <td>
                             <span class="badge" th:classappend="${debt.type == 'OWED_TO_ME' ? 'badge-owed' : 'badge-iowe'}"
                                   th:text="${debt.type == 'OWED_TO_ME' ? '💰 Owed to Me' : '💸 I Owe'}"></span>
                         </td>
-                        <td th:text="${#numbers.formatDecimal(debt.amount, 1, 0)} + ' TZS'"></td>
+                        <td th:text="${#numbers.formatDecimal(debt.amount, 1, 0) + ' TZS'}">0 TZS</td>
                         <td>
-                            <strong th:text="${#numbers.formatDecimal(debt.remainingAmount, 1, 0)} + ' TZS'"></strong>
+                            <strong th:text="${#numbers.formatDecimal(debt.remainingAmount, 1, 0) + ' TZS'}">0 TZS</strong>
                         </td>
                         <td>
-                            <span class="badge" th:classappend="${debt.status == 'SETTLED' ? 'badge-settled' : (debt.status == 'PARTIAL' ? 'badge-partial' : 'badge-pending')}"
-                                  th:text="${debt.status}"></span>
+                            <span class="badge" 
+                                  th:classappend="${debt.status == 'SETTLED' ? 'badge-settled' : (debt.status == 'PARTIAL' ? 'badge-partial' : 'badge-pending')}"
+                                  th:text="${debt.status}">PENDING</span>
                         </td>
                         <td>
                             <span th:if="${debt.dueDate != null}"
                                   th:text="${#temporals.format(debt.dueDate, 'dd MMM yyyy')}"
-                                  th:classappend="${debt.dueDate.isBefore(#temporals.createNow()) and debt.status != 'SETTLED' ? 'overdue' : ''}"></span>
+                                  th:classappend="${debt.dueDate != null and debt.dueDate.isBefore(#temporals.createNow().toLocalDate()) and debt.status != 'SETTLED' ? 'overdue' : ''}"></span>
                             <span th:if="${debt.dueDate == null}" style="color:#D1D5DB;">—</span>
                         </td>
                         <td>
@@ -224,9 +194,5 @@
             </div>
         </div>
     </div>
-    
-    <script>
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
-    </script>
 </body>
 </html>
