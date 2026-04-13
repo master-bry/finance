@@ -15,99 +15,116 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/transactions")
 public class TransactionController {
-    
+
     @Autowired
     private TransactionService transactionService;
-    
+
     @Autowired
     private UserService userService;
-    
+
     @GetMapping
     public String listTransactions(Authentication authentication, Model model) {
         String userId = getUserId(authentication);
         var transactions = transactionService.getUserTransactions(userId);
-        
+
         double totalIncome = transactions.stream()
-            .filter(t -> "INCOME".equals(t.getType()))
-            .mapToDouble(Transaction::getAmount)
-            .sum();
+                .filter(t -> "INCOME".equals(t.getType()))
+                .mapToDouble(Transaction::getAmount)
+                .sum();
         double totalExpense = transactions.stream()
-            .filter(t -> "EXPENSE".equals(t.getType()))
-            .mapToDouble(Transaction::getAmount)
-            .sum();
-        
+                .filter(t -> "EXPENSE".equals(t.getType()))
+                .mapToDouble(Transaction::getAmount)
+                .sum();
+
         java.util.Map<String, Object> stats = new java.util.HashMap<>();
         stats.put("totalIncome", totalIncome);
         stats.put("totalExpense", totalExpense);
         stats.put("balance", totalIncome - totalExpense);
         stats.put("transactionCount", transactions.size());
-        
+
         model.addAttribute("transactions", transactions);
         model.addAttribute("stats", stats);
         model.addAttribute("currentPage", "transactions");
         model.addAttribute("pageSubtitle", "Manage all your income and expenses");
+        model.addAttribute("title", "Transactions");
         return "transactions/index";
     }
-    
-    // @GetMapping("/add")
-    // public String showAddForm(Model model) {
-    //     if (!model.containsAttribute("transaction")) {
-    //         model.addAttribute("transaction", new Transaction());
-    //     }
-    //     model.addAttribute("currentPage", "transactions");
-    //     return "transactions/add";
-    // }
-    
-    // @PostMapping("/add")
-    // public String addTransaction(@Valid @ModelAttribute Transaction transaction,
-    //                              BindingResult result,
-    //                              Authentication authentication,
-    //                              RedirectAttributes redirectAttributes) {
-    //     if (result.hasErrors()) {
-    //         redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.transaction", result);
-    //         redirectAttributes.addFlashAttribute("transaction", transaction);
-    //         return "redirect:/transactions/add";
-    //     }
-        
-    //     String userId = getUserId(authentication);
-    //     transaction.setUserId(userId);
-    //     transactionService.saveTransaction(transaction);
-    //     redirectAttributes.addFlashAttribute("success", "Transaction added successfully!");
-    //     return "redirect:/transactions";
-    // }
-    
+
+    // ADD methods removed as requested
+
     @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable String id, Authentication authentication, Model model) {
+    public String showEditForm(@PathVariable String id,
+                               Authentication authentication,
+                               Model model,
+                               RedirectAttributes redirectAttributes) {
         String userId = getUserId(authentication);
-        transactionService.getTransaction(id).ifPresent(transaction -> {
-            if (transaction.getUserId().equals(userId)) {
-                model.addAttribute("transaction", transaction);
-            }
-        });
-        return "transactions/edit";
+        return transactionService.getTransaction(id)
+                .filter(transaction -> transaction.getUserId().equals(userId))
+                .map(transaction -> {
+                    model.addAttribute("transaction", transaction);
+                    model.addAttribute("currentPage", "transactions");
+                    model.addAttribute("pageSubtitle", "Edit transaction");
+                    model.addAttribute("title", "Edit Transaction");
+                    return "transactions/edit";
+                })
+                .orElseGet(() -> {
+                    redirectAttributes.addFlashAttribute("error", "Transaction not found or access denied.");
+                    return "redirect:/transactions";
+                });
     }
-    
+
     @PostMapping("/edit/{id}")
     public String updateTransaction(@PathVariable String id,
                                     @Valid @ModelAttribute Transaction transaction,
+                                    BindingResult result,
                                     Authentication authentication,
                                     RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.transaction", result);
+            redirectAttributes.addFlashAttribute("transaction", transaction);
+            return "redirect:/transactions/edit/" + id;
+        }
+
         String userId = getUserId(authentication);
+        
+        // Verify ownership
+        var existingOpt = transactionService.getTransaction(id);
+        if (existingOpt.isEmpty() || !existingOpt.get().getUserId().equals(userId)) {
+            redirectAttributes.addFlashAttribute("error", "Transaction not found or access denied.");
+            return "redirect:/transactions";
+        }
+
         transaction.setId(id);
         transaction.setUserId(userId);
-        transactionService.saveTransaction(transaction);
+        
+        // USE updateTransaction() NOT saveTransaction() - this triggers DailyEntry sync
+        transactionService.updateTransaction(transaction);
+        
         redirectAttributes.addFlashAttribute("success", "Transaction updated successfully!");
         return "redirect:/transactions";
     }
-    
+
     @GetMapping("/delete/{id}")
-    public String deleteTransaction(@PathVariable String id, RedirectAttributes redirectAttributes) {
-        transactionService.deleteTransaction(id);  // Now this method exists
+    public String deleteTransaction(@PathVariable String id,
+                                    Authentication authentication,
+                                    RedirectAttributes redirectAttributes) {
+        String userId = getUserId(authentication);
+        
+        var transactionOpt = transactionService.getTransaction(id);
+        if (transactionOpt.isEmpty() || !transactionOpt.get().getUserId().equals(userId)) {
+            redirectAttributes.addFlashAttribute("error", "Transaction not found or access denied.");
+            return "redirect:/transactions";
+        }
+
+        // This will soft delete AND sync removal to DailyEntry
+        transactionService.deleteTransaction(id);
         redirectAttributes.addFlashAttribute("success", "Transaction deleted successfully!");
         return "redirect:/transactions";
     }
-    
+
     private String getUserId(Authentication authentication) {
-        return userService.findByUsername(authentication.getName()).get().getId();
+        return userService.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"))
+                .getId();
     }
 }
