@@ -6,127 +6,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Debts - Finance Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
     <style>
-        :root {
-            --primary-dark: #2F6B3F;
-            --secondary: #7FB77E;
-            --accent: #F7C85C;
-            --background: #FFF6C0;
-            --white: #FFFFFF;
-            --success: #10B981;
-            --danger: #EF4444;
-            --warning: #F59E0B;
-            --sidebar-width: 280px;
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--background); }
-
-        /* ── SIDEBAR ── */
-        .sidebar {
-            position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh;
-            background: linear-gradient(135deg, var(--primary-dark) 0%, #1a4d2a 100%);
-            color: white; padding: 1.5rem; overflow-y: auto; z-index: 1000;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        .pagination a, .pagination span {
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            text-decoration: none;
+            background: var(--white);
+            color: var(--primary-dark);
+            border: 1px solid var(--gray-300);
+            min-width: 2.5rem;
+            text-align: center;
         }
-        .sidebar-header { text-align: center; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 1.5rem; }
-        .sidebar-header h2 { font-size: 1.5rem; margin-bottom: 0.25rem; }
-        .sidebar-header h2 span { color: var(--accent); }
-        .sidebar-header p { font-size: 0.8rem; opacity: 0.8; }
-        .nav-menu { list-style: none; }
-        .nav-item { margin-bottom: 0.5rem; }
-        .nav-link { display: flex; align-items: center; padding: 0.75rem 1rem; color: white; text-decoration: none; border-radius: 10px; gap: 12px; transition: all 0.3s; }
-        .nav-link i { width: 20px; }
-        .nav-link:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
-        .nav-link.active { background: var(--accent); color: var(--primary-dark); font-weight: bold; }
-
-        /* ── MAIN ── */
-        .main-content { margin-left: var(--sidebar-width); padding: 1.5rem; min-height: 100vh; }
-        .top-bar {
-            background: var(--white); border-radius: 15px; padding: 1rem 1.5rem; margin-bottom: 1.5rem;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        .pagination a:hover {
+            background: var(--primary-dark);
+            color: white;
         }
-        .top-bar h3 { color: var(--primary-dark); font-size: 1.2rem; }
-        .top-bar p { font-size: 0.85rem; color: #6B7280; margin-top: 0.15rem; }
-        .logout-btn { background: var(--danger); color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem; }
-
-        /* ── ALERTS ── */
-        .alert { padding: 1rem 1.25rem; border-radius: 10px; margin-bottom: 1rem; font-weight: 500; }
-        .alert-success { background: #D1FAE5; color: #065F46; }
-        .alert-error   { background: #FEE2E2; color: #991B1B; }
-
-        /* ── SUMMARY CARDS ── */
-        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-        .summary-card {
-            background: var(--white); border-radius: 15px; padding: 1.25rem; text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        .pagination .active {
+            background: var(--primary-dark);
+            color: white;
+            font-weight: bold;
         }
-        .summary-card .label { font-size: 0.82rem; color: #6B7280; margin-bottom: 0.5rem; }
-        .summary-card .value { font-size: 1.5rem; font-weight: 700; }
-        .value.green  { color: var(--success); }
-        .value.red    { color: var(--danger); }
-        .value.yellow { color: var(--warning); }
-
-        /* ── TOOLBAR ── */
-        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem; }
-        .btn-add {
-            background: var(--primary-dark); color: white; padding: 0.6rem 1.25rem;
-            border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 0.95rem;
-            display: inline-flex; align-items: center; gap: 0.4rem; transition: background 0.2s;
+        .pagination .disabled {
+            opacity: 0.5;
+            pointer-events: none;
         }
-        .btn-add:hover { background: var(--secondary); }
-
-        /* ── TABLE CARD ── */
-        .table-card { background: var(--white); border-radius: 15px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 700px; }
-        thead tr { background: #F9FAFB; }
-        th { padding: 0.75rem 1rem; text-align: left; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; color: #6B7280; border-bottom: 2px solid #E5E7EB; }
-        td { padding: 0.85rem 1rem; border-bottom: 1px solid #F3F4F6; color: #374151; vertical-align: middle; }
-        tbody tr:hover { background: #FAFAFA; }
-        tbody tr:last-child td { border-bottom: none; }
-
-        /* ── BADGES ── */
-        .badge { display: inline-block; padding: 0.2rem 0.65rem; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
-        .badge-settled  { background: #D1FAE5; color: #065F46; }
-        .badge-partial  { background: #FEF3C7; color: #92400E; }
-        .badge-pending  { background: #FEE2E2; color: #991B1B; }
-        .badge-owed     { background: #DBEAFE; color: #1E40AF; }
-        .badge-iowe     { background: #FCE7F3; color: #9D174D; }
-        .overdue        { color: var(--danger); font-size: 0.78rem; font-weight: 600; }
-
-        /* ── ACTION BUTTONS ── */
-        .actions { display: flex; gap: 0.35rem; flex-wrap: wrap; }
-        .btn-xs {
-            padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.78rem; font-weight: 600;
-            text-decoration: none; white-space: nowrap; transition: opacity 0.2s;
+        .page-size-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-left: 1rem;
         }
-        .btn-xs:hover { opacity: 0.82; }
-        .btn-payment { background: var(--success); color: white; }
-        .btn-edit    { background: #3B82F6; color: white; }
-        .btn-delete  { background: var(--danger); color: white; }
-
-        /* ── EMPTY STATE ── */
-        .empty-state { text-align: center; padding: 3rem 1rem; color: #9CA3AF; }
-        .empty-state i { font-size: 3rem; margin-bottom: 1rem; display: block; }
-
-        /* ── MOBILE ── */
-        .mobile-menu-btn {
-            display: none; position: fixed; top: 1rem; left: 1rem; z-index: 1100;
-            background: var(--primary-dark); color: white; padding: 0.5rem 0.65rem;
-            border-radius: 8px; cursor: pointer; border: none;
-        }
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
-            .sidebar.active { transform: translateX(0); }
-            .main-content { margin-left: 0; }
-            .mobile-menu-btn { display: block; }
+        .page-size-selector select {
+            padding: 0.4rem;
+            border-radius: 6px;
+            border: 1px solid var(--gray-300);
         }
     </style>
 </head>
 <body>
     <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-
-    <!-- Sidebar -->
+    
+    <!-- Sidebar (same as before) -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2>💰 Finance<span>Tracker</span></h2>
@@ -139,30 +68,25 @@
             <li class="nav-item"><a href="/investments" class="nav-link"><i class="fas fa-chart-line"></i> Investments</a></li>
             <li class="nav-item"><a href="/goals" class="nav-link"><i class="fas fa-bullseye"></i> Goals</a></li>
             <li class="nav-item"><a href="/budget" class="nav-link"><i class="fas fa-wallet"></i> Budget</a></li>
-            <li class="nav-item"><a href="/daily-entry" class="nav-link"><i class="fas fa-calendar-day"></i> Daily Entry</a></li>
+            <li class="nav-item"><a href="/excel/daily" class="nav-link"><i class="fas fa-calendar-day"></i> Daily Entry</a></li>
             <li class="nav-item"><a href="/reports" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
         </ul>
     </div>
-
-    <!-- Main Content -->
+    
     <div class="main-content">
-
-        <!-- Top Bar -->
         <div class="top-bar">
-            <div>
-                <h3>💳 Debts &amp; Lending</h3>
+            <div class="welcome-text">
+                <h3>Welcome back, <span sec:authentication="name">User</span>!</h3>
                 <p th:text="${pageSubtitle}">Manage your debts and lending</p>
             </div>
-            <div style="display:flex; align-items:center; gap:1rem;">
-                <span style="font-size:0.9rem; color:#6B7280;">Welcome, <strong sec:authentication="name"></strong></span>
+            <div class="user-info">
                 <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>
-
-        <!-- Alerts -->
+        
         <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-        <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
-
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+        
         <!-- Summary Cards -->
         <div class="summary-grid">
             <div class="summary-card">
@@ -175,47 +99,54 @@
             </div>
             <div class="summary-card">
                 <div class="label">⚖️ Net Position</div>
-                <div class="value"
-                     th:classappend="${netPosition >= 0 ? 'green' : 'red'}"
+                <div class="value" th:class="${netPosition >= 0 ? 'green' : 'red'}"
                      th:text="${#numbers.formatDecimal(netPosition, 1, 0)} + ' TZS'">0 TZS</div>
             </div>
             <div class="summary-card">
                 <div class="label">📋 Total Records</div>
-                <div class="value yellow" th:text="${debts.size()}">0</div>
+                <div class="value yellow" th:text="${totalItems}">0</div>
             </div>
         </div>
 
-        <!-- Toolbar -->
+        <!-- Toolbar with Filters and Add Button -->
         <div class="toolbar">
             <a href="/debts/add" class="btn-add"><i class="fas fa-plus"></i> Add New Debt</a>
-            <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
-                <span style="font-size:0.9rem; color:#6B7280; white-space:nowrap;">Filter:</span>
-                <select id="filterType" style="padding:0.5rem 0.75rem; border-radius:8px; border:1px solid #D1D5DB; font-size:0.9rem;" onchange="applyFilters()">
+            <form method="get" action="/debts" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                <select name="type" style="padding:0.5rem; border-radius:8px; border:1px solid #D1D5DB;">
                     <option value="">All Types</option>
-                    <option value="OWED_TO_ME">Owed to Me</option>
-                    <option value="I_OWE">I Owe</option>
+                    <option value="OWED_TO_ME" th:selected="${filterType == 'OWED_TO_ME'}">Owed to Me</option>
+                    <option value="I_OWE" th:selected="${filterType == 'I_OWE'}">I Owe</option>
                 </select>
-                <select id="filterStatus" style="padding:0.5rem 0.75rem; border-radius:8px; border:1px solid #D1D5DB; font-size:0.9rem;" onchange="applyFilters()">
+                <select name="status" style="padding:0.5rem; border-radius:8px; border:1px solid #D1D5DB;">
                     <option value="">All Status</option>
-                    <option value="PENDING">Pending</option>
-                    <option value="PARTIAL">Partial</option>
-                    <option value="SETTLED">Settled</option>
+                    <option value="PENDING" th:selected="${filterStatus == 'PENDING'}">Pending</option>
+                    <option value="PARTIAL" th:selected="${filterStatus == 'PARTIAL'}">Partial</option>
+                    <option value="SETTLED" th:selected="${filterStatus == 'SETTLED'}">Settled</option>
                 </select>
-                <input type="number" id="minAmount" placeholder="Min Amount" style="padding:0.5rem 0.75rem; border-radius:8px; border:1px solid #D1D5DB; width:100px; font-size:0.9rem;" onkeyup="applyFilters()">
-                <input type="number" id="maxAmount" placeholder="Max Amount" style="padding:0.5rem 0.75rem; border-radius:8px; border:1px solid #D1D5DB; width:100px; font-size:0.9rem;" onkeyup="applyFilters()">
-                <a href="/debts" style="padding:0.5rem 0.75rem; background:#9CA3AF; color:white; border-radius:8px; text-decoration:none; font-size:0.9rem;">Reset</a>
-            </div>
+                <button type="submit" class="btn-filter" style="padding:0.5rem 1rem;">Filter</button>
+                <a href="/debts" class="btn-secondary" style="padding:0.5rem 1rem;">Reset</a>
+                <div class="page-size-selector">
+                    <label>Show:</label>
+                    <select name="size" onchange="this.form.submit()">
+                        <option value="5" th:selected="${pageSize == 5}">5</option>
+                        <option value="10" th:selected="${pageSize == 10}">10</option>
+                        <option value="20" th:selected="${pageSize == 20}">20</option>
+                        <option value="50" th:selected="${pageSize == 50}">50</option>
+                    </select>
+                    <input type="hidden" name="page" value="0"/>
+                </div>
+            </form>
         </div>
 
         <!-- Table -->
         <div class="table-card">
             <div th:if="${debts.empty}" class="empty-state">
                 <i class="fas fa-hand-holding-usd"></i>
-                <p>No debt records yet.</p>
-                <p style="margin-top:0.5rem;"><a href="/debts/add" style="color: var(--primary-dark); font-weight:600;">Add your first record</a></p>
+                <p>No debt records found.</p>
+                <p><a href="/debts/add" style="color: var(--primary-dark);">Add your first record</a></p>
             </div>
 
-            <table th:if="${!debts.empty}">
+            <table class="data-table" th:if="${!debts.empty}">
                 <thead>
                     <tr>
                         <th>Person</th>
@@ -234,26 +165,21 @@
                             <div th:if="${debt.phoneNumber}" style="font-size:0.78rem; color:#6B7280;" th:text="${debt.phoneNumber}"></div>
                         </td>
                         <td>
-                            <span class="badge"
-                                  th:classappend="${debt.type == 'OWED_TO_ME' ? 'badge-owed' : 'badge-iowe'}"
-                                  th:text="${debt.type == 'OWED_TO_ME' ? '💰 Owed to Me' : '💸 I Owe'}">
-                            </span>
+                            <span class="badge" th:classappend="${debt.type == 'OWED_TO_ME' ? 'badge-owed' : 'badge-iowe'}"
+                                  th:text="${debt.type == 'OWED_TO_ME' ? '💰 Owed to Me' : '💸 I Owe'}"></span>
                         </td>
                         <td th:text="${#numbers.formatDecimal(debt.amount, 1, 0)} + ' TZS'"></td>
                         <td>
                             <strong th:text="${#numbers.formatDecimal(debt.remainingAmount, 1, 0)} + ' TZS'"></strong>
                         </td>
                         <td>
-                            <span class="badge"
-                                  th:classappend="${debt.status == 'SETTLED' ? 'badge-settled' : (debt.status == 'PARTIAL' ? 'badge-partial' : 'badge-pending')}"
-                                  th:text="${debt.status}">
-                            </span>
+                            <span class="badge" th:classappend="${debt.status == 'SETTLED' ? 'badge-settled' : (debt.status == 'PARTIAL' ? 'badge-partial' : 'badge-pending')}"
+                                  th:text="${debt.status}"></span>
                         </td>
                         <td>
                             <span th:if="${debt.dueDate != null}"
                                   th:text="${#temporals.format(debt.dueDate, 'dd MMM yyyy')}"
-                                  th:classappend="${debt.dueDate.isBefore(#temporals.createNow()) and debt.status != 'SETTLED' ? 'overdue' : ''}">
-                            </span>
+                                  th:classappend="${debt.dueDate.isBefore(#temporals.createNow()) and debt.status != 'SETTLED' ? 'overdue' : ''}"></span>
                             <span th:if="${debt.dueDate == null}" style="color:#D1D5DB;">—</span>
                         </td>
                         <td>
@@ -277,9 +203,28 @@
                     </tr>
                 </tbody>
             </table>
+            
+            <!-- Pagination -->
+            <div th:if="${totalPages > 1}" class="pagination">
+                <a th:href="@{/debts(page=0, size=${pageSize}, type=${filterType}, status=${filterStatus})}"
+                   th:classappend="${currentPage == 0} ? 'disabled'">« First</a>
+                <a th:href="@{/debts(page=${currentPage - 1}, size=${pageSize}, type=${filterType}, status=${filterStatus})}"
+                   th:classappend="${currentPage == 0} ? 'disabled'">‹ Prev</a>
+                
+                <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                    <a th:href="@{/debts(page=${i}, size=${pageSize}, type=${filterType}, status=${filterStatus})}"
+                       th:text="${i + 1}"
+                       th:classappend="${i == currentPage} ? 'active'"></a>
+                </th:block>
+                
+                <a th:href="@{/debts(page=${currentPage + 1}, size=${pageSize}, type=${filterType}, status=${filterStatus})}"
+                   th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">Next ›</a>
+                <a th:href="@{/debts(page=${totalPages - 1}, size=${pageSize}, type=${filterType}, status=${filterStatus})}"
+                   th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">Last »</a>
+            </div>
         </div>
     </div>
-
+    
     <script>
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
     </script>
