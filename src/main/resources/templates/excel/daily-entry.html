@@ -1,213 +1,181 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Entry - Finance Tracker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-dark: #2F6B3F;
-            --secondary: #7FB77E;
-            --accent: #F7C85C;
-            --background: #FFF6C0;
-            --white: #FFFFFF;
-            --success: #10B981;
-            --danger: #EF4444;
-            --sidebar-width: 280px;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--background); }
-        
-        .sidebar {
-            position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh;
-            background: linear-gradient(135deg, var(--primary-dark) 0%, #1a4d2a 100%);
-            color: white; padding: 1.5rem; overflow-y: auto;
-        }
-        .sidebar-header { text-align: center; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 1.5rem; }
-        .sidebar-header h2 span { color: var(--accent); }
-        .nav-menu { list-style: none; }
-        .nav-item { margin-bottom: 0.5rem; }
-        .nav-link { display: flex; align-items: center; padding: 0.75rem 1rem; color: white; text-decoration: none; border-radius: 10px; gap: 12px; transition: all 0.3s; }
-        .nav-link:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
-        .nav-link.active { background: var(--accent); color: var(--primary-dark); font-weight: bold; }
-        
-        .main-content { margin-left: var(--sidebar-width); padding: 1.5rem; min-height: 100vh; }
-        .top-bar {
-            background: var(--white); border-radius: 15px; padding: 1rem 1.5rem; margin-bottom: 1.5rem;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .logout-btn { background: var(--danger); color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; }
-        
-        .balance-card {
-            background: linear-gradient(135deg, var(--primary-dark), var(--secondary));
-            color: white;
-            padding: 1.5rem;
-            border-radius: 15px;
-            margin-bottom: 1.5rem;
-            text-align: center;
-        }
-        .balance-amount { font-size: 2.5rem; font-weight: bold; }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .stat-card {
-            background: var(--white);
-            padding: 1rem;
-            border-radius: 15px;
-            text-align: center;
-        }
-        .stat-value { font-size: 1.5rem; font-weight: bold; }
-        .income { color: var(--success); }
-        .expense { color: var(--danger); }
-        
-        .form-card {
-            background: var(--white);
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        .form-title {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-            color: var(--primary-dark);
-            border-left: 4px solid var(--accent);
-            padding-left: 0.75rem;
-        }
-        .form-group { margin-bottom: 1rem; }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #E5E7EB;
-            border-radius: 10px;
-            font-size: 1rem;
-        }
-        .btn-submit {
-            background: var(--primary-dark);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 100%;
-        }
-        .btn-submit:hover { background: var(--secondary); }
-        
-        .entry-list {
-            background: var(--white);
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        .entry-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem;
-            border-bottom: 1px solid #E5E7EB;
-        }
-        .delete-btn { color: var(--danger); text-decoration: none; margin-left: 1rem; }
-        
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        
-        .alert-success { background: #D1FAE5; color: #065F46; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
-        .alert-error { background: #FEE2E2; color: #991B1B; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
-        
-        .mobile-menu-btn { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 1100; background: var(--primary-dark); color: white; padding: 0.5rem; border-radius: 8px; cursor: pointer; }
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.active { transform: translateX(0); }
-            .main-content { margin-left: 0; }
-            .mobile-menu-btn { display: block; }
-            .row { grid-template-columns: 1fr; }
-        }
-    </style>
+    <title>Daily Entry</title>
+    
+    <th:block layout:fragment="styles">
+        <style>
+            .btn-submit {
+                background: var(--primary-dark);
+                color: white;
+                padding: 0.75rem 1.5rem;
+                border: none;
+                border-radius: 10px;
+                cursor: pointer;
+                width: 100%;
+                font-weight: 600;
+            }
+            
+            .btn-submit:hover {
+                background: var(--secondary);
+            }
+            
+            .entry-list {
+                background: var(--white);
+                border-radius: 15px;
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .entry-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.75rem;
+                border-bottom: 1px solid var(--gray-200);
+            }
+            
+            .entry-item:last-child {
+                border-bottom: none;
+            }
+            
+            .delete-btn {
+                color: var(--danger);
+                text-decoration: none;
+                margin-left: 1rem;
+            }
+            
+            .form-title {
+                font-size: 1.2rem;
+                margin-bottom: 1rem;
+                color: var(--primary-dark);
+                border-left: 4px solid var(--accent);
+                padding-left: 0.75rem;
+            }
+            
+            .income {
+                color: var(--success);
+            }
+            
+            .expense {
+                color: var(--danger);
+            }
+        </style>
+    </th:block>
 </head>
 <body>
-    <div class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
-    
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header"><h2>💰 Finance<span>Tracker</span></h2><p>Manage Your Finances</p></div>
-        <ul class="nav-menu">
-            <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-            <li class="nav-item"><a href="/transactions" class="nav-link"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
-            <li class="nav-item"><a href="/debts" class="nav-link"><i class="fas fa-hand-holding-usd"></i> Debts</a></li>
-            <li class="nav-item"><a href="/investments" class="nav-link"><i class="fas fa-chart-line"></i> Investments</a></li>
-            <li class="nav-item"><a href="/goals" class="nav-link"><i class="fas fa-bullseye"></i> Goals</a></li>
-            <li class="nav-item"><a href="/budget" class="nav-link"><i class="fas fa-wallet"></i> Budget</a></li>
-            <li class="nav-item"><a href="/daily-entry" class="nav-link active"><i class="fas fa-file-excel"></i> Daily Entry</a></li>
-            <li class="nav-item"><a href="/reports" class="nav-link"><i class="fas fa-chart-bar"></i> Reports</a></li>
-        </ul>
-    </div>
-    
-    <div class="main-content">
-        <div class="top-bar">
-            <div><h3>📅 Daily Entry</h3><p>Record your daily expenses and income</p></div>
-            <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        </div>
-        
-        <div th:if="${success}" class="alert-success" th:text="${success}"></div>
-        <div th:if="${error}" class="alert-error" th:text="${error}"></div>
-        
+    <div layout:fragment="content">
         <!-- Current Balance -->
         <div class="balance-card">
             <div><i class="fas fa-wallet"></i> Current Balance</div>
-            <div class="balance-amount"><span th:text="${#numbers.formatDecimal(currentBalance, 1, 2)}"></span> TZS</div>
+            <div class="balance-amount"><span th:text="${#numbers.formatDecimal(currentBalance, 1, 0)}"></span> TZS</div>
             <div th:text="${#temporals.format(#temporals.createNow(), 'EEEE, MMMM d, yyyy')}"></div>
         </div>
         
         <!-- Today's Stats -->
         <div class="stats-grid">
-            <div class="stat-card"><div>💰 Today's Income</div><div class="stat-value income"><span th:text="${#numbers.formatDecimal(entry.totalIncome, 1, 2)}"></span> TZS</div></div>
-            <div class="stat-card"><div>💸 Today's Expense</div><div class="stat-value expense"><span th:text="${#numbers.formatDecimal(entry.totalExpense, 1, 2)}"></span> TZS</div></div>
-            <div class="stat-card"><div>📊 Today's Savings</div><div class="stat-value" th:class="${(entry.totalIncome - entry.totalExpense) >= 0 ? 'income' : 'expense'}"><span th:text="${#numbers.formatDecimal(entry.totalIncome - entry.totalExpense, 1, 2)}"></span> TZS</div></div>
+            <div class="stat-card">
+                <div class="stat-title">💰 Today's Income</div>
+                <div class="stat-value income" th:text="${#numbers.formatDecimal(entry.totalIncome, 1, 0)} + ' TZS'">0 TZS</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">💸 Today's Expense</div>
+                <div class="stat-value expense" th:text="${#numbers.formatDecimal(entry.totalExpense, 1, 0)} + ' TZS'">0 TZS</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">📊 Today's Savings</div>
+                <div class="stat-value" th:class="${(entry.totalIncome - entry.totalExpense) >= 0 ? 'income' : 'expense'}"
+                     th:text="${#numbers.formatDecimal(entry.totalIncome - entry.totalExpense, 1, 0)} + ' TZS'">0 TZS</div>
+            </div>
         </div>
         
         <!-- Add Expense Form -->
-        <div class="form-card">
+        <div class="section-card">
             <div class="form-title"><i class="fas fa-shopping-cart"></i> Add Expense</div>
             <form action="/excel/add-expense" method="post">
                 <div class="row">
-                    <div class="form-group"><input type="text" name="description" placeholder="What did you buy?" required></div>
-                    <div class="form-group"><input type="number" step="0.01" name="amount" placeholder="Amount (TZS)" required></div>
+                    <div class="form-group">
+                        <input type="text" name="description" placeholder="What did you buy?" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" step="0.01" name="amount" placeholder="Amount (TZS)" required>
+                    </div>
                 </div>
                 <div class="row">
-                    <div class="form-group"><select name="category" required><option value="">Select Category</option><option value="Food">🍔 Food</option><option value="Transport">🚗 Transport</option><option value="Rent">🏠 Rent</option><option value="Utilities">💡 Utilities</option><option value="Entertainment">🎬 Entertainment</option><option value="Shopping">🛍️ Shopping</option><option value="Healthcare">🏥 Healthcare</option><option value="Education">📚 Education</option><option value="Other">📌 Other</option></select></div>
-                    <div class="form-group"><button type="submit" class="btn-submit"><i class="fas fa-plus-circle"></i> Add Expense</button></div>
+                    <div class="form-group">
+                        <select name="category" required>
+                            <option value="">Select Category</option>
+                            <option value="Food">🍔 Food</option>
+                            <option value="Transport">🚗 Transport</option>
+                            <option value="Rent">🏠 Rent</option>
+                            <option value="Utilities">💡 Utilities</option>
+                            <option value="Entertainment">🎬 Entertainment</option>
+                            <option value="Shopping">🛍️ Shopping</option>
+                            <option value="Healthcare">🏥 Healthcare</option>
+                            <option value="Education">📚 Education</option>
+                            <option value="Other">📌 Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn-submit"><i class="fas fa-plus-circle"></i> Add Expense</button>
+                    </div>
                 </div>
             </form>
         </div>
         
         <!-- Add Income Form -->
-        <div class="form-card">
+        <div class="section-card">
             <div class="form-title"><i class="fas fa-money-bill-wave"></i> Add Income</div>
             <form action="/excel/add-income" method="post">
                 <div class="row">
-                    <div class="form-group"><input type="text" name="description" placeholder="Income source" required></div>
-                    <div class="form-group"><input type="number" step="0.01" name="amount" placeholder="Amount (TZS)" required></div>
+                    <div class="form-group">
+                        <input type="text" name="description" placeholder="Income source" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" step="0.01" name="amount" placeholder="Amount (TZS)" required>
+                    </div>
                 </div>
                 <div class="row">
-                    <div class="form-group"><select name="source" required><option value="">Select Source</option><option value="Salary">💰 Salary</option><option value="Business">💼 Business</option><option value="Investment">📈 Investment</option><option value="Gift">🎁 Gift</option><option value="Other">📌 Other</option></select></div>
-                    <div class="form-group"><button type="submit" class="btn-submit"><i class="fas fa-plus-circle"></i> Add Income</button></div>
+                    <div class="form-group">
+                        <select name="source" required>
+                            <option value="">Select Source</option>
+                            <option value="Salary">💰 Salary</option>
+                            <option value="Business">💼 Business</option>
+                            <option value="Investment">📈 Investment</option>
+                            <option value="Gift">🎁 Gift</option>
+                            <option value="Other">📌 Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn-submit"><i class="fas fa-plus-circle"></i> Add Income</button>
+                    </div>
                 </div>
             </form>
         </div>
         
         <!-- Excel Upload -->
-        <div class="form-card">
+        <div class="section-card">
             <div class="form-title"><i class="fas fa-file-excel"></i> Upload Excel File</div>
             <form action="/excel/upload" method="post" enctype="multipart/form-data">
                 <div class="row">
-                    <div class="form-group"><input type="number" step="0.01" name="openingBalance" placeholder="Opening Balance (TZS)" required></div>
-                    <div class="form-group"><input type="file" name="file" accept=".xlsx, .xls" required></div>
+                    <div class="form-group">
+                        <input type="number" step="0.01" name="openingBalance" placeholder="Opening Balance (TZS)" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="file" name="file" accept=".xlsx, .xls" required>
+                    </div>
                 </div>
                 <div class="row">
-                    <div class="form-group"><button type="submit" class="btn-submit" style="background: #217346;"><i class="fas fa-upload"></i> Upload Excel</button></div>
-                    <div class="form-group"><a href="/excel/download-template" class="btn-submit" style="background: #217346; display: block; text-align: center; text-decoration: none;"><i class="fas fa-download"></i> Download Template</a></div>
+                    <div class="form-group">
+                        <button type="submit" class="btn-submit" style="background: #217346;"><i class="fas fa-upload"></i> Upload Excel</button>
+                    </div>
+                    <div class="form-group">
+                        <a href="/excel/download-template" class="btn-submit" style="background: #217346; display: block; text-align: center; text-decoration: none;">
+                            <i class="fas fa-download"></i> Download Template
+                        </a>
+                    </div>
                 </div>
             </form>
         </div>
@@ -215,30 +183,48 @@
         <!-- Today's Expenses List -->
         <div class="entry-list">
             <div class="form-title"><i class="fas fa-list"></i> Today's Expenses</div>
-            <div th:if="${entry.expenses.empty}" style="text-align: center; padding: 1rem; color: #6B7280;">No expenses recorded today</div>
+            <div th:if="${entry.expenses.empty}" class="empty-state" style="padding: 1rem;">
+                <p>No expenses recorded today</p>
+            </div>
             <div th:each="exp, stat : ${entry.expenses}" class="entry-item">
-                <div><strong th:text="${exp.description}"></strong><br><small th:text="${exp.category}"></small></div>
-                <div><span class="expense" th:text="'- ' + ${#numbers.formatDecimal(exp.amount, 1, 2)} + ' TZS'"></span><a th:href="'/excel/delete-expense/' + ${stat.index}" class="delete-btn" onclick="return confirm('Delete this expense?')"><i class="fas fa-trash"></i></a></div>
+                <div>
+                    <strong th:text="${exp.description}"></strong><br>
+                    <small class="category-badge" th:text="${exp.category}"></small>
+                </div>
+                <div>
+                    <span class="expense" th:text="'- ' + ${#numbers.formatDecimal(exp.amount, 1, 0)} + ' TZS'"></span>
+                    <a th:href="'/excel/delete-expense/' + ${stat.index}" class="delete-btn" onclick="return confirm('Delete this expense?')">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </div>
             </div>
         </div>
         
         <!-- Today's Income List -->
         <div class="entry-list">
             <div class="form-title"><i class="fas fa-list"></i> Today's Income</div>
-            <div th:if="${entry.incomes.empty}" style="text-align: center; padding: 1rem; color: #6B7280;">No income recorded today</div>
+            <div th:if="${entry.incomes.empty}" class="empty-state" style="padding: 1rem;">
+                <p>No income recorded today</p>
+            </div>
             <div th:each="inc, stat : ${entry.incomes}" class="entry-item">
-                <div><strong th:text="${inc.description}"></strong><br><small th:text="${inc.source}"></small></div>
-                <div><span class="income" th:text="'+ ' + ${#numbers.formatDecimal(inc.amount, 1, 2)} + ' TZS'"></span><a th:href="'/excel/delete-income/' + ${stat.index}" class="delete-btn" onclick="return confirm('Delete this income?')"><i class="fas fa-trash"></i></a></div>
+                <div>
+                    <strong th:text="${inc.description}"></strong><br>
+                    <small class="category-badge" th:text="${inc.source}"></small>
+                </div>
+                <div>
+                    <span class="income" th:text="'+ ' + ${#numbers.formatDecimal(inc.amount, 1, 0)} + ' TZS'"></span>
+                    <a th:href="'/excel/delete-income/' + ${stat.index}" class="delete-btn" onclick="return confirm('Delete this income?')">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </div>
             </div>
         </div>
         
         <div style="text-align: center; margin-top: 1rem;">
-            <a href="/excel/history" class="btn-submit" style="background: #6B7280; text-decoration: none; display: inline-block; width: auto; padding: 0.75rem 2rem;"><i class="fas fa-history"></i> View History</a>
+            <a href="/excel/history" class="btn btn-secondary" style="display: inline-block; width: auto; padding: 0.75rem 2rem;">
+                <i class="fas fa-history"></i> View History
+            </a>
         </div>
     </div>
-    
-    <script>
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
-    </script>
 </body>
 </html>
