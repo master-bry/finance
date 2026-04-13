@@ -156,9 +156,8 @@ src/main/resources/
 |-------|--------|
 | ![Debts](screenshots/daily.png) | ![Budget](screenshots/budget.png) |
 
-> Add your screenshots to a `/screenshots` folder in the project root and update the paths above.
 
----
+----
 
 ## 🔒 Security
 
