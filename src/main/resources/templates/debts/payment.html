@@ -1,31 +1,16 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Make Payment - Finance Tracker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <title>Make Payment</title>
 </head>
 <body>
-    <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-    
-    <div class="sidebar" id="sidebar">
-        <!-- same sidebar -->
-    </div>
-    
-    <div class="main-content">
-        <div class="top-bar">
-            <div>
-                <h3>💵 Record Payment</h3>
-                <p>Record a payment against this debt</p>
-            </div>
-            <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        </div>
-        
+    <div layout:fragment="content">
         <div class="form-container">
-            <h2>💰 Payment Details</h2>
+            <h2 style="color: var(--primary-dark); margin-bottom: 0.3rem;">💰 Payment Details</h2>
+            <p style="color: var(--gray-500); margin-bottom: 1.5rem;">Record a payment against this debt</p>
             
             <div class="debt-info">
                 <p><strong>Person:</strong> <span th:text="${debt.personName}"></span></p>
@@ -38,13 +23,13 @@
             
             <form th:action="@{/debts/make-payment/{id}(id=${debt.id})}" method="post">
                 <div class="form-group">
-                    <label>Payment Amount (TZS) *</label>
-                    <input type="number" step="0.01" name="amount" required 
+                    <label for="amount">Payment Amount (TZS) *</label>
+                    <input type="number" step="0.01" id="amount" name="amount" required 
                            th:max="${debt.remainingAmount}" placeholder="Enter amount" min="0.01">
                 </div>
                 <div class="form-group">
-                    <label>Notes (optional)</label>
-                    <textarea name="notes" rows="3" placeholder="e.g., Cash payment, Bank transfer..."></textarea>
+                    <label for="notes">Notes (optional)</label>
+                    <textarea id="notes" name="notes" rows="3" placeholder="e.g., Cash payment, Bank transfer..."></textarea>
                 </div>
                 <div class="btn-group">
                     <button type="submit" class="btn btn-success"><i class="fas fa-check-circle"></i> Record Payment</button>
@@ -53,9 +38,5 @@
             </form>
         </div>
     </div>
-    
-    <script>
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
-    </script>
 </body>
 </html>
