@@ -37,23 +37,6 @@ public class TransactionService {
     }
 
     /**
-     * Update an existing transaction and sync to DailyEntry.
-     */
-    public Transaction updateTransaction(Transaction transaction) {
-        // Ensure it exists and preserve userId
-        Transaction existing = transactionRepository.findById(transaction.getId())
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
-        transaction.setUserId(existing.getUserId());
-        transaction.setDeleted(existing.isDeleted());
-        transaction.setDeletedAt(existing.getDeletedAt());
-        Transaction saved = transactionRepository.save(transaction);
-
-        // Sync to DailyEntry (update)
-        dailyEntryService.syncTransactionToDailyEntry(saved.getUserId(), saved, false);
-        return saved;
-    }
-
-    /**
      * Soft delete - marks as deleted and syncs removal from DailyEntry.
      */
     public void deleteTransaction(String id) {
@@ -112,6 +95,18 @@ public class TransactionService {
                 .forEach(t -> incomeByCategory.merge(t.getCategory(), t.getAmount(), Double::sum));
         return incomeByCategory;
     }
+    public Transaction updateTransaction(Transaction transaction) {
+    Transaction existing = transactionRepository.findById(transaction.getId())
+            .orElseThrow(() -> new RuntimeException("Transaction not found"));
+    transaction.setUserId(existing.getUserId());
+    transaction.setDeleted(existing.isDeleted());
+    transaction.setDeletedAt(existing.getDeletedAt());
+    Transaction saved = transactionRepository.save(transaction);
+
+    // Sync to DailyEntry
+    dailyEntryService.syncTransactionToDailyEntry(saved.getUserId(), saved, false);
+    return saved;
+}
 
     public List<Transaction> getRecentTransactions(String userId, int limit) {
         return transactionRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId)
