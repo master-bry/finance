@@ -49,32 +49,32 @@ public class TransactionController {
         return "transactions/index";
     }
     
-    @GetMapping("/add")
-    public String showAddForm(Model model) {
-        if (!model.containsAttribute("transaction")) {
-            model.addAttribute("transaction", new Transaction());
-        }
-        model.addAttribute("currentPage", "transactions");
-        return "transactions/add";
-    }
+    // @GetMapping("/add")
+    // public String showAddForm(Model model) {
+    //     if (!model.containsAttribute("transaction")) {
+    //         model.addAttribute("transaction", new Transaction());
+    //     }
+    //     model.addAttribute("currentPage", "transactions");
+    //     return "transactions/add";
+    // }
     
-    @PostMapping("/add")
-    public String addTransaction(@Valid @ModelAttribute Transaction transaction,
-                                 BindingResult result,
-                                 Authentication authentication,
-                                 RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.transaction", result);
-            redirectAttributes.addFlashAttribute("transaction", transaction);
-            return "redirect:/transactions/add";
-        }
+    // @PostMapping("/add")
+    // public String addTransaction(@Valid @ModelAttribute Transaction transaction,
+    //                              BindingResult result,
+    //                              Authentication authentication,
+    //                              RedirectAttributes redirectAttributes) {
+    //     if (result.hasErrors()) {
+    //         redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.transaction", result);
+    //         redirectAttributes.addFlashAttribute("transaction", transaction);
+    //         return "redirect:/transactions/add";
+    //     }
         
-        String userId = getUserId(authentication);
-        transaction.setUserId(userId);
-        transactionService.saveTransaction(transaction);
-        redirectAttributes.addFlashAttribute("success", "Transaction added successfully!");
-        return "redirect:/transactions";
-    }
+    //     String userId = getUserId(authentication);
+    //     transaction.setUserId(userId);
+    //     transactionService.saveTransaction(transaction);
+    //     redirectAttributes.addFlashAttribute("success", "Transaction added successfully!");
+    //     return "redirect:/transactions";
+    // }
     
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable String id, Authentication authentication, Model model) {

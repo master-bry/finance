@@ -32,7 +32,7 @@ public class ExcelController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/daily")
+    @GetMapping("/daily-entry")
     public String showDailyEntry(Authentication authentication, Model model) {
         String userId = getUserId(authentication);
 
@@ -47,7 +47,7 @@ public class ExcelController {
         model.addAttribute("pageSubtitle", "Record your daily expenses and income");
         model.addAttribute("title", "Daily Entry");
 
-        return "excel/daily";
+        return "excel/daily-entry";
     }
 
     @PostMapping("/add-expense")
@@ -96,7 +96,7 @@ public class ExcelController {
             redirectAttributes.addFlashAttribute("error", "Error adding expense: " + e.getMessage());
         }
 
-        return "redirect:/excel/daily";
+        return "redirect:/excel/daily-entry";
     }
 
     @PostMapping("/add-income")
@@ -144,7 +144,7 @@ public class ExcelController {
             redirectAttributes.addFlashAttribute("error", "Error adding income: " + e.getMessage());
         }
 
-        return "redirect:/excel/daily";
+        return "redirect:/excel/daily-entry";
     }
 
     @GetMapping("/delete-expense/{index}")
@@ -167,7 +167,7 @@ public class ExcelController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error removing expense");
         }
-        return "redirect:/excel/daily";
+        return "redirect:/excel/daily-entry";
     }
 
     @GetMapping("/delete-income/{index}")
@@ -185,7 +185,7 @@ public class ExcelController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error removing income");
         }
-        return "redirect:/excel/daily";
+        return "redirect:/excel/daily-entry";
     }
 
     @PostMapping("/upload")
@@ -200,7 +200,7 @@ public class ExcelController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error processing Excel: " + e.getMessage());
         }
-        return "redirect:/excel/daily";
+        return "redirect:/excel/daily-entry";
     }
 
     @GetMapping("/download-template")
