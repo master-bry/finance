@@ -58,7 +58,6 @@
             
             <div class="investment-actions">
                 <a th:href="'/investments/update-value/' + ${inv.id}" class="btn-xs btn-update">💰 Update Value</a>
-                <a th:href="'/investments/add-transaction/' + ${inv.id}" class="btn-xs btn-transaction">📝 Add Transaction</a>
                 <a th:href="'/investments/edit/' + ${inv.id}" class="btn-xs btn-edit">✏️ Edit</a>
                 <a th:href="'/investments/delete/' + ${inv.id}" class="btn-xs btn-delete" onclick="return confirm('Are you sure?')">🗑️ Delete</a>
             </div>

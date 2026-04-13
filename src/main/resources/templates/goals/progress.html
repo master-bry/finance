@@ -24,7 +24,7 @@
             <form th:action="@{/goals/progress/{id}(id=${goal.id})}" method="post">
                 <div class="form-group">
                     <label>Amount to Add (TZS) *</label>
-                    <input type="number" step="0.01" name="amount" required placeholder="Enter amount">
+                    <input type="number" step="0.01" name="amount" required placeholder="Enter amount" min="0.01" th:max="${goal.remainingAmount}">
                 </div>
                 <div class="form-group">
                     <label>Notes (optional)</label>
