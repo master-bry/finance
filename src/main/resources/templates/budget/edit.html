@@ -5,57 +5,56 @@
 <head>
     <title>Edit Budget</title>
     
-    <th:block layout:fragment="styles">
-        <style>
+    <style layout:fragment="styles">
+        .category-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .category-name {
+            font-weight: bold;
+        }
+        
+        .btn-save {
+            background: var(--primary-dark);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .btn-save:hover {
+            background: var(--secondary);
+        }
+        
+        .btn-back {
+            background: var(--gray-500);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 1rem;
+            text-align: center;
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
             .category-row {
-                display: grid;
-                grid-template-columns: 1fr 1fr 1fr;
-                gap: 1rem;
-                align-items: center;
-                margin-bottom: 0.75rem;
-                padding: 0.5rem;
-                border-bottom: 1px solid var(--gray-200);
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
             }
-            
-            .category-name {
-                font-weight: bold;
-            }
-            
-            .btn-save {
-                background: var(--primary-dark);
-                color: white;
-                padding: 0.75rem 1.5rem;
-                border: none;
-                border-radius: 10px;
-                cursor: pointer;
-                width: 100%;
-                font-size: 1rem;
-                font-weight: 600;
-            }
-            
-            .btn-save:hover {
-                background: var(--secondary);
-            }
-            
-            .btn-back {
-                background: var(--gray-500);
-                color: white;
-                padding: 0.75rem 1.5rem;
-                border-radius: 10px;
-                text-decoration: none;
-                display: inline-block;
-                margin-top: 1rem;
-                text-align: center;
-                width: 100%;
-            }
-            
-            @media (max-width: 768px) {
-                .category-row {
-                    grid-template-columns: 1fr;
-                }
-            }
-        </style>
-    </th:block>
+        }
+    </style>
 </head>
 <body>
     <div layout:fragment="content">
@@ -64,36 +63,38 @@
                 <i class="fas fa-edit"></i> Edit Budget
             </h2>
             
-            <form action="/budget/edit" method="post">
+            <form th:action="@{/budget/edit}" th:object="${budget}" method="post">
                 <div class="row">
                     <div class="form-group">
-                        <label>Total Monthly Income (TZS)</label>
-                        <input type="number" step="0.01" name="totalIncome" th:value="${budget.totalIncome}" required>
+                        <label for="totalIncome">Total Monthly Income (TZS) *</label>
+                        <input type="number" step="0.01" id="totalIncome" th:field="*{totalIncome}" required>
                     </div>
                     <div class="form-group">
-                        <label>Savings Target (TZS)</label>
-                        <input type="number" step="0.01" name="savingsTarget" th:value="${budget.savingsTarget}">
+                        <label for="savingsTarget">Savings Target (TZS)</label>
+                        <input type="number" step="0.01" id="savingsTarget" th:field="*{savingsTarget}">
                     </div>
                 </div>
                 
                 <h4 style="margin: 1.5rem 0 1rem 0; color: var(--primary-dark);">Category Budgets</h4>
                 
-                <div th:each="entry : ${budget.categoryBudgets}">
+                <div th:each="entry : *{categoryBudgets}">
                     <div class="category-row">
                         <div class="category-name" th:text="${entry.key}"></div>
                         <div>
-                            <input type="number" step="0.01" th:name="'planned_' + ${entry.key}" 
-                                   th:value="${entry.value.planned}" placeholder="Amount" 
-                                   style="width: 100%; padding: 0.75rem; border: 2px solid var(--gray-200); border-radius: 10px;">
+                            <input type="number" step="0.01" 
+                                   th:name="'categoryBudgets[' + ${entry.key} + '].planned'" 
+                                   th:value="${entry.value.planned}" 
+                                   placeholder="Amount" 
+                                   style="width: 100%; padding: 0.75rem; border: 2px solid #E5E7EB; border-radius: 10px;">
                         </div>
                         <div th:text="'Current: ' + ${#numbers.formatDecimal(entry.value.actual, 1, 0)} + ' TZS'" 
-                             style="color: var(--gray-500); font-size: 0.85rem;"></div>
+                             style="color: #6B7280; font-size: 0.85rem;"></div>
                     </div>
                 </div>
                 
                 <div class="form-group" style="margin-top: 1.5rem;">
-                    <label>Notes</label>
-                    <textarea name="notes" rows="3" th:text="${budget.notes}" 
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" th:field="*{notes}" rows="3" 
                               placeholder="Any additional notes..."></textarea>
                 </div>
                 
