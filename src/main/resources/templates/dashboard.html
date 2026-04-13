@@ -444,8 +444,8 @@
         }
         
         const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
-        const weeklyIncome = /*[[${weeklyIncome}]]*/ [0, 0, 0, 0];
-        const weeklyExpense = /*[[${weeklyExpense}]]*/ [0, 0, 0, 0];
+        const weeklyIncome = [[${weeklyIncome}]]; /* [0, 0, 0, 0];*/
+        const weeklyExpense = [[${weeklyExpense}]];
         
         new Chart(weeklyCtx, {
             type: 'line',

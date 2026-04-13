@@ -1,82 +1,77 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title} + ' - Finance Tracker'">Finance Tracker</title>
-    <!-- External CSS -->
-    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}">
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title layout:title-pattern="$CONTENT_TITLE - Finance Tracker">Finance Tracker</title>
+    
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Main Layout CSS -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    
+    <!-- Page-specific CSS placeholder -->
+    <th:block layout:fragment="styles"></th:block>
 </head>
 <body>
     <!-- Mobile Menu Button -->
-    <div class="mobile-menu-btn" onclick="toggleSidebar()">
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">
         <i class="fas fa-bars"></i>
-    </div>
-    
-    <!-- Sidebar Navigation -->
+    </button>
+
+    <!-- Sidebar Navigation Drawer -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2>💰 Finance<span>Tracker</span></h2>
             <p>Manage Your Finances</p>
         </div>
-        
         <ul class="nav-menu">
             <li class="nav-item">
                 <a href="/dashboard" class="nav-link" th:classappend="${currentPage == 'dashboard' ? 'active' : ''}">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Dashboard</span>
+                    <i class="fas fa-chart-line"></i> Dashboard
                 </a>
             </li>
             <li class="nav-item">
                 <a href="/transactions" class="nav-link" th:classappend="${currentPage == 'transactions' ? 'active' : ''}">
-                    <i class="fas fa-exchange-alt"></i>
-                    <span>Transactions</span>
+                    <i class="fas fa-exchange-alt"></i> Transactions
                 </a>
             </li>
             <li class="nav-item">
                 <a href="/debts" class="nav-link" th:classappend="${currentPage == 'debts' ? 'active' : ''}">
-                    <i class="fas fa-hand-holding-usd"></i>
-                    <span>Debts</span>
+                    <i class="fas fa-hand-holding-usd"></i> Debts
                 </a>
             </li>
             <li class="nav-item">
                 <a href="/investments" class="nav-link" th:classappend="${currentPage == 'investments' ? 'active' : ''}">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Investments</span>
+                    <i class="fas fa-chart-line"></i> Investments
                 </a>
             </li>
             <li class="nav-item">
                 <a href="/goals" class="nav-link" th:classappend="${currentPage == 'goals' ? 'active' : ''}">
-                    <i class="fas fa-bullseye"></i>
-                    <span>Goals</span>
+                    <i class="fas fa-bullseye"></i> Goals
                 </a>
             </li>
             <li class="nav-item">
                 <a href="/budget" class="nav-link" th:classappend="${currentPage == 'budget' ? 'active' : ''}">
-                    <i class="fas fa-wallet"></i>
-                    <span>Budget</span>
+                    <i class="fas fa-wallet"></i> Budget
                 </a>
             </li>
             <li class="nav-item">
-                <a href="/daily-entry" class="nav-link" th:classappend="${currentPage == 'daily' ? 'active' : ''}">
-                    <i class="fas fa-calendar-day"></i>
-                    <span>Daily Entry</span>
+                <a href="/excel/daily" class="nav-link" th:classappend="${currentPage == 'daily' ? 'active' : ''}">
+                    <i class="fas fa-calendar-day"></i> Daily Entry
                 </a>
             </li>
             <li class="nav-item">
                 <a href="/reports" class="nav-link" th:classappend="${currentPage == 'reports' ? 'active' : ''}">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Reports</span>
+                    <i class="fas fa-chart-bar"></i> Reports
                 </a>
             </li>
         </ul>
     </div>
-    
+
     <!-- Main Content -->
     <div class="main-content">
         <!-- Top Bar -->
@@ -89,19 +84,37 @@
                 <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>
-        
+
         <!-- Alert Messages -->
-        <div th:if="${success}" class="alert-success" style="background: #D1FAE5; color: #065F46; padding: 1rem; border-radius: 10px; margin-bottom: 1rem;" th:text="${success}"></div>
-        <div th:if="${error}" class="alert-error" style="background: #FEE2E2; color: #991B1B; padding: 1rem; border-radius: 10px; margin-bottom: 1rem;" th:text="${error}"></div>
-        
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
         <!-- Page Content -->
-        <div th:replace="${pageContent}"></div>
+        <div layout:fragment="content">
+            <!-- Page-specific content goes here -->
+        </div>
     </div>
-    
-    <script>
+
+    <!-- Common JavaScript -->
+    <script th:inline="javascript">
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
         }
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !menuBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
     </script>
+    
+    <!-- Page-specific JavaScript placeholder -->
+    <th:block layout:fragment="scripts"></th:block>
 </body>
 </html>
