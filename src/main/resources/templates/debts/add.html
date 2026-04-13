@@ -1,73 +1,60 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Debt - Finance Tracker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <title>Add Debt</title>
 </head>
 <body>
-    <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-    
-    <div class="sidebar" id="sidebar">
-        <!-- same sidebar -->
-    </div>
-    
-    <div class="main-content">
-        <div class="top-bar">
-            <div>
-                <h3>➕ Add New Debt</h3>
-                <p>Record a new debt or lending</p>
-            </div>
-            <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        </div>
-        
-        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
-        
+    <div layout:fragment="content">
         <div class="form-container">
-            <h2>💳 Debt Details</h2>
+            <h2 style="color: var(--primary-dark); margin-bottom: 0.3rem;">💳 Debt Details</h2>
+            <p style="color: var(--gray-500); margin-bottom: 1.5rem;">Record a new debt or lending</p>
+            
             <form th:action="@{/debts/add}" th:object="${debt}" method="post">
                 <div class="form-group">
-                    <label>Person Name *</label>
-                    <input type="text" th:field="*{personName}" required placeholder="Enter person's name">
+                    <label for="personName">Person Name *</label>
+                    <input type="text" id="personName" th:field="*{personName}" required placeholder="Enter person's name">
+                    <div th:if="${#fields.hasErrors('personName')}" th:errors="*{personName}" class="error-message"></div>
                 </div>
                 
                 <div class="row">
                     <div class="form-group">
-                        <label>Type *</label>
-                        <select th:field="*{type}" required>
+                        <label for="type">Type *</label>
+                        <select id="type" th:field="*{type}" required>
                             <option value="">Select type</option>
                             <option value="OWED_TO_ME">💰 Owed to Me</option>
                             <option value="I_OWE">💸 I Owe</option>
                         </select>
+                        <div th:if="${#fields.hasErrors('type')}" th:errors="*{type}" class="error-message"></div>
                     </div>
                     <div class="form-group">
-                        <label>Amount (TZS) *</label>
-                        <input type="number" step="0.01" th:field="*{amount}" required placeholder="0.00" min="0.01">
+                        <label for="amount">Amount (TZS) *</label>
+                        <input type="number" step="0.01" id="amount" th:field="*{amount}" required placeholder="0.00" min="0.01">
+                        <div th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}" class="error-message"></div>
                     </div>
                 </div>
                 
                 <div class="row">
                     <div class="form-group">
-                        <label>Phone Number</label>
-                        <input type="tel" th:field="*{phoneNumber}" placeholder="Optional">
+                        <label for="phoneNumber">Phone Number</label>
+                        <input type="tel" id="phoneNumber" th:field="*{phoneNumber}" placeholder="Optional">
                     </div>
                     <div class="form-group">
-                        <label>Due Date</label>
-                        <input type="date" th:field="*{dueDate}">
+                        <label for="dueDate">Due Date</label>
+                        <input type="date" id="dueDate" th:field="*{dueDate}">
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label>Description</label>
-                    <textarea th:field="*{description}" rows="3" placeholder="What is this debt for?"></textarea>
+                    <label for="description">Description</label>
+                    <textarea id="description" th:field="*{description}" rows="3" placeholder="What is this debt for?"></textarea>
                 </div>
                 
                 <div class="form-group">
-                    <label>Additional Notes</label>
-                    <textarea th:field="*{notes}" rows="2" placeholder="Any additional information..."></textarea>
+                    <label for="notes">Additional Notes</label>
+                    <textarea id="notes" th:field="*{notes}" rows="2" placeholder="Any additional information..."></textarea>
                 </div>
                 
                 <div class="btn-group">
@@ -77,9 +64,5 @@
             </form>
         </div>
     </div>
-    
-    <script>
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
-    </script>
 </body>
 </html>
