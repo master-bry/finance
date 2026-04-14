@@ -25,7 +25,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-title">📊 Savings Rate</div>
-                <div class="stat-value positive" th:text="${stats.savingsRate} + '%'">0%</div>
+                <div class="stat-value positive" th:text="${#numbers.formatDecimal(stats.savingsRate, 1, 1)} + '%'">0%</div>
             </div>
         </div>
         
@@ -149,21 +149,14 @@
                 <p>No active goals. <a href="/goals/add" style="color: var(--primary-dark);">Create your first goal!</a></p>
             </div>
         </div>
-        
-        <!-- Alerts/Notifications -->
-        <div class="section-card" th:if="${alerts != null && !alerts.empty}">
-            <div class="section-header">
-                <h4><i class="fas fa-bell"></i> Notifications</h4>
-            </div>
-            <div th:each="alert : ${alerts}">
-                <div class="alert" th:class="'alert ' + (${alert.type} == 'WARNING' ? 'alert-error' : 'alert-success')" 
-                     th:text="${alert.message}"></div>
-            </div>
-        </div>
     </div>
     
     <th:block layout:fragment="scripts">
         <script th:inline="javascript">
+            // Display notifications as toasts
+            const notifications = /*[[${notifications}]]*/ [];
+            notifications.forEach(msg => showInfoToast(msg, 'Notification'));
+
             // Expense Chart Data
             const expenseCategories = /*[[${expenseCategories}]]*/ [];
             const expenseAmounts = /*[[${expenseAmounts}]]*/ [];

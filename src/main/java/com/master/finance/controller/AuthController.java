@@ -12,15 +12,15 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class AuthController {
-    
+
     @Autowired
     private UserService userService;
-    
+
     @GetMapping("/")
     public String home() {
         return "redirect:/login";
     }
-    
+
     @GetMapping("/login")
     public String login(@RequestParam(value = "error", required = false) String error,
                         @RequestParam(value = "logout", required = false) String logout,
@@ -33,27 +33,37 @@ public class AuthController {
         }
         return "login";
     }
-    
+
     @GetMapping("/register")
     public String register(Model model) {
         model.addAttribute("user", new User());
         return "register";
     }
-    
+
     @PostMapping("/register")
     public String registerUser(User user, RedirectAttributes redirectAttributes) {
         if (userService.existsByUsername(user.getUsername())) {
             redirectAttributes.addFlashAttribute("error", "Username already exists");
             return "redirect:/register";
         }
-        
+
         if (userService.existsByEmail(user.getEmail())) {
             redirectAttributes.addFlashAttribute("error", "Email already registered");
             return "redirect:/register";
         }
-        
+
         userService.registerUser(user);
         redirectAttributes.addFlashAttribute("success", "Registration successful! Please login.");
         return "redirect:/login";
+    }
+
+    /**
+     * Custom logout success page.
+     * Spring Security will redirect here after logout.
+     */
+    @GetMapping("/auth/logout")
+    public String logoutSuccess(Model model) {
+        model.addAttribute("title", "Logged Out");
+        return "auth/logout";
     }
 }

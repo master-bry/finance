@@ -13,21 +13,31 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    
+
     @Autowired
     private CustomUserDetailsService userDetailsService;
-    
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/", "/login", "/register", "/css/**", "/js/**", "/static/**", 
-                                "/images/**", "/debug/**", "/reset/**", "/fix-password", 
-                                "/test-login/**", "/check-user", "/set-password/**", 
-                                "/reencode-password", "/generate-hash", "/update-my-password",
-                                "/dashboard", "/transactions/**", "/debts/**", "/investments/**", 
-                                "/goals/**", "/budget/**","/daily-entry/**", "/reports/**").permitAll()
+                // Public resources and pages
+                .requestMatchers(
+                    "/", "/login", "/register",
+                    "/auth/logout",               // custom logout page
+                    "/error/**",                  // custom error pages
+                    "/css/**", "/js/**", "/static/**",
+                    "/images/**", "/debug/**", "/reset/**", "/fix-password",
+                    "/test-login/**", "/check-user", "/set-password/**",
+                    "/reencode-password", "/generate-hash", "/update-my-password"
+                ).permitAll()
+                // All authenticated pages (dashboard, transactions, etc.)
+                .requestMatchers(
+                    "/dashboard", "/transactions/**", "/debts/**",
+                    "/investments/**", "/goals/**", "/budget/**",
+                    "/excel/**", "/reports/**"
+                ).authenticated()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -36,14 +46,16 @@ public class SecurityConfig {
                 .permitAll()
             )
             .logout(logout -> logout
-                .logoutSuccessUrl("/login?logout")
+                .logoutSuccessUrl("/auth/logout")   // ← use custom logout page
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
                 .permitAll()
             )
             .userDetailsService(userDetailsService);
-        
+
         return http.build();
     }
-    
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

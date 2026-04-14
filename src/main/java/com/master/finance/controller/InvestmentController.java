@@ -3,25 +3,23 @@ package com.master.finance.controller;
 import com.master.finance.model.Investment;
 import com.master.finance.service.InvestmentService;
 import com.master.finance.service.UserService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/investments")
 public class InvestmentController {
-    
+
     @Autowired
     private InvestmentService investmentService;
-    
+
     @Autowired
     private UserService userService;
-    
+
     @GetMapping
     public String listInvestments(Authentication authentication, Model model) {
         String userId = getUserId(authentication);
@@ -29,99 +27,201 @@ public class InvestmentController {
         model.addAttribute("totalInvested", investmentService.getTotalInvested(userId));
         model.addAttribute("totalCurrentValue", investmentService.getTotalCurrentValue(userId));
         model.addAttribute("totalProfitLoss", investmentService.getTotalProfitLoss(userId));
+
+        // Layout attributes
+        model.addAttribute("currentPage", "investments");
+        model.addAttribute("pageSubtitle", "Manage your investment portfolio");
+        model.addAttribute("title", "Investments");
+
         return "investments/index";
     }
-    
+
     @GetMapping("/add")
     public String showAddForm(Model model) {
         if (!model.containsAttribute("investment")) {
             model.addAttribute("investment", new Investment());
         }
+
+        // Layout attributes
+        model.addAttribute("currentPage", "investments");
+        model.addAttribute("pageSubtitle", "Add a new investment");
+        model.addAttribute("title", "Add Investment");
+
         return "investments/add";
     }
-    
+
     @PostMapping("/add")
-    public String addInvestment(@Valid @ModelAttribute Investment investment,
-                                BindingResult result,
+    public String addInvestment(@ModelAttribute Investment investment,
                                 Authentication authentication,
                                 RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.investment", result);
-            redirectAttributes.addFlashAttribute("investment", investment);
-            return "redirect:/investments/add";
+        try {
+            String userId = getUserId(authentication);
+            investment.setUserId(userId);
+            investmentService.saveInvestment(investment);
+            redirectAttributes.addFlashAttribute("success", "Investment added successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to add investment: " + e.getMessage());
         }
-        
-        String userId = getUserId(authentication);
-        investment.setUserId(userId);
-        investmentService.saveInvestment(investment);
-        redirectAttributes.addFlashAttribute("success", "Investment added successfully!");
         return "redirect:/investments";
     }
-    
+
     @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable String id, Authentication authentication, Model model) {
+    public String showEditForm(@PathVariable String id,
+                               Authentication authentication,
+                               Model model,
+                               RedirectAttributes redirectAttributes) {
         String userId = getUserId(authentication);
-        investmentService.getInvestment(id).ifPresent(investment -> {
-            if (investment.getUserId().equals(userId)) {
-                model.addAttribute("investment", investment);
-            }
-        });
-        return "investments/edit";
+        return investmentService.getInvestment(id)
+                .filter(investment -> investment.getUserId().equals(userId))
+                .map(investment -> {
+                    model.addAttribute("investment", investment);
+                    // Layout attributes
+                    model.addAttribute("currentPage", "investments");
+                    model.addAttribute("pageSubtitle", "Edit investment details");
+                    model.addAttribute("title", "Edit Investment");
+                    return "investments/edit";
+                })
+                .orElseGet(() -> {
+                    redirectAttributes.addFlashAttribute("error", "Investment not found or access denied.");
+                    return "redirect:/investments";
+                });
     }
-    
+
     @PostMapping("/edit/{id}")
     public String updateInvestment(@PathVariable String id,
-                                   @Valid @ModelAttribute Investment investment,
+                                   @ModelAttribute Investment investment,
                                    Authentication authentication,
                                    RedirectAttributes redirectAttributes) {
-        String userId = getUserId(authentication);
-        investment.setId(id);
-        investment.setUserId(userId);
-        investmentService.saveInvestment(investment);
-        redirectAttributes.addFlashAttribute("success", "Investment updated successfully!");
+        try {
+            String userId = getUserId(authentication);
+            // Ensure ownership
+            investmentService.getInvestment(id).ifPresentOrElse(existing -> {
+                if (existing.getUserId().equals(userId)) {
+                    investment.setId(id);
+                    investment.setUserId(userId);
+                    investmentService.saveInvestment(investment);
+                    redirectAttributes.addFlashAttribute("success", "Investment updated successfully!");
+                } else {
+                    redirectAttributes.addFlashAttribute("error", "Access denied.");
+                }
+            }, () -> redirectAttributes.addFlashAttribute("error", "Investment not found."));
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Update failed: " + e.getMessage());
+        }
         return "redirect:/investments";
     }
-    
+
     @GetMapping("/delete/{id}")
-    public String softDeleteInvestment(@PathVariable String id, RedirectAttributes redirectAttributes) {
-        investmentService.softDeleteInvestment(id);
-        redirectAttributes.addFlashAttribute("success", "Investment deleted successfully!");
+    public String softDeleteInvestment(@PathVariable String id,
+                                       Authentication authentication,
+                                       RedirectAttributes redirectAttributes) {
+        try {
+            String userId = getUserId(authentication);
+            investmentService.getInvestment(id).ifPresentOrElse(investment -> {
+                if (investment.getUserId().equals(userId)) {
+                    investmentService.softDeleteInvestment(id);
+                    redirectAttributes.addFlashAttribute("success", "Investment deleted successfully!");
+                } else {
+                    redirectAttributes.addFlashAttribute("error", "Access denied.");
+                }
+            }, () -> redirectAttributes.addFlashAttribute("error", "Investment not found."));
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Delete failed: " + e.getMessage());
+        }
         return "redirect:/investments";
     }
-    
+
     @GetMapping("/update-value/{id}")
-    public String showUpdateValueForm(@PathVariable String id, Model model) {
-        investmentService.getInvestment(id).ifPresent(investment -> model.addAttribute("investment", investment));
-        return "investments/update-value";
+    public String showUpdateValueForm(@PathVariable String id,
+                                      Authentication authentication,
+                                      Model model,
+                                      RedirectAttributes redirectAttributes) {
+        String userId = getUserId(authentication);
+        return investmentService.getInvestment(id)
+                .filter(investment -> investment.getUserId().equals(userId))
+                .map(investment -> {
+                    model.addAttribute("investment", investment);
+                    // Layout attributes
+                    model.addAttribute("currentPage", "investments");
+                    model.addAttribute("pageSubtitle", "Update current value");
+                    model.addAttribute("title", "Update Value");
+                    return "investments/update-value";
+                })
+                .orElseGet(() -> {
+                    redirectAttributes.addFlashAttribute("error", "Investment not found.");
+                    return "redirect:/investments";
+                });
     }
-    
+
     @PostMapping("/update-value/{id}")
     public String updateValue(@PathVariable String id,
                               @RequestParam Double currentValue,
+                              Authentication authentication,
                               RedirectAttributes redirectAttributes) {
-        investmentService.updateCurrentValue(id, currentValue);
-        redirectAttributes.addFlashAttribute("success", "Investment value updated successfully!");
+        try {
+            String userId = getUserId(authentication);
+            investmentService.getInvestment(id).ifPresentOrElse(investment -> {
+                if (investment.getUserId().equals(userId)) {
+                    investmentService.updateCurrentValue(id, currentValue);
+                    redirectAttributes.addFlashAttribute("success", "Investment value updated successfully!");
+                } else {
+                    redirectAttributes.addFlashAttribute("error", "Access denied.");
+                }
+            }, () -> redirectAttributes.addFlashAttribute("error", "Investment not found."));
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Update failed: " + e.getMessage());
+        }
         return "redirect:/investments";
     }
-    
+
     @GetMapping("/add-transaction/{id}")
-    public String showAddTransactionForm(@PathVariable String id, Model model) {
-        investmentService.getInvestment(id).ifPresent(investment -> model.addAttribute("investment", investment));
-        return "investments/add-transaction";
+    public String showAddTransactionForm(@PathVariable String id,
+                                         Authentication authentication,
+                                         Model model,
+                                         RedirectAttributes redirectAttributes) {
+        String userId = getUserId(authentication);
+        return investmentService.getInvestment(id)
+                .filter(investment -> investment.getUserId().equals(userId))
+                .map(investment -> {
+                    model.addAttribute("investment", investment);
+                    // Layout attributes
+                    model.addAttribute("currentPage", "investments");
+                    model.addAttribute("pageSubtitle", "Add investment transaction");
+                    model.addAttribute("title", "Add Transaction");
+                    return "investments/add-transaction";
+                })
+                .orElseGet(() -> {
+                    redirectAttributes.addFlashAttribute("error", "Investment not found.");
+                    return "redirect:/investments";
+                });
     }
-    
+
     @PostMapping("/add-transaction/{id}")
     public String addTransaction(@PathVariable String id,
                                  @RequestParam String type,
                                  @RequestParam Double amount,
                                  @RequestParam String description,
+                                 Authentication authentication,
                                  RedirectAttributes redirectAttributes) {
-        investmentService.addTransaction(id, type, amount, description);
-        redirectAttributes.addFlashAttribute("success", "Transaction added successfully!");
+        try {
+            String userId = getUserId(authentication);
+            investmentService.getInvestment(id).ifPresentOrElse(investment -> {
+                if (investment.getUserId().equals(userId)) {
+                    investmentService.addTransaction(id, type, amount, description);
+                    redirectAttributes.addFlashAttribute("success", "Transaction added successfully!");
+                } else {
+                    redirectAttributes.addFlashAttribute("error", "Access denied.");
+                }
+            }, () -> redirectAttributes.addFlashAttribute("error", "Investment not found."));
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to add transaction: " + e.getMessage());
+        }
         return "redirect:/investments";
     }
-    
+
     private String getUserId(Authentication authentication) {
-        return userService.findByUsername(authentication.getName()).get().getId();
+        return userService.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"))
+                .getId();
     }
 }

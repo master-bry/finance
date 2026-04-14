@@ -157,6 +157,14 @@
             closeDeleteModal();
         }
     });
+
+    // Offline Detection
+    window.addEventListener('offline', function() {
+    window.location.href = '/error/offline';
+     });
+     function showInfoToast(message, title = 'Info') {
+      showToast(message, 'info', title);
+      }
     </script>
     
     <!-- Page-specific JavaScript placeholder -->
