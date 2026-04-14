@@ -22,10 +22,10 @@
                 <p><strong>Amount Invested:</strong> <span th:text="${#numbers.formatDecimal(investment.amountInvested, 1, 0)}"></span> TZS</p>
             </div>
             
-            <form id="updateValueForm" th:action="@{/investments/update-value/{id}(id=${investment.id})}" method="post">
+            <form id="updateValueForm" th:action="@{/investments/update-value/{id}(id=${investment.id})}" method="post" novalidate>
                 <div class="form-group">
                     <label for="currentValue">New Current Value *</label>
-                    <input type="number" step="0.01" id="currentValue" name="currentValue" required placeholder="Enter new value" min="0">
+                    <input type="number" step="0.01" id="currentValue" name="currentValue" placeholder="Enter new value" min="0">
                     <div class="error-message" data-error-for="currentValue"></div>
                 </div>
                 
@@ -46,7 +46,7 @@
                 document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
                 valueInput.classList.remove('is-invalid');
                 
-                if (isNaN(value) || value < 0) {
+                if (!valueInput.value || isNaN(value) || value < 0) {
                     e.preventDefault();
                     valueInput.classList.add('is-invalid');
                     document.querySelector('[data-error-for="currentValue"]').textContent = 'Please enter a valid positive amount';
