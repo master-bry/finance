@@ -4,28 +4,85 @@
       layout:decorate="~{layout}">
 <head>
     <title>Reports</title>
+    
+    <th:block layout:fragment="styles">
+        <style>
+            .report-toolbar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+            .limit-selector {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            .limit-selector select {
+                padding: 0.4rem 0.8rem;
+                border-radius: 8px;
+                border: 1px solid var(--gray-300);
+                background: white;
+            }
+            .btn-download {
+                background: var(--primary-dark);
+                color: white;
+                padding: 0.5rem 1.25rem;
+                border-radius: 8px;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                font-weight: 500;
+                white-space: nowrap;
+            }
+            .btn-download:hover {
+                background: var(--secondary);
+            }
+        </style>
+    </th:block>
 </head>
 <body>
     <div layout:fragment="content">
-        <!-- Month Picker -->
+        <!-- Month Picker with Toolbar -->
         <form method="get" action="/reports" class="month-picker">
-            <label for="month"><i class="fas fa-calendar-alt"></i> Report Period:</label>
-            <select id="month" name="month">
-                <option value="1" th:selected="${reportMonth == 1}">January</option>
-                <option value="2" th:selected="${reportMonth == 2}">February</option>
-                <option value="3" th:selected="${reportMonth == 3}">March</option>
-                <option value="4" th:selected="${reportMonth == 4}">April</option>
-                <option value="5" th:selected="${reportMonth == 5}">May</option>
-                <option value="6" th:selected="${reportMonth == 6}">June</option>
-                <option value="7" th:selected="${reportMonth == 7}">July</option>
-                <option value="8" th:selected="${reportMonth == 8}">August</option>
-                <option value="9" th:selected="${reportMonth == 9}">September</option>
-                <option value="10" th:selected="${reportMonth == 10}">October</option>
-                <option value="11" th:selected="${reportMonth == 11}">November</option>
-                <option value="12" th:selected="${reportMonth == 12}">December</option>
-            </select>
-            <input type="number" name="year" th:value="${reportYear}" min="2000" max="2100" style="width:90px;">
-            <button type="submit" class="btn-filter"><i class="fas fa-search"></i> View</button>
+            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                <label for="month"><i class="fas fa-calendar-alt"></i> Period:</label>
+                <select id="month" name="month">
+                    <option value="1" th:selected="${reportMonth == 1}">January</option>
+                    <option value="2" th:selected="${reportMonth == 2}">February</option>
+                    <option value="3" th:selected="${reportMonth == 3}">March</option>
+                    <option value="4" th:selected="${reportMonth == 4}">April</option>
+                    <option value="5" th:selected="${reportMonth == 5}">May</option>
+                    <option value="6" th:selected="${reportMonth == 6}">June</option>
+                    <option value="7" th:selected="${reportMonth == 7}">July</option>
+                    <option value="8" th:selected="${reportMonth == 8}">August</option>
+                    <option value="9" th:selected="${reportMonth == 9}">September</option>
+                    <option value="10" th:selected="${reportMonth == 10}">October</option>
+                    <option value="11" th:selected="${reportMonth == 11}">November</option>
+                    <option value="12" th:selected="${reportMonth == 12}">December</option>
+                </select>
+                <input type="number" name="year" th:value="${reportYear}" min="2000" max="2100" style="width:100px;">
+                <button type="submit" class="btn-filter"><i class="fas fa-search"></i> View</button>
+            </div>
+            
+            <div class="report-toolbar">
+                <div class="limit-selector">
+                    <label><i class="fas fa-list"></i> Show:</label>
+                    <select name="limit" onchange="this.form.submit()">
+                        <option value="10" th:selected="${limit == 10}">10 transactions</option>
+                        <option value="25" th:selected="${limit == 25}">25 transactions</option>
+                        <option value="50" th:selected="${limit == 50}">50 transactions</option>
+                        <option value="100" th:selected="${limit == 100}">100 transactions</option>
+                        <option value="0" th:selected="${limit == 0}">All transactions</option>
+                    </select>
+                </div>
+                <a th:href="@{/reports/download(year=${reportYear}, month=${reportMonth})}" class="btn-download">
+                    <i class="fas fa-download"></i> Download Excel Report
+                </a>
+            </div>
         </form>
 
         <!-- Monthly Summary -->
@@ -89,7 +146,7 @@
                                 th:text="${#temporals.format(tx.date, 'dd MMM yyyy')}"></td>
                             <td th:text="${tx.description}"></td>
                             <td>
-                                <span style="font-size:0.85rem; color: var(--gray-500);" th:text="${tx.category}"></span>
+                                <span class="category-badge" th:text="${tx.category}"></span>
                             </td>
                             <td>
                                 <span class="badge" th:classappend="${tx.type == 'INCOME' ? 'badge-income' : 'badge-expense'}"
