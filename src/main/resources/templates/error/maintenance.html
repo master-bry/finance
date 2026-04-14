@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance – Finance Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .maintenance-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--background);
+            padding: 1.5rem;
+        }
+        .maintenance-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        .maintenance-icon {
+            width: 90px;
+            height: 90px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+        .maintenance-icon i {
+            font-size: 2.8rem;
+            color: var(--primary-dark);
+        }
+        .maintenance-card h2 {
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+        }
+        .maintenance-card p {
+            color: var(--gray-500);
+            margin-bottom: 1rem;
+        }
+        .progress-bar {
+            background: var(--gray-200);
+            border-radius: 10px;
+            height: 8px;
+            width: 70%;
+            margin: 1.5rem auto;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: var(--primary-dark);
+            height: 100%;
+            width: 65%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .contact {
+            color: var(--gray-500);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="maintenance-page">
+        <div class="maintenance-card">
+            <div class="maintenance-icon">
+                <i class="fas fa-tools"></i>
+            </div>
+            <h2>Under Maintenance</h2>
+            <p>We're currently performing scheduled maintenance to improve your experience.</p>
+            <p>We'll be back shortly. Thank you for your patience!</p>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <div class="contact">
+                <i class="fas fa-envelope"></i> support@financetracker.com
+            </div>
+        </div>
+    </div>
+</body>
+</html>

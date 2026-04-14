@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logged Out – Finance Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .auth-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #1a4d2a 100%);
+            padding: 1.5rem;
+        }
+        .auth-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .auth-icon {
+            width: 90px;
+            height: 90px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+        .auth-icon i {
+            font-size: 2.8rem;
+            color: var(--primary-dark);
+        }
+        .auth-card h2 {
+            color: var(--primary-dark);
+            margin-bottom: 0.75rem;
+        }
+        .auth-card p {
+            color: var(--gray-500);
+            margin-bottom: 2rem;
+        }
+        .btn-primary {
+            background: var(--primary-dark);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 10px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+        .auth-footer {
+            margin-top: 1.5rem;
+        }
+        .auth-footer a {
+            color: var(--gray-500);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .auth-footer a:hover {
+            color: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>You've been logged out</h2>
+            <p>Thank you for using Finance Tracker. Your session has ended securely.</p>
+            <a href="/login" class="btn-primary"><i class="fas fa-sign-in-alt"></i> Sign In Again</a>
+            <div class="auth-footer">
+                <a href="/"><i class="fas fa-home"></i> Back to Home</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

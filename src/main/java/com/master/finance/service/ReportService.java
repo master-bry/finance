@@ -70,7 +70,7 @@ public class ReportService {
 
     // For backward compatibility (default limit 10)
     public List<Transaction> getRecentTransactions(String userId, int year, int month) {
-        return getRecentTransactions(userId, year, month, 10);
+        return getRecentTransactions(userId, year, month, 5);
     }
 
     /**

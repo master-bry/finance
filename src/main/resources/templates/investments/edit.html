@@ -1,134 +1,26 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Investment - Finance Tracker</title>
-    <style>
-        /* Same styles as add.html */
-        :root {
-            --primary-dark: #2F6B3F;
-            --secondary: #7FB77E;
-            --accent: #F7C85C;
-            --background: #FFF6C0;
-            --white: #FFFFFF;
-        }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--background);
-            min-height: 100vh;
-        }
-        
-        .navbar {
-            background: var(--primary-dark);
-            color: white;
-            padding: 1rem 2rem;
-        }
-        
-        .navbar-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo { font-size: 1.5rem; font-weight: bold; }
-        .logo span { color: var(--accent); }
-        
-        .container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
-        
-        .form-container {
-            background: var(--white);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
-        
-        h1 { color: var(--primary-dark); margin-bottom: 1.5rem; }
-        
-        .form-group { margin-bottom: 1.5rem; }
-        
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #374151;
-            font-weight: 500;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #E5E7EB;
-            border-radius: 10px;
-            font-size: 1rem;
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-        
-        .btn {
-            flex: 1;
-            padding: 0.75rem;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-        }
-        
-        .btn-primary { background: var(--primary-dark); color: white; }
-        .btn-primary:hover { background: var(--secondary); }
-        .btn-secondary { background: #9CA3AF; color: white; }
-        
-        .row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        
-        @media (max-width: 640px) {
-            .row { grid-template-columns: 1fr; }
-        }
-    </style>
+    <title>Edit Investment</title>
+    <th:block layout:fragment="styles">
+        <style>
+            .error-message { color: var(--danger); font-size: 0.85rem; margin-top: 0.25rem; }
+            .is-invalid { border-color: var(--danger) !important; }
+        </style>
+    </th:block>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-container">
-            <div class="logo">💰 Finance<span>Tracker</span></div>
-            <div class="nav-links">
-                <a href="/dashboard">Dashboard</a>
-                <a href="/transactions">Transactions</a>
-                <a href="/debts">Debts</a>
-                <a href="/investments">Investments</a>
-                <a href="/goals">Goals</a>
-                <a href="/budget">Budget</a>
-                <a href="/daily-entry">Daily Entry</a>
-                <a href="/reports">Reports</a>
-            </div>
-        </div>
-    </nav>
-    
-    <div class="container">
+    <div layout:fragment="content">
         <div class="form-container">
-            <h1>✏️ Edit Investment</h1>
+            <h2 style="color: var(--primary-dark); margin-bottom: 1.5rem;">✏️ Edit Investment</h2>
             
-            <form action="#" th:action="@{/investments/edit/{id}(id=${investment.id})}" th:object="${investment}" method="post">
+            <form id="investmentEditForm" th:action="@{/investments/edit/{id}(id=${investment.id})}" th:object="${investment}" method="post">
                 <div class="form-group">
                     <label for="name">Investment Name *</label>
                     <input type="text" id="name" th:field="*{name}" required>
+                    <div class="error-message" data-error-for="name"></div>
                 </div>
                 
                 <div class="row">
@@ -142,8 +34,8 @@
                             <option value="CRYPTO">₿ Crypto</option>
                             <option value="OTHER">📌 Other</option>
                         </select>
+                        <div class="error-message" data-error-for="type"></div>
                     </div>
-                    
                     <div class="form-group">
                         <label for="riskLevel">Risk Level</label>
                         <select id="riskLevel" th:field="*{riskLevel}">
@@ -156,13 +48,13 @@
                 
                 <div class="row">
                     <div class="form-group">
-                        <label for="amountInvested">Amount Invested</label>
-                        <input type="number" step="0.01" id="amountInvested" th:field="*{amountInvested}" required>
+                        <label for="amountInvested">Amount Invested *</label>
+                        <input type="number" step="0.01" id="amountInvested" th:field="*{amountInvested}" required min="0.01">
+                        <div class="error-message" data-error-for="amountInvested"></div>
                     </div>
-                    
                     <div class="form-group">
                         <label for="currentValue">Current Value</label>
-                        <input type="number" step="0.01" id="currentValue" th:field="*{currentValue}">
+                        <input type="number" step="0.01" id="currentValue" th:field="*{currentValue}" min="0">
                     </div>
                 </div>
                 
@@ -171,7 +63,6 @@
                         <label for="expectedReturn">Expected Return (%)</label>
                         <input type="number" step="0.01" id="expectedReturn" th:field="*{expectedReturn}">
                     </div>
-                    
                     <div class="form-group">
                         <label for="provider">Provider</label>
                         <input type="text" id="provider" th:field="*{provider}">
@@ -190,5 +81,39 @@
             </form>
         </div>
     </div>
+    
+    <th:block layout:fragment="scripts">
+        <script>
+            document.getElementById('investmentEditForm').addEventListener('submit', function(e) {
+                let isValid = true;
+                const name = document.getElementById('name');
+                const amount = document.getElementById('amountInvested');
+                
+                document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+                document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                
+                if (!name.value.trim()) {
+                    showFieldError(name, 'Investment name is required');
+                    isValid = false;
+                }
+                
+                if (!amount.value || parseFloat(amount.value) <= 0) {
+                    showFieldError(amount, 'Amount must be greater than 0');
+                    isValid = false;
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    showErrorToast('Please fix the errors before submitting.');
+                }
+            });
+            
+            function showFieldError(field, message) {
+                field.classList.add('is-invalid');
+                const errorDiv = field.closest('.form-group').querySelector('.error-message');
+                if (errorDiv) errorDiv.textContent = message;
+            }
+        </script>
+    </th:block>
 </body>
 </html>

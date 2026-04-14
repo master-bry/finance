@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 – Server Error | Finance Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .error-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--background);
+            padding: 1.5rem;
+        }
+        .error-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        .error-code {
+            font-size: 7rem;
+            font-weight: 800;
+            color: var(--danger);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+        .error-icon {
+            font-size: 3.5rem;
+            color: var(--warning);
+            margin-bottom: 1rem;
+        }
+        .error-card h2 {
+            color: var(--gray-700);
+            margin-bottom: 1rem;
+        }
+        .error-card p {
+            color: var(--gray-500);
+            margin-bottom: 2rem;
+        }
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        .btn-primary {
+            background: var(--primary-dark);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .btn-warning {
+            background: var(--accent);
+            color: var(--primary-dark);
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .btn-primary:hover { background: var(--secondary); }
+        .btn-warning:hover { background: #e6b84a; }
+    </style>
+</head>
+<body>
+    <div class="error-page">
+        <div class="error-card">
+            <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="error-code">500</div>
+            <h2>Internal Server Error</h2>
+            <p>Something went wrong on our end. Please try again later.</p>
+            <div class="btn-group">
+                <a href="/dashboard" class="btn-primary"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="javascript:location.reload()" class="btn-warning"><i class="fas fa-sync-alt"></i> Refresh</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
