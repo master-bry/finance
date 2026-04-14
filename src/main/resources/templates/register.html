@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Finance Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary-dark: #2F6B3F;
@@ -12,6 +13,8 @@
             --background: #FFF6C0;
             --white: #FFFFFF;
             --danger: #EF4444;
+            --success: #10B981;
+            --warning: #F59E0B;
         }
         
         * {
@@ -41,14 +44,8 @@
         }
         
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         h1 {
@@ -138,6 +135,48 @@
             grid-template-columns: 1fr 1fr;
             gap: 15px;
         }
+
+        .password-wrapper {
+            position: relative;
+        }
+        .password-wrapper input {
+            padding-right: 40px;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6B7280;
+        }
+        .strength-meter {
+            margin-top: 8px;
+        }
+        .strength-bar {
+            height: 6px;
+            background: #E5E7EB;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s, background 0.3s;
+        }
+        .strength-text {
+            font-size: 0.8rem;
+            color: #6B7280;
+        }
+        .error-message {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+        .is-invalid {
+            border-color: var(--danger) !important;
+        }
     </style>
 </head>
 <body>
@@ -148,31 +187,43 @@
         
         <div th:if="${error}" class="alert-error" th:text="${error}"></div>
         
-        <form action="/register" method="post" th:object="${user}">
+        <form id="registerForm" action="/register" method="post" th:object="${user}" novalidate>
             <div class="row">
                 <div class="form-group">
                     <label for="username">Username *</label>
-                    <input type="text" id="username" name="username" th:field="*{username}" required>
+                    <input type="text" id="username" name="username" th:field="*{username}" placeholder="Choose a username">
+                    <div class="error-message" data-error-for="username"></div>
                 </div>
                 <div class="form-group">
                     <label for="fullName">Full Name</label>
-                    <input type="text" id="fullName" name="fullName" th:field="*{fullName}">
+                    <input type="text" id="fullName" name="fullName" th:field="*{fullName}" placeholder="Your full name">
                 </div>
             </div>
             
             <div class="form-group">
                 <label for="email">Email *</label>
-                <input type="email" id="email" name="email" th:field="*{email}" required>
+                <input type="email" id="email" name="email" th:field="*{email}" placeholder="your@email.com">
+                <div class="error-message" data-error-for="email"></div>
             </div>
             
             <div class="row">
                 <div class="form-group">
                     <label for="password">Password *</label>
-                    <input type="password" id="password" name="password" th:field="*{password}" required>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" th:field="*{password}" placeholder="Create a strong password">
+                        <i class="toggle-password fas fa-eye" onclick="togglePassword('password')"></i>
+                    </div>
+                    <div class="strength-meter">
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strengthFill"></div>
+                        </div>
+                        <span class="strength-text" id="strengthText">Enter a password</span>
+                    </div>
+                    <div class="error-message" data-error-for="password"></div>
                 </div>
                 <div class="form-group">
                     <label for="phoneNumber">Phone Number</label>
-                    <input type="tel" id="phoneNumber" name="phoneNumber" th:field="*{phoneNumber}">
+                    <input type="tel" id="phoneNumber" name="phoneNumber" th:field="*{phoneNumber}" placeholder="Optional">
                 </div>
             </div>
             
@@ -183,5 +234,101 @@
             Already have an account? <a href="/login">Login here</a>
         </div>
     </div>
+
+    <script>
+        // Password toggle
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = field.nextElementSibling;
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Password strength meter
+        const passwordInput = document.getElementById('password');
+        const strengthFill = document.getElementById('strengthFill');
+        const strengthText = document.getElementById('strengthText');
+
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            const strength = checkPasswordStrength(password);
+            updateStrengthMeter(strength);
+        });
+
+        function checkPasswordStrength(password) {
+            let score = 0;
+            if (password.length >= 8) score++;
+            if (password.length >= 12) score++;
+            if (/[a-z]/.test(password)) score++;
+            if (/[A-Z]/.test(password)) score++;
+            if (/[0-9]/.test(password)) score++;
+            if (/[^a-zA-Z0-9]/.test(password)) score++;
+            return Math.min(score, 5);
+        }
+
+        function updateStrengthMeter(score) {
+            const percentages = [0, 20, 40, 60, 80, 100];
+            const colors = ['#EF4444', '#F59E0B', '#F7C85C', '#10B981', '#10B981', '#10B981'];
+            const labels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
+            
+            strengthFill.style.width = percentages[score] + '%';
+            strengthFill.style.background = colors[score];
+            strengthText.textContent = labels[score];
+        }
+
+        // Client-side validation
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            
+            const username = document.getElementById('username');
+            const email = document.getElementById('email');
+            const password = document.getElementById('password');
+            
+            if (!username.value.trim()) {
+                showFieldError(username, 'Username is required');
+                isValid = false;
+            } else if (username.value.trim().length < 3) {
+                showFieldError(username, 'Username must be at least 3 characters');
+                isValid = false;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email.value.trim()) {
+                showFieldError(email, 'Email is required');
+                isValid = false;
+            } else if (!emailRegex.test(email.value)) {
+                showFieldError(email, 'Please enter a valid email address');
+                isValid = false;
+            }
+            
+            if (!password.value) {
+                showFieldError(password, 'Password is required');
+                isValid = false;
+            } else if (password.value.length < 6) {
+                showFieldError(password, 'Password must be at least 6 characters');
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+
+        function showFieldError(field, message) {
+            field.classList.add('is-invalid');
+            const errorDiv = field.closest('.form-group').querySelector('.error-message');
+            if (errorDiv) errorDiv.textContent = message;
+        }
+    </script>
 </body>
 </html>

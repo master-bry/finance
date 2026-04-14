@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Finance Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary-dark: #2F6B3F;
@@ -14,13 +15,13 @@
             --danger: #EF4444;
             --success: #10B981;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, var(--background) 0%, #FFE8A0 100%);
@@ -30,7 +31,7 @@
             align-items: center;
             padding: 20px;
         }
-        
+
         .login-container {
             background: var(--white);
             border-radius: 20px;
@@ -40,7 +41,7 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             animation: fadeIn 0.5s ease-out;
         }
-        
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -51,30 +52,30 @@
                 transform: translateY(0);
             }
         }
-        
+
         h1 {
             color: var(--primary-dark);
             text-align: center;
             margin-bottom: 10px;
         }
-        
+
         .subtitle {
             text-align: center;
             color: #6B7280;
             margin-bottom: 30px;
         }
-        
+
         .form-group {
             margin-bottom: 20px;
         }
-        
+
         label {
             display: block;
             margin-bottom: 8px;
             color: #374151;
             font-weight: 500;
         }
-        
+
         input {
             width: 100%;
             padding: 12px 15px;
@@ -83,13 +84,36 @@
             font-size: 16px;
             transition: all 0.3s;
         }
-        
+
         input:focus {
             outline: none;
             border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(247, 200, 92, 0.1);
         }
-        
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            padding-right: 44px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6B7280;
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+
+        .toggle-password:hover {
+            color: var(--primary-dark);
+        }
+
         .btn {
             width: 100%;
             padding: 12px;
@@ -102,41 +126,41 @@
             cursor: pointer;
             transition: all 0.3s;
         }
-        
+
         .btn:hover {
             background: var(--secondary);
             transform: translateY(-2px);
         }
-        
+
         .register-link {
             text-align: center;
             margin-top: 20px;
         }
-        
+
         .register-link a {
             color: var(--primary-dark);
             text-decoration: none;
             font-weight: 600;
         }
-        
+
         .alert {
             padding: 12px;
             border-radius: 10px;
             margin-bottom: 20px;
         }
-        
+
         .alert-error {
             background: #FEE2E2;
             color: #991B1B;
             border-left: 4px solid var(--danger);
         }
-        
+
         .alert-success {
             background: #D1FAE5;
             color: #065F46;
             border-left: 4px solid var(--success);
         }
-        
+
         .logo {
             text-align: center;
             font-size: 3em;
@@ -149,11 +173,11 @@
         <div class="logo">💰</div>
         <h1>Finance Tracker</h1>
         <p class="subtitle">Manage your finances with ease</p>
-        
-        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
-        <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
-        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-        
+
+        <div th:if="${error}" class="alert alert-error" role="alert" th:text="${error}"></div>
+        <div th:if="${message}" class="alert alert-success" role="status" th:text="${message}"></div>
+        <div th:if="${success}" class="alert alert-success" role="status" th:text="${success}"></div>
+
         <form action="/login" method="post">
             <div class="form-group">
                 <label for="username">Username</label>
@@ -161,14 +185,31 @@
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" required>
+                    <i class="toggle-password fas fa-eye" aria-label="Toggle password visibility" onclick="togglePassword('password')"></i>
+                </div>
             </div>
             <button type="submit" class="btn">Login</button>
         </form>
-        
+
         <div class="register-link">
             Don't have an account? <a href="/register">Register here</a>
         </div>
     </div>
+
+    <script>
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = field.nextElementSibling;
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+    </script>
 </body>
 </html>
