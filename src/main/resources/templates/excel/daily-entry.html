@@ -17,18 +17,15 @@
                 width: 100%;
                 font-weight: 600;
             }
-            
             .btn-submit:hover {
                 background: var(--secondary);
             }
-            
             .entry-list {
                 background: var(--white);
                 border-radius: 15px;
                 padding: 1.5rem;
                 margin-bottom: 1.5rem;
             }
-            
             .entry-item {
                 display: flex;
                 justify-content: space-between;
@@ -36,17 +33,14 @@
                 padding: 0.75rem;
                 border-bottom: 1px solid var(--gray-200);
             }
-            
             .entry-item:last-child {
                 border-bottom: none;
             }
-            
             .delete-btn {
                 color: var(--danger);
                 text-decoration: none;
                 margin-left: 1rem;
             }
-            
             .form-title {
                 font-size: 1.2rem;
                 margin-bottom: 1rem;
@@ -54,26 +48,23 @@
                 border-left: 4px solid var(--accent);
                 padding-left: 0.75rem;
             }
-            
-            .income {
-                color: var(--success);
-            }
-            
-            .expense {
-                color: var(--danger);
+            .income { color: var(--success); }
+            .expense { color: var(--danger); }
+            .bill-select-row {
+                margin-top: 0.5rem;
             }
         </style>
     </th:block>
 </head>
 <body>
     <div layout:fragment="content">
-       <!-- Current Balance Card -->
+        <!-- Current Balance Card -->
         <div class="balance-card">
-           <div><i class="fas fa-wallet"></i> Current Balance</div>
-             <div class="balance-amount">
+            <div><i class="fas fa-wallet"></i> Current Balance</div>
+            <div class="balance-amount">
                 <span th:text="${#numbers.formatDecimal(currentBalance, 1, 0)}"></span> TZS
             </div>
-           <div th:text="${#temporals.format(#temporals.createNow(), 'EEEE, MMMM d, yyyy')}"></div>
+            <div th:text="${#temporals.format(#temporals.createNow(), 'EEEE, MMMM d, yyyy')}"></div>
         </div>
         
         <!-- Today's Stats -->
@@ -93,7 +84,7 @@
             </div>
         </div>
         
-        <!-- Add Expense Form -->
+        <!-- Add Expense Form with Bill Option -->
         <div class="section-card">
             <div class="form-title"><i class="fas fa-shopping-cart"></i> Add Expense</div>
             <form action="/excel/add-expense" method="post">
@@ -117,9 +108,31 @@
                             <option value="Shopping">🛍️ Shopping</option>
                             <option value="Healthcare">🏥 Healthcare</option>
                             <option value="Education">📚 Education</option>
+                            <option value="Bills">📋 Bills</option>
                             <option value="Other">📌 Other</option>
                         </select>
                     </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label>Payment Method</label>
+                        <div style="display: flex; gap: 1.5rem; align-items: center;">
+                            <label><input type="radio" name="paymentMethod" value="CASH" checked onchange="toggleBillSelect()"> 💵 Cash</label>
+                            <label><input type="radio" name="paymentMethod" value="BILL" onchange="toggleBillSelect()"> 📋 Bill</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row bill-select-row" id="billSelectRow" style="display: none;">
+                    <div class="form-group">
+                        <label>Select Bill to Pay</label>
+                        <select name="billId">
+                            <option value="">-- Choose pending bill --</option>
+                            <option th:each="bill : ${pendingBills}" th:value="${bill.id}"
+                                    th:text="${bill.name} + ' (' + #numbers.formatDecimal(bill.amount,1,0) + ' TZS, Due: ' + #temporals.format(bill.dueDate,'dd/MM') + ')'"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="form-group">
                         <button type="submit" class="btn-submit"><i class="fas fa-plus-circle"></i> Add Expense</button>
                     </div>
@@ -127,7 +140,7 @@
             </form>
         </div>
         
-        <!-- Add Income Form -->
+        <!-- Add Income Form (unchanged) -->
         <div class="section-card">
             <div class="form-title"><i class="fas fa-money-bill-wave"></i> Add Income</div>
             <form action="/excel/add-income" method="post">
@@ -157,7 +170,7 @@
             </form>
         </div>
         
-        <!-- Excel Upload -->
+        <!-- Excel Upload (unchanged) -->
         <div class="section-card">
             <div class="form-title"><i class="fas fa-file-excel"></i> Upload Excel File</div>
             <form action="/excel/upload" method="post" enctype="multipart/form-data">
@@ -192,6 +205,7 @@
                 <div>
                     <strong th:text="${exp.description}"></strong><br>
                     <small class="category-badge" th:text="${exp.category}"></small>
+                    <span th:if="${exp.paymentMethod == 'BILL'}" class="badge badge-info" style="margin-left: 0.5rem;">📋 Bill</span>
                 </div>
                 <div>
                     <span class="expense" th:text="'- ' + ${#numbers.formatDecimal(exp.amount, 1, 0)} + ' TZS'"></span>
@@ -228,5 +242,15 @@
             </a>
         </div>
     </div>
+    
+    <th:block layout:fragment="scripts">
+        <script>
+            function toggleBillSelect() {
+                const billRadio = document.querySelector('input[value="BILL"]');
+                const row = document.getElementById('billSelectRow');
+                if (row) row.style.display = billRadio && billRadio.checked ? 'block' : 'none';
+            }
+        </script>
+    </th:block>
 </body>
 </html>
