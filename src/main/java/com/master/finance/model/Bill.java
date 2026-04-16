@@ -14,7 +14,7 @@ public class Bill {
     private String name;
     private Double amount;
     private String category;
-    private String status; // PENDING, PAID, OVERDUE
+    private String status; // PENDING, PAID, PARTIAL
     private boolean recurring;
     private String frequency; // MONTHLY, WEEKLY, YEARLY, NONE
 
@@ -33,10 +33,9 @@ public class Bill {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.status = "PENDING";
-        this.recurring = false;
     }
 
-    // Getters and Setters
+    // Getters and Setters (zote zihifadhiwe)
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getUserId() { return userId; }
