@@ -45,22 +45,25 @@ public class BillController {
     }
 
     @PostMapping("/add")
-public String addBill(@ModelAttribute Bill bill, Authentication authentication,
-                      @RequestParam(defaultValue = "/bills") String redirectTo,
-                      RedirectAttributes redirectAttributes) {
-    try {
-        bill.setUserId(getUserId(authentication));
-        billService.saveBill(bill);
-        redirectAttributes.addFlashAttribute("success", "Bill added");
-    } catch (Exception e) {
-        redirectAttributes.addFlashAttribute("error", e.getMessage());
+    public String addBill(@ModelAttribute Bill bill,
+                          Authentication authentication,
+                          @RequestParam(defaultValue = "/excel/daily-entry") String redirectTo,
+                          RedirectAttributes redirectAttributes) {
+        try {
+            bill.setUserId(getUserId(authentication));
+            billService.saveBill(bill);
+            redirectAttributes.addFlashAttribute("success", "Bill added successfully");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error: " + e.getMessage());
+        }
+        return "redirect:" + redirectTo;
     }
-    return "redirect:" + redirectTo;
-}
 
     @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable String id, Authentication authentication,
-                               Model model, RedirectAttributes redirectAttributes) {
+    public String showEditForm(@PathVariable String id,
+                               Authentication authentication,
+                               Model model,
+                               RedirectAttributes redirectAttributes) {
         String userId = getUserId(authentication);
         return billService.getBill(id)
                 .filter(b -> b.getUserId().equals(userId))
@@ -76,8 +79,11 @@ public String addBill(@ModelAttribute Bill bill, Authentication authentication,
     }
 
     @PostMapping("/edit/{id}")
-    public String updateBill(@PathVariable String id, @ModelAttribute Bill bill,
-                             Authentication authentication, RedirectAttributes redirectAttributes) {
+    public String updateBill(@PathVariable String id,
+                             @ModelAttribute Bill bill,
+                             Authentication authentication,
+                             @RequestParam(defaultValue = "/bills") String redirectTo,
+                             RedirectAttributes redirectAttributes) {
         try {
             bill.setId(id);
             bill.setUserId(getUserId(authentication));
@@ -86,26 +92,34 @@ public String addBill(@ModelAttribute Bill bill, Authentication authentication,
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/bills";
+        return "redirect:" + redirectTo;
     }
 
     @GetMapping("/pay/{id}")
-    public String markAsPaid(@PathVariable String id, Authentication authentication,
+    public String markAsPaid(@PathVariable String id,
+                             Authentication authentication,
+                             @RequestParam(defaultValue = "/excel/daily-entry") String redirectTo,
                              RedirectAttributes redirectAttributes) {
         String userId = getUserId(authentication);
-        billService.getBill(id).ifPresentOrElse(bill -> {
-            if (bill.getUserId().equals(userId)) {
-                billService.markAsPaid(id);
-                redirectAttributes.addFlashAttribute("success", "Bill marked as paid. Transaction recorded.");
-            } else {
-                redirectAttributes.addFlashAttribute("error", "Access denied");
-            }
-        }, () -> redirectAttributes.addFlashAttribute("error", "Bill not found"));
-        return "redirect:/bills";
+        try {
+            billService.getBill(id).ifPresentOrElse(bill -> {
+                if (bill.getUserId().equals(userId)) {
+                    billService.markAsPaid(id);
+                    redirectAttributes.addFlashAttribute("success", "Bill marked as paid. Transaction recorded.");
+                } else {
+                    redirectAttributes.addFlashAttribute("error", "Access denied");
+                }
+            }, () -> redirectAttributes.addFlashAttribute("error", "Bill not found"));
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Payment failed: " + e.getMessage());
+        }
+        return "redirect:" + redirectTo;
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteBill(@PathVariable String id, Authentication authentication,
+    public String deleteBill(@PathVariable String id,
+                             Authentication authentication,
+                             @RequestParam(defaultValue = "/excel/daily-entry") String redirectTo,
                              RedirectAttributes redirectAttributes) {
         String userId = getUserId(authentication);
         billService.getBill(id).ifPresentOrElse(bill -> {
@@ -116,7 +130,7 @@ public String addBill(@ModelAttribute Bill bill, Authentication authentication,
                 redirectAttributes.addFlashAttribute("error", "Access denied");
             }
         }, () -> redirectAttributes.addFlashAttribute("error", "Bill not found"));
-        return "redirect:/bills";
+        return "redirect:" + redirectTo;
     }
 
     private String getUserId(Authentication authentication) {

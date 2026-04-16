@@ -140,8 +140,9 @@
                         <select name="billId">
                             <option value="">-- Choose pending bill --</option>
                             <th:block th:if="${pendingBills != null}">
-                                <option th:each="bill : ${pendingBills}" th:value="${bill.id}"
-                                        th:text="${bill.name} + ' (' + #numbers.formatDecimal(bill.amount,1,0) + ' TZS, Due: ' + #temporals.format(bill.dueDate,'dd/MM') + ')'"></option>
+                                <option th:each="bill : ${pendingBills}" th:value="${bill.id}" th:inline="text">
+                                    [[${bill.name}]] ([[${#numbers.formatDecimal(bill.amount,1,0)}]] TZS, Due: [[${#temporals.format(bill.dueDate,'dd/MM')}]])
+                                </option>
                             </th:block>
                         </select>
                     </div>

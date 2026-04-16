@@ -27,7 +27,7 @@ import com.master.finance.service.TransactionService;
 import com.master.finance.service.UserService;
 
 @Controller
-@RequestMapping("/excel")
+@RequestMapping("/error/maintanance")
 public class ExcelController {
 
     @Autowired
@@ -43,26 +43,26 @@ public class ExcelController {
     private BillService billService;
 
     @GetMapping("/daily-entry")
-    public String showDailyEntry(Authentication authentication, Model model) {
-        String userId = getUserId(authentication);
+public String showDailyEntry(Authentication authentication, Model model) {
+    String userId = getUserId(authentication);
 
-        DailyEntry todayEntry = dailyEntryService.getTodayEntry(userId).orElse(new DailyEntry());
-        Double currentBalance = dailyEntryService.getCurrentBalance(userId);
-        List<DailyEntry> history = dailyEntryService.getUserEntries(userId);
-        List<Bill> allBills = billService.getUserBills(userId); // 
-        model.addAttribute("allBills", allBills);
-        List<Bill> pendingBills = billService.getPendingBills(userId);
+    DailyEntry todayEntry = dailyEntryService.getTodayEntry(userId).orElse(new DailyEntry());
+    Double currentBalance = dailyEntryService.getCurrentBalance(userId);
+    List<DailyEntry> history = dailyEntryService.getUserEntries(userId);
+    List<Bill> allBills = billService.getUserBills(userId);
+    List<Bill> pendingBills = billService.getPendingBills(userId);
 
-        model.addAttribute("entry", todayEntry);
-        model.addAttribute("currentBalance", currentBalance);
-        model.addAttribute("history", history);
-        model.addAttribute("pendingBills", pendingBills);
-        model.addAttribute("currentPage", "daily");
-        model.addAttribute("pageSubtitle", "Record your daily expenses and income");
-        model.addAttribute("title", "Daily Entry");
+    model.addAttribute("entry", todayEntry);
+    model.addAttribute("currentBalance", currentBalance);
+    model.addAttribute("history", history);
+    model.addAttribute("allBills", allBills);
+    model.addAttribute("pendingBills", pendingBills);
+    model.addAttribute("currentPage", "daily");
+    model.addAttribute("pageSubtitle", "Record your daily expenses and income");
+    model.addAttribute("title", "Daily Entry");
 
-        return "excel/daily-entry";
-    }
+    return "excel/daily-entry";
+}
 
     @PostMapping("/add-expense")
     public String addExpense(@RequestParam String description,
