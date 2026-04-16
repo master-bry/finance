@@ -123,15 +123,20 @@
                     </div>
                 </div>
                 <div class="row bill-select-row" id="billSelectRow" style="display: none;">
-                    <div class="form-group">
-                        <label>Select Bill to Pay</label>
-                        <select name="billId">
-                            <option value="">-- Choose pending bill --</option>
-                            <option th:each="bill : ${pendingBills}" th:value="${bill.id}"
-                                    th:text="${bill.name} + ' (' + #numbers.formatDecimal(bill.amount,1,0) + ' TZS, Due: ' + #temporals.format(bill.dueDate,'dd/MM') + ')'"></option>
-                        </select>
-                    </div>
-                </div>
+                  <div class="form-group">
+                    <label>Select Bill to Pay</label>
+                     <select name="billId">
+                      <option value="">-- Choose pending bill --</option>
+                     <option th:each="bill : ${pendingBills}" th:value="${bill.id}"
+                       th:text="${bill.name} + ' (' + #numbers.formatDecimal(bill.amount,1,0) + ' TZS, Due: ' + #temporals.format(bill.dueDate,'dd/MM') + ')'"></option>
+                </select>
+            <small style="display: block; margin-top: 0.25rem;">
+            <a href="/bills" target="_blank" style="color: var(--primary-dark); text-decoration: none;">
+                <i class="fas fa-external-link-alt"></i> Manage Bills
+            </a>
+        </small>
+    </div>
+</div>
                 <div class="row">
                     <div class="form-group">
                         <button type="submit" class="btn-submit"><i class="fas fa-plus-circle"></i> Add Expense</button>
