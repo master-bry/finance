@@ -1,10 +1,9 @@
 package com.master.finance.controller;
 
+import com.master.finance.model.Bill;
 import com.master.finance.model.DailyEntry;
 import com.master.finance.model.Transaction;
-import com.master.finance.service.DailyEntryService;
-import com.master.finance.service.TransactionService;
-import com.master.finance.service.UserService;
+import com.master.finance.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -32,6 +31,9 @@ public class ExcelController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private BillService billService;
+
     @GetMapping("/daily-entry")
     public String showDailyEntry(Authentication authentication, Model model) {
         String userId = getUserId(authentication);
@@ -39,10 +41,12 @@ public class ExcelController {
         DailyEntry todayEntry = dailyEntryService.getTodayEntry(userId).orElse(new DailyEntry());
         Double currentBalance = dailyEntryService.getCurrentBalance(userId);
         List<DailyEntry> history = dailyEntryService.getUserEntries(userId);
+        List<Bill> pendingBills = billService.getPendingBills(userId);
 
         model.addAttribute("entry", todayEntry);
         model.addAttribute("currentBalance", currentBalance);
         model.addAttribute("history", history);
+        model.addAttribute("pendingBills", pendingBills);
         model.addAttribute("currentPage", "daily");
         model.addAttribute("pageSubtitle", "Record your daily expenses and income");
         model.addAttribute("title", "Daily Entry");
@@ -54,12 +58,13 @@ public class ExcelController {
     public String addExpense(@RequestParam String description,
                              @RequestParam Double amount,
                              @RequestParam String category,
+                             @RequestParam(defaultValue = "CASH") String paymentMethod,
+                             @RequestParam(required = false) String billId,
                              Authentication authentication,
                              RedirectAttributes redirectAttributes) {
         try {
             String userId = getUserId(authentication);
 
-            // 1. Save Transaction
             Transaction transaction = new Transaction();
             transaction.setUserId(userId);
             transaction.setDescription(description);
@@ -70,24 +75,27 @@ public class ExcelController {
             transaction.setDeleted(false);
             transactionService.saveTransaction(transaction);
 
-            // 2. Get or create today's DailyEntry
             DailyEntry entry = dailyEntryService.getOrCreateTodayEntry(userId);
 
-            // 3. Add expense item
             DailyEntry.ExpenseItem expense = new DailyEntry.ExpenseItem();
             expense.setDescription(description);
             expense.setAmount(amount);
             expense.setCategory(category);
             expense.setTime(LocalDateTime.now());
+            expense.setPaymentMethod(paymentMethod);
+
+            if ("BILL".equals(paymentMethod) && billId != null && !billId.isEmpty()) {
+                Bill bill = billService.applyPayment(billId, amount);
+                expense.setBillId(billId);
+                redirectAttributes.addFlashAttribute("success",
+                    "Bill payment recorded: " + amount + " TZS. Remaining: " + bill.getAmount() + " TZS");
+            } else {
+                redirectAttributes.addFlashAttribute("success", "Expense added: " + amount + " TZS");
+            }
+
             entry.getExpenses().add(expense);
-
-            // 4. Save DailyEntry
             dailyEntryService.saveDailyEntry(entry, userId);
-            
-            // 5. Recalculate balances for today and future days
             dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
-
-            redirectAttributes.addFlashAttribute("success", "Expense added: " + amount + " TZS");
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error adding expense: " + e.getMessage());
@@ -105,7 +113,6 @@ public class ExcelController {
         try {
             String userId = getUserId(authentication);
 
-            // 1. Save Transaction
             Transaction transaction = new Transaction();
             transaction.setUserId(userId);
             transaction.setDescription(description);
@@ -116,10 +123,8 @@ public class ExcelController {
             transaction.setDeleted(false);
             transactionService.saveTransaction(transaction);
 
-            // 2. Get or create today's DailyEntry
             DailyEntry entry = dailyEntryService.getOrCreateTodayEntry(userId);
 
-            // 3. Add income item
             DailyEntry.IncomeItem income = new DailyEntry.IncomeItem();
             income.setDescription(description);
             income.setAmount(amount);
@@ -127,10 +132,7 @@ public class ExcelController {
             income.setTime(LocalDateTime.now());
             entry.getIncomes().add(income);
 
-            // 4. Save DailyEntry
             dailyEntryService.saveDailyEntry(entry, userId);
-            
-            // 5. Recalculate balances
             dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
 
             redirectAttributes.addFlashAttribute("success", "Income added: " + amount + " TZS");
@@ -151,7 +153,6 @@ public class ExcelController {
             if (entry != null && index < entry.getExpenses().size()) {
                 DailyEntry.ExpenseItem expense = entry.getExpenses().get(index);
                 
-                // Find and soft delete the corresponding transaction
                 List<Transaction> todayTransactions = transactionService.getTransactionsByDateRange(
                         userId, 
                         LocalDateTime.now().withHour(0).withMinute(0).withSecond(0),
@@ -187,7 +188,6 @@ public class ExcelController {
             if (entry != null && index < entry.getIncomes().size()) {
                 DailyEntry.IncomeItem income = entry.getIncomes().get(index);
                 
-                // Find and soft delete the corresponding transaction
                 List<Transaction> todayTransactions = transactionService.getTransactionsByDateRange(
                         userId, 
                         LocalDateTime.now().withHour(0).withMinute(0).withSecond(0),
@@ -256,7 +256,6 @@ public class ExcelController {
             String userId = getUserId(authentication);
             DailyEntry entry = dailyEntryService.getEntryById(id).orElse(null);
             if (entry != null && entry.getUserId().equals(userId)) {
-                // Soft delete all transactions for that day
                 LocalDateTime start = entry.getDate().withHour(0).withMinute(0).withSecond(0);
                 LocalDateTime end = entry.getDate().withHour(23).withMinute(59).withSecond(59);
                 List<Transaction> dayTransactions = transactionService.getTransactionsByDateRange(userId, start, end);
