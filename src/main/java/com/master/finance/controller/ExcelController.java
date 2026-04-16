@@ -27,7 +27,7 @@ import com.master.finance.service.TransactionService;
 import com.master.finance.service.UserService;
 
 @Controller
-@RequestMapping("/error/maintanance")
+@RequestMapping("/excel")
 public class ExcelController {
 
     @Autowired
