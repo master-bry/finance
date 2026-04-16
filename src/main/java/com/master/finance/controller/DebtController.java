@@ -1,7 +1,10 @@
 package com.master.finance.controller;
 
 import com.master.finance.model.Debt;
+import com.master.finance.model.Transaction;
 import com.master.finance.service.DebtService;
+import com.master.finance.service.TransactionService;
+import com.master.finance.service.DailyEntryService;
 import com.master.finance.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -26,6 +29,12 @@ public class DebtController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private TransactionService transactionService;   // NEW
+
+    @Autowired
+    private DailyEntryService dailyEntryService;     // NEW
 
     // ─── LIST WITH PAGINATION AND FILTERS ─────────────────────────────────────
 
@@ -57,7 +66,7 @@ public class DebtController {
         model.addAttribute("filterStatus", status);
 
         // Layout attributes
-        model.addAttribute("currentPageMenu", "debts");
+        model.addAttribute("currentPage", "debts");
         model.addAttribute("pageSubtitle", "Manage your debts and lending");
         model.addAttribute("title", "Debts");
 
@@ -71,7 +80,7 @@ public class DebtController {
         if (!model.containsAttribute("debt")) {
             model.addAttribute("debt", new Debt());
         }
-        model.addAttribute("currentPageMenu", "debts");
+        model.addAttribute("currentPage", "debts");
         model.addAttribute("pageSubtitle", "Add a new debt record");
         return "debts/add";
     }
@@ -125,7 +134,7 @@ public class DebtController {
         }
 
         model.addAttribute("debt", debtOpt.get());
-        model.addAttribute("currentPageMenu", "debts");
+        model.addAttribute("currentPage", "debts");
         model.addAttribute("pageSubtitle", "Edit debt record");
         return "debts/edit";
     }
@@ -198,7 +207,7 @@ public class DebtController {
         }
 
         model.addAttribute("debt", debtOpt.get());
-        model.addAttribute("currentPageMenu", "debts");
+        model.addAttribute("currentPage", "debts");
         model.addAttribute("pageSubtitle", "Record a payment");
         return "debts/payment";
     }
@@ -217,8 +226,28 @@ public class DebtController {
             return "redirect:/debts";
         }
 
+        Debt debt = debtOpt.get();
+
         try {
+            // 1. Record the payment in DebtService
             debtService.makePayment(id, amount, notes);
+
+            // 2. Create a corresponding Transaction
+            Transaction tx = new Transaction();
+            tx.setUserId(debt.getUserId());
+            tx.setDescription("Debt Payment: " + debt.getPersonName() + (notes.isEmpty() ? "" : " - " + notes));
+            tx.setAmount(amount);
+            // If "I_OWE", it's an expense (money going out). If "OWED_TO_ME", it's income (money coming in)
+            tx.setType("I_OWE".equals(debt.getType()) ? "EXPENSE" : "INCOME");
+            tx.setCategory("Debt");
+            tx.setDate(LocalDateTime.now());
+            tx.setDeleted(false);
+            transactionService.saveTransaction(tx);
+
+            // 3. Update today's DailyEntry and recalculate balances
+            dailyEntryService.getOrCreateTodayEntry(debt.getUserId());
+            dailyEntryService.recalculateBalancesFromDate(debt.getUserId(), LocalDateTime.now());
+
             redirectAttributes.addFlashAttribute("success", "Payment recorded successfully!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Payment failed: " + e.getMessage());

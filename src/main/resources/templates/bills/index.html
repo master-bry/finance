@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Manage Bills</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="header-section">
+        <h1><i class="fas fa-file-invoice"></i> Manage Bills</h1>
+        <a href="/bills/add" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Bill</a>
+    </div>
+
+    <!-- Overdue Alerts -->
+    <div th:if="${!overdueBills.empty}" class="section-card" style="border-left: 4px solid var(--danger);">
+        <div class="section-header">
+            <h4><i class="fas fa-exclamation-circle"></i> Overdue Bills</h4>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead><tr><th>Name</th><th>Amount</th><th>Due Date</th><th>Actions</th></tr></thead>
+                <tbody>
+                    <tr th:each="bill : ${overdueBills}">
+                        <td th:text="${bill.name}"></td>
+                        <td class="negative" th:text="${#numbers.formatDecimal(bill.amount,1,0)} + ' TZS'"></td>
+                        <td th:text="${#temporals.format(bill.dueDate, 'dd MMM yyyy')}"></td>
+                        <td>
+                            <a th:href="@{/bills/pay/{id}(id=${bill.id})}" class="btn-xs btn-success">Pay Now</a>
+                            <a th:href="@{/bills/edit/{id}(id=${bill.id})}" class="btn-xs btn-edit">Edit</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- All Bills -->
+    <div class="section-card">
+        <div class="section-header">
+            <h4><i class="fas fa-list"></i> All Bills</h4>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Amount</th>
+                        <th>Category</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Recurring</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="bill : ${bills}">
+                        <td th:text="${bill.name}"></td>
+                        <td th:text="${#numbers.formatDecimal(bill.amount,1,0)} + ' TZS'"></td>
+                        <td th:text="${bill.category}"></td>
+                        <td th:text="${#temporals.format(bill.dueDate, 'dd MMM yyyy')}"></td>
+                        <td>
+                            <span class="badge" th:classappend="${bill.status == 'PAID' ? 'badge-success' : (bill.status == 'PARTIAL' ? 'badge-warning' : 'badge-pending')}"
+                                  th:text="${bill.status}"></span>
+                        </td>
+                        <td th:text="${bill.recurring ? bill.frequency : 'No'}"></td>
+                        <td>
+                            <div class="actions">
+                                <a th:if="${bill.status != 'PAID'}" th:href="@{/bills/pay/{id}(id=${bill.id})}" class="btn-xs btn-success">Pay</a>
+                                <a th:href="@{/bills/edit/{id}(id=${bill.id})}" class="btn-xs btn-edit">Edit</a>
+                                <a href="#" th:onclick="'showDeleteModal(\'Delete this bill?\', function() { window.location.href=\'/bills/delete/' + ${bill.id} + '\'; }); return false;'" class="btn-xs btn-delete">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${bills.empty}">
+                        <td colspan="7"><div class="empty-state">No bills found. <a href="/bills/add">Add your first bill</a>.</div></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div style="margin-top: 1rem;">
+        <a href="/excel/daily-entry" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Daily Entry</a>
+    </div>
+</div>
+</body>
+</html>
