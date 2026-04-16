@@ -37,9 +37,12 @@ public class DailyEntry {
         private Double amount;
         private String category;
         private LocalDateTime time;
+        private String paymentMethod; // "CASH" or "BILL"
+        private String billId;        // reference to Bill if paymentMethod == "BILL"
         
         public ExpenseItem() {
             this.time = LocalDateTime.now();
+            this.paymentMethod = "CASH";
         }
         
         public String getDescription() { return description; }
@@ -50,6 +53,10 @@ public class DailyEntry {
         public void setCategory(String category) { this.category = category; }
         public LocalDateTime getTime() { return time; }
         public void setTime(LocalDateTime time) { this.time = time; }
+        public String getPaymentMethod() { return paymentMethod; }
+        public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+        public String getBillId() { return billId; }
+        public void setBillId(String billId) { this.billId = billId; }
     }
     
     @Document
@@ -97,61 +104,43 @@ public class DailyEntry {
         this.closingBalance = this.openingBalance + this.totalIncome - this.totalExpense;
     }
     
-    // Getters and Setters
+    // Getters and Setters (all unchanged except ExpenseItem getters/setters already included)
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
-    
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
-    
     public LocalDateTime getDate() { return date; }
     public void setDate(LocalDateTime date) { this.date = date; }
-    
     public Double getOpeningBalance() { return openingBalance; }
     public void setOpeningBalance(Double openingBalance) { this.openingBalance = openingBalance; calculateTotals(); }
-    
     public Double getTotalIncome() { return totalIncome; }
     public void setTotalIncome(Double totalIncome) { this.totalIncome = totalIncome; calculateTotals(); }
-    
     public Double getTotalExpense() { return totalExpense; }
     public void setTotalExpense(Double totalExpense) { this.totalExpense = totalExpense; calculateTotals(); }
-    
     public Double getSavings() { return savings; }
     public void setSavings(Double savings) { this.savings = savings; }
-    
     public Double getClosingBalance() { return closingBalance; }
     public void setClosingBalance(Double closingBalance) { this.closingBalance = closingBalance; }
-    
     public List<ExpenseItem> getExpenses() { return expenses; }
     public void setExpenses(List<ExpenseItem> expenses) { this.expenses = expenses; calculateTotals(); }
-    
     public List<IncomeItem> getIncomes() { return incomes; }
     public void setIncomes(List<IncomeItem> incomes) { this.incomes = incomes; calculateTotals(); }
-    
     public Map<String, Double> getExpensesByCategory() { return expensesByCategory; }
     public void setExpensesByCategory(Map<String, Double> expensesByCategory) { this.expensesByCategory = expensesByCategory; }
-    
     public Map<String, Boolean> getGoalsCompleted() { return goalsCompleted; }
     public void setGoalsCompleted(Map<String, Boolean> goalsCompleted) { this.goalsCompleted = goalsCompleted; }
-    
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
-    
     public String getMood() { return mood; }
     public void setMood(String mood) { this.mood = mood; }
-    
     public boolean isCompleted() { return completed; }
     public void setCompleted(boolean completed) { this.completed = completed; }
-    
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-    
     public boolean isDeleted() { return deleted; }
     public void setDeleted(boolean deleted) { this.deleted = deleted; }
-    
     public LocalDateTime getDeletedAt() { return deletedAt; }
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 }
