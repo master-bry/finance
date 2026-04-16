@@ -40,8 +40,15 @@ public class BillService {
         return billRepository.save(bill);
     }
 
-    // Optional: method to add bills manually if needed (via a simple form)
     public Bill saveBill(Bill bill) {
         return billRepository.save(bill);
+    }
+
+    public void deleteBill(String id) {
+        billRepository.findById(id).ifPresent(bill -> {
+            bill.setDeleted(true);
+            bill.setDeletedAt(LocalDateTime.now());
+            billRepository.save(bill);
+        });
     }
 }
