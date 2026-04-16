@@ -17,9 +17,7 @@
                 width: 100%;
                 font-weight: 600;
             }
-            .btn-submit:hover {
-                background: var(--secondary);
-            }
+            .btn-submit:hover { background: var(--secondary); }
             .entry-list {
                 background: var(--white);
                 border-radius: 15px;
@@ -33,14 +31,8 @@
                 padding: 0.75rem;
                 border-bottom: 1px solid var(--gray-200);
             }
-            .entry-item:last-child {
-                border-bottom: none;
-            }
-            .delete-btn {
-                color: var(--danger);
-                text-decoration: none;
-                margin-left: 1rem;
-            }
+            .entry-item:last-child { border-bottom: none; }
+            .delete-btn { color: var(--danger); text-decoration: none; margin-left: 1rem; }
             .form-title {
                 font-size: 1.2rem;
                 margin-bottom: 1rem;
@@ -50,8 +42,29 @@
             }
             .income { color: var(--success); }
             .expense { color: var(--danger); }
-            .bill-select-row {
-                margin-top: 0.5rem;
+            .bill-select-row { margin-top: 0.5rem; }
+            
+            /* Bills management section */
+            .bills-section {
+                margin-top: 1.5rem;
+                padding: 1.5rem;
+                background: var(--white);
+                border-radius: 15px;
+                display: none;
+            }
+            .bills-section.active { display: block; }
+            .bill-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.5rem 0;
+                border-bottom: 1px solid var(--gray-200);
+            }
+            .bill-actions .btn-xs { margin-left: 0.25rem; }
+            .inline-form {
+                margin-top: 1rem;
+                padding-top: 1rem;
+                border-top: 1px dashed var(--gray-300);
             }
         </style>
     </th:block>
@@ -123,20 +136,15 @@
                     </div>
                 </div>
                 <div class="row bill-select-row" id="billSelectRow" style="display: none;">
-                  <div class="form-group">
-                    <label>Select Bill to Pay</label>
-                     <select name="billId">
-                      <option value="">-- Choose pending bill --</option>
-                     <option th:each="bill : ${pendingBills}" th:value="${bill.id}"
-                       th:text="${bill.name} + ' (' + #numbers.formatDecimal(bill.amount,1,0) + ' TZS, Due: ' + #temporals.format(bill.dueDate,'dd/MM') + ')'"></option>
-                </select>
-            <small style="display: block; margin-top: 0.25rem;">
-            <a href="/bills" target="_blank" style="color: var(--primary-dark); text-decoration: none;">
-                <i class="fas fa-external-link-alt"></i> Manage Bills
-            </a>
-        </small>
-    </div>
-</div>
+                    <div class="form-group">
+                        <label>Select Bill to Pay</label>
+                        <select name="billId">
+                            <option value="">-- Choose pending bill --</option>
+                            <option th:each="bill : ${pendingBills}" th:value="${bill.id}"
+                                    th:text="${bill.name} + ' (' + #numbers.formatDecimal(bill.amount,1,0) + ' TZS, Due: ' + #temporals.format(bill.dueDate,'dd/MM') + ')'"></option>
+                        </select>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="form-group">
                         <button type="submit" class="btn-submit"><i class="fas fa-plus-circle"></i> Add Expense</button>
@@ -145,7 +153,7 @@
             </form>
         </div>
         
-        <!-- Add Income Form (unchanged) -->
+        <!-- Add Income Form -->
         <div class="section-card">
             <div class="form-title"><i class="fas fa-money-bill-wave"></i> Add Income</div>
             <form action="/excel/add-income" method="post">
@@ -175,7 +183,7 @@
             </form>
         </div>
         
-        <!-- Excel Upload (unchanged) -->
+        <!-- Excel Upload -->
         <div class="section-card">
             <div class="form-title"><i class="fas fa-file-excel"></i> Upload Excel File</div>
             <form action="/excel/upload" method="post" enctype="multipart/form-data">
@@ -241,10 +249,89 @@
             </div>
         </div>
         
-        <div style="text-align: center; margin-top: 1rem;">
-            <a href="/excel/history" class="btn btn-secondary" style="display: inline-block; width: auto; padding: 0.75rem 2rem;">
+        <!-- Toggle Button for Bills Management -->
+        <div style="text-align: center; margin: 1.5rem 0 1rem;">
+            <button type="button" id="toggleBillsBtn" class="btn btn-secondary" style="padding: 0.75rem 2rem;">
+                <i class="fas fa-file-invoice"></i> Manage Bills
+            </button>
+            <a href="/excel/history" class="btn btn-secondary" style="padding: 0.75rem 2rem; margin-left: 1rem;">
                 <i class="fas fa-history"></i> View History
             </a>
+        </div>
+        
+        <!-- Bills Management Section (Hidden by default) -->
+        <div id="billsManagementSection" class="bills-section">
+            <div class="section-header">
+                <h4><i class="fas fa-file-invoice"></i> Manage Bills</h4>
+            </div>
+            
+            <!-- Add Bill Form (inline) -->
+            <div class="inline-form">
+                <h5 style="margin-bottom: 1rem;">➕ Add New Bill</h5>
+                <form action="/bills/add" method="post">
+                    <input type="hidden" name="redirectTo" value="/excel/daily-entry">
+                    <div class="row">
+                        <div class="form-group">
+                            <input type="text" name="name" placeholder="Bill Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="number" step="0.01" name="amount" placeholder="Amount (TZS)" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group">
+                            <select name="category">
+                                <option value="Rent">🏠 Rent</option>
+                                <option value="Utilities">💡 Utilities</option>
+                                <option value="Internet">🌐 Internet</option>
+                                <option value="Insurance">🛡️ Insurance</option>
+                                <option value="Subscription">📺 Subscription</option>
+                                <option value="Other">📌 Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="date" name="dueDate" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group">
+                            <label><input type="checkbox" name="recurring" value="true"> Recurring?</label>
+                        </div>
+                        <div class="form-group">
+                            <select name="frequency">
+                                <option value="MONTHLY">Monthly</option>
+                                <option value="WEEKLY">Weekly</option>
+                                <option value="YEARLY">Yearly</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <textarea name="notes" placeholder="Notes" rows="2"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">Save Bill</button>
+                </form>
+            </div>
+            
+            <!-- List of All Bills -->
+            <div style="margin-top: 1.5rem;">
+                <h5>📋 All Bills</h5>
+                <div th:if="${allBills == null or allBills.empty}" class="empty-state" style="padding: 1rem;">
+                    <p>No bills yet. Add one above.</p>
+                </div>
+                <div th:each="bill : ${allBills}" class="bill-item">
+                    <div>
+                        <strong th:text="${bill.name}"></strong>
+                        <span class="badge" th:classappend="${bill.status == 'PAID' ? 'badge-success' : (bill.status == 'PARTIAL' ? 'badge-warning' : 'badge-pending')}"
+                              th:text="${bill.status}"></span>
+                        <br>
+                        <small th:text="${#numbers.formatDecimal(bill.amount,1,0)} + ' TZS' + ' | Due: ' + ${#temporals.format(bill.dueDate, 'dd/MM/yyyy')}"></small>
+                    </div>
+                    <div class="bill-actions">
+                        <a th:if="${bill.status != 'PAID'}" th:href="@{/bills/pay/{id}(id=${bill.id})}?redirectTo=/excel/daily-entry" class="btn-xs btn-success">Pay</a>
+                        <a th:href="@{/bills/delete/{id}(id=${bill.id})}?redirectTo=/excel/daily-entry" class="btn-xs btn-delete" onclick="return confirm('Delete this bill?')">Del</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -255,6 +342,12 @@
                 const row = document.getElementById('billSelectRow');
                 if (row) row.style.display = billRadio && billRadio.checked ? 'block' : 'none';
             }
+            
+            // Toggle bills section
+            document.getElementById('toggleBillsBtn').addEventListener('click', function() {
+                const section = document.getElementById('billsManagementSection');
+                section.classList.toggle('active');
+            });
         </script>
     </th:block>
 </body>

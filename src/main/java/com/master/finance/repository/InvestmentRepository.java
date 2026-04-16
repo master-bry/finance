@@ -1,10 +1,12 @@
 package com.master.finance.repository;
 
-import com.master.finance.model.Investment;
+import java.util.List;
+
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
-import java.util.List;
+
+import com.master.finance.model.Investment;
 
 @Repository
 public interface InvestmentRepository extends MongoRepository<Investment, String> {

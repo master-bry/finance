@@ -1,14 +1,26 @@
 package com.master.finance.controller;
 
-import com.master.finance.model.Investment;
-import com.master.finance.service.InvestmentService;
-import com.master.finance.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.master.finance.model.Investment;
+import com.master.finance.service.InvestmentService;
+import com.master.finance.service.UserService;
+
+import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/investments")
@@ -20,6 +32,11 @@ public class InvestmentController {
     @Autowired
     private UserService userService;
 
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(Double.class, new CustomNumberEditor(Double.class, true));
+    }
+
     @GetMapping
     public String listInvestments(Authentication authentication, Model model) {
         String userId = getUserId(authentication);
@@ -28,7 +45,6 @@ public class InvestmentController {
         model.addAttribute("totalCurrentValue", investmentService.getTotalCurrentValue(userId));
         model.addAttribute("totalProfitLoss", investmentService.getTotalProfitLoss(userId));
 
-        // Layout attributes
         model.addAttribute("currentPage", "investments");
         model.addAttribute("pageSubtitle", "Manage your investment portfolio");
         model.addAttribute("title", "Investments");
@@ -41,19 +57,25 @@ public class InvestmentController {
         if (!model.containsAttribute("investment")) {
             model.addAttribute("investment", new Investment());
         }
-
-        // Layout attributes
         model.addAttribute("currentPage", "investments");
         model.addAttribute("pageSubtitle", "Add a new investment");
         model.addAttribute("title", "Add Investment");
-
         return "investments/add";
     }
 
     @PostMapping("/add")
-    public String addInvestment(@ModelAttribute Investment investment,
+    public String addInvestment(@Valid @ModelAttribute("investment") Investment investment,
+                                BindingResult result,
                                 Authentication authentication,
+                                Model model,
                                 RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            model.addAttribute("investment", investment);
+            model.addAttribute("currentPage", "investments");
+            model.addAttribute("pageSubtitle", "Add a new investment");
+            model.addAttribute("title", "Add Investment");
+            return "investments/add";
+        }
         try {
             String userId = getUserId(authentication);
             investment.setUserId(userId);
@@ -75,7 +97,6 @@ public class InvestmentController {
                 .filter(investment -> investment.getUserId().equals(userId))
                 .map(investment -> {
                     model.addAttribute("investment", investment);
-                    // Layout attributes
                     model.addAttribute("currentPage", "investments");
                     model.addAttribute("pageSubtitle", "Edit investment details");
                     model.addAttribute("title", "Edit Investment");
@@ -89,12 +110,20 @@ public class InvestmentController {
 
     @PostMapping("/edit/{id}")
     public String updateInvestment(@PathVariable String id,
-                                   @ModelAttribute Investment investment,
+                                   @Valid @ModelAttribute("investment") Investment investment,
+                                   BindingResult result,
                                    Authentication authentication,
+                                   Model model,
                                    RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            model.addAttribute("investment", investment);
+            model.addAttribute("currentPage", "investments");
+            model.addAttribute("pageSubtitle", "Edit investment details");
+            model.addAttribute("title", "Edit Investment");
+            return "investments/edit";
+        }
         try {
             String userId = getUserId(authentication);
-            // Ensure ownership
             investmentService.getInvestment(id).ifPresentOrElse(existing -> {
                 if (existing.getUserId().equals(userId)) {
                     investment.setId(id);
@@ -141,7 +170,6 @@ public class InvestmentController {
                 .filter(investment -> investment.getUserId().equals(userId))
                 .map(investment -> {
                     model.addAttribute("investment", investment);
-                    // Layout attributes
                     model.addAttribute("currentPage", "investments");
                     model.addAttribute("pageSubtitle", "Update current value");
                     model.addAttribute("title", "Update Value");
@@ -184,7 +212,6 @@ public class InvestmentController {
                 .filter(investment -> investment.getUserId().equals(userId))
                 .map(investment -> {
                     model.addAttribute("investment", investment);
-                    // Layout attributes
                     model.addAttribute("currentPage", "investments");
                     model.addAttribute("pageSubtitle", "Add investment transaction");
                     model.addAttribute("title", "Add Transaction");

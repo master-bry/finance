@@ -1,9 +1,8 @@
 package com.master.finance.controller;
 
-import com.master.finance.model.Bill;
-import com.master.finance.model.DailyEntry;
-import com.master.finance.model.Transaction;
-import com.master.finance.service.*;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -11,12 +10,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import com.master.finance.model.Bill;
+import com.master.finance.model.DailyEntry;
+import com.master.finance.model.Transaction;
+import com.master.finance.service.BillService;
+import com.master.finance.service.DailyEntryService;
+import com.master.finance.service.TransactionService;
+import com.master.finance.service.UserService;
 
 @Controller
 @RequestMapping("/excel")
@@ -41,6 +49,8 @@ public class ExcelController {
         DailyEntry todayEntry = dailyEntryService.getTodayEntry(userId).orElse(new DailyEntry());
         Double currentBalance = dailyEntryService.getCurrentBalance(userId);
         List<DailyEntry> history = dailyEntryService.getUserEntries(userId);
+        List<Bill> allBills = billService.getUserBills(userId); // 
+        model.addAttribute("allBills", allBills);
         List<Bill> pendingBills = billService.getPendingBills(userId);
 
         model.addAttribute("entry", todayEntry);

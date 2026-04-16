@@ -1,12 +1,14 @@
 package com.master.finance.service;
 
-import com.master.finance.model.Investment;
-import com.master.finance.repository.InvestmentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.master.finance.model.Investment;
+import com.master.finance.repository.InvestmentRepository;
 
 @Service
 public class InvestmentService {
@@ -29,7 +31,7 @@ public class InvestmentService {
     public void softDeleteInvestment(String id) {
         investmentRepository.findById(id).ifPresent(investment -> {
             investment.setDeleted(true);
-            investment.setDeletedAt(LocalDateTime.now());
+            investment.setDeletedAt(LocalDate.now());
             investmentRepository.save(investment);
         });
     }
