@@ -1,14 +1,20 @@
 package com.master.finance.controller;
 
-import com.master.finance.model.Bill;
-import com.master.finance.service.BillService;
-import com.master.finance.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.master.finance.model.Bill;
+import com.master.finance.service.BillService;
+import com.master.finance.service.UserService;
 
 @Controller
 @RequestMapping("/bills")
@@ -39,17 +45,18 @@ public class BillController {
     }
 
     @PostMapping("/add")
-    public String addBill(@ModelAttribute Bill bill, Authentication authentication,
-                          RedirectAttributes redirectAttributes) {
-        try {
-            bill.setUserId(getUserId(authentication));
-            billService.saveBill(bill);
-            redirectAttributes.addFlashAttribute("success", "Bill added successfully");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error: " + e.getMessage());
-        }
-        return "redirect:/bills";
+public String addBill(@ModelAttribute Bill bill, Authentication authentication,
+                      @RequestParam(defaultValue = "/bills") String redirectTo,
+                      RedirectAttributes redirectAttributes) {
+    try {
+        bill.setUserId(getUserId(authentication));
+        billService.saveBill(bill);
+        redirectAttributes.addFlashAttribute("success", "Bill added");
+    } catch (Exception e) {
+        redirectAttributes.addFlashAttribute("error", e.getMessage());
     }
+    return "redirect:" + redirectTo;
+}
 
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable String id, Authentication authentication,

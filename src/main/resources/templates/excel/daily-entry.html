@@ -44,7 +44,6 @@
             .expense { color: var(--danger); }
             .bill-select-row { margin-top: 0.5rem; }
             
-            /* Bills management section */
             .bills-section {
                 margin-top: 1.5rem;
                 padding: 1.5rem;
@@ -140,8 +139,10 @@
                         <label>Select Bill to Pay</label>
                         <select name="billId">
                             <option value="">-- Choose pending bill --</option>
-                            <option th:each="bill : ${pendingBills}" th:value="${bill.id}"
-                                    th:text="${bill.name} + ' (' + #numbers.formatDecimal(bill.amount,1,0) + ' TZS, Due: ' + #temporals.format(bill.dueDate,'dd/MM') + ')'"></option>
+                            <th:block th:if="${pendingBills != null}">
+                                <option th:each="bill : ${pendingBills}" th:value="${bill.id}"
+                                        th:text="${bill.name} + ' (' + #numbers.formatDecimal(bill.amount,1,0) + ' TZS, Due: ' + #temporals.format(bill.dueDate,'dd/MM') + ')'"></option>
+                            </th:block>
                         </select>
                     </div>
                 </div>
@@ -259,13 +260,13 @@
             </a>
         </div>
         
-        <!-- Bills Management Section (Hidden by default) -->
+        <!-- Bills Management Section -->
         <div id="billsManagementSection" class="bills-section">
             <div class="section-header">
                 <h4><i class="fas fa-file-invoice"></i> Manage Bills</h4>
             </div>
             
-            <!-- Add Bill Form (inline) -->
+            <!-- Add Bill Form -->
             <div class="inline-form">
                 <h5 style="margin-bottom: 1rem;">➕ Add New Bill</h5>
                 <form action="/bills/add" method="post">
@@ -343,10 +344,14 @@
                 if (row) row.style.display = billRadio && billRadio.checked ? 'block' : 'none';
             }
             
-            // Toggle bills section
-            document.getElementById('toggleBillsBtn').addEventListener('click', function() {
+            document.addEventListener('DOMContentLoaded', function() {
+                const toggleBtn = document.getElementById('toggleBillsBtn');
                 const section = document.getElementById('billsManagementSection');
-                section.classList.toggle('active');
+                if (toggleBtn && section) {
+                    toggleBtn.addEventListener('click', function() {
+                        section.classList.toggle('active');
+                    });
+                }
             });
         </script>
     </th:block>
