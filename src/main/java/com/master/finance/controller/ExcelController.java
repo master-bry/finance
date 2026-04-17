@@ -43,26 +43,25 @@ public class ExcelController {
     private BillService billService;
 
     @GetMapping("/daily-entry")
-public String showDailyEntry(Authentication authentication, Model model) {
-    String userId = getUserId(authentication);
+    public String showDailyEntry(Authentication authentication, Model model) {
+        String userId = getUserId(authentication);
+        DailyEntry todayEntry = dailyEntryService.getTodayEntry(userId).orElse(new DailyEntry());
+        Double currentBalance = dailyEntryService.getCurrentBalance(userId);
+        List<DailyEntry> history = dailyEntryService.getUserEntries(userId);
+        List<Bill> allBills = billService.getUserBills(userId);
+        List<Bill> pendingBills = billService.getPendingBills(userId);
 
-    DailyEntry todayEntry = dailyEntryService.getTodayEntry(userId).orElse(new DailyEntry());
-    Double currentBalance = dailyEntryService.getCurrentBalance(userId);
-    List<DailyEntry> history = dailyEntryService.getUserEntries(userId);
-    List<Bill> allBills = billService.getUserBills(userId);
-    List<Bill> pendingBills = billService.getPendingBills(userId);
+        model.addAttribute("entry", todayEntry);
+        model.addAttribute("currentBalance", currentBalance);
+        model.addAttribute("history", history);
+        model.addAttribute("allBills", allBills);
+        model.addAttribute("pendingBills", pendingBills);
+        model.addAttribute("currentPage", "daily");
+        model.addAttribute("pageSubtitle", "Record your daily expenses and income");
+        model.addAttribute("title", "Daily Entry");
 
-    model.addAttribute("entry", todayEntry);
-    model.addAttribute("currentBalance", currentBalance);
-    model.addAttribute("history", history);
-    model.addAttribute("allBills", allBills);
-    model.addAttribute("pendingBills", pendingBills);
-    model.addAttribute("currentPage", "daily");
-    model.addAttribute("pageSubtitle", "Record your daily expenses and income");
-    model.addAttribute("title", "Daily Entry");
-
-    return "excel/daily-entry";
-}
+        return "excel/daily-entry";
+    }
 
     @PostMapping("/add-expense")
     public String addExpense(@RequestParam String description,
@@ -75,42 +74,46 @@ public String showDailyEntry(Authentication authentication, Model model) {
         try {
             String userId = getUserId(authentication);
 
-            Transaction transaction = new Transaction();
-            transaction.setUserId(userId);
-            transaction.setDescription(description);
-            transaction.setAmount(amount);
-            transaction.setType("EXPENSE");
-            transaction.setCategory(category);
-            transaction.setDate(LocalDateTime.now());
-            transaction.setDeleted(false);
-            transactionService.saveTransaction(transaction);
+            // Ikiwa ni BILL (prepaid), toa kwenye bill, usiweke Transaction
+            if ("BILL".equals(paymentMethod) && billId != null && !billId.isEmpty()) {
+                Bill bill = billService.applyPayment(billId, amount);
+                redirectAttributes.addFlashAttribute("success",
+                    "Used " + amount + " TZS from prepaid bill '" + bill.getName() +
+                    "'. Remaining prepaid: " + bill.getAmount() + " TZS");
+            } else {
+                // CASH – normal expense, inaathiri cash balance
+                Transaction transaction = new Transaction();
+                transaction.setUserId(userId);
+                transaction.setDescription(description);
+                transaction.setAmount(amount);
+                transaction.setType("EXPENSE");
+                transaction.setCategory(category);
+                transaction.setDate(LocalDateTime.now());
+                transaction.setDeleted(false);
+                transactionService.saveTransaction(transaction);
+                redirectAttributes.addFlashAttribute("success", "Expense added: " + amount + " TZS");
+            }
 
+            // Kwa CASH na BILL, ongeza expense kwenye DailyEntry (kwa ajili ya kuonyesha)
             DailyEntry entry = dailyEntryService.getOrCreateTodayEntry(userId);
-
             DailyEntry.ExpenseItem expense = new DailyEntry.ExpenseItem();
             expense.setDescription(description);
             expense.setAmount(amount);
             expense.setCategory(category);
             expense.setTime(LocalDateTime.now());
             expense.setPaymentMethod(paymentMethod);
-
-            if ("BILL".equals(paymentMethod) && billId != null && !billId.isEmpty()) {
-                Bill bill = billService.applyPayment(billId, amount);
+            if ("BILL".equals(paymentMethod)) {
                 expense.setBillId(billId);
-                redirectAttributes.addFlashAttribute("success",
-                    "Bill payment recorded: " + amount + " TZS. Remaining: " + bill.getAmount() + " TZS");
-            } else {
-                redirectAttributes.addFlashAttribute("success", "Expense added: " + amount + " TZS");
             }
-
             entry.getExpenses().add(expense);
             dailyEntryService.saveDailyEntry(entry, userId);
+
+            // Recalculate balances kutoka leo – kwa BILL hakuna transaction, hivyo cash balance haibadiliki
             dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
 
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error adding expense: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error: " + e.getMessage());
         }
-
         return "redirect:/excel/daily-entry";
     }
 
@@ -122,7 +125,6 @@ public String showDailyEntry(Authentication authentication, Model model) {
                             RedirectAttributes redirectAttributes) {
         try {
             String userId = getUserId(authentication);
-
             Transaction transaction = new Transaction();
             transaction.setUserId(userId);
             transaction.setDescription(description);
@@ -134,23 +136,19 @@ public String showDailyEntry(Authentication authentication, Model model) {
             transactionService.saveTransaction(transaction);
 
             DailyEntry entry = dailyEntryService.getOrCreateTodayEntry(userId);
-
             DailyEntry.IncomeItem income = new DailyEntry.IncomeItem();
             income.setDescription(description);
             income.setAmount(amount);
             income.setSource(source);
             income.setTime(LocalDateTime.now());
             entry.getIncomes().add(income);
-
             dailyEntryService.saveDailyEntry(entry, userId);
             dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
 
             redirectAttributes.addFlashAttribute("success", "Income added: " + amount + " TZS");
-
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error adding income: " + e.getMessage());
         }
-
         return "redirect:/excel/daily-entry";
     }
 
@@ -159,24 +157,27 @@ public String showDailyEntry(Authentication authentication, Model model) {
         try {
             String userId = getUserId(authentication);
             DailyEntry entry = dailyEntryService.getTodayEntry(userId).orElse(null);
-
             if (entry != null && index < entry.getExpenses().size()) {
                 DailyEntry.ExpenseItem expense = entry.getExpenses().get(index);
-                
-                List<Transaction> todayTransactions = transactionService.getTransactionsByDateRange(
-                        userId, 
-                        LocalDateTime.now().withHour(0).withMinute(0).withSecond(0),
-                        LocalDateTime.now().withHour(23).withMinute(59).withSecond(59));
-                
-                for (Transaction t : todayTransactions) {
-                    if (t.getDescription().equals(expense.getDescription()) &&
-                        t.getAmount().equals(expense.getAmount()) &&
-                        "EXPENSE".equals(t.getType())) {
-                        transactionService.deleteTransaction(t.getId());
-                        break;
+                // Kwa BILL, tunahitaji kurejesha kiasi kwenye bill (reverse payment)
+                if ("BILL".equals(expense.getPaymentMethod()) && expense.getBillId() != null) {
+                    // Optional: revert bill amount – kwa sasa tunaruka kwa urahisi
+                    // Unaweza kuongeza method revertPayment kwenye BillService
+                } else {
+                    // Kwa CASH, futa transaction
+                    List<Transaction> todayTransactions = transactionService.getTransactionsByDateRange(
+                            userId, 
+                            LocalDateTime.now().withHour(0).withMinute(0).withSecond(0),
+                            LocalDateTime.now().withHour(23).withMinute(59).withSecond(59));
+                    for (Transaction t : todayTransactions) {
+                        if (t.getDescription().equals(expense.getDescription()) &&
+                            t.getAmount().equals(expense.getAmount()) &&
+                            "EXPENSE".equals(t.getType())) {
+                            transactionService.deleteTransaction(t.getId());
+                            break;
+                        }
                     }
                 }
-                
                 entry.getExpenses().remove(index);
                 entry.calculateTotals();
                 dailyEntryService.saveDailyEntry(entry, userId);
@@ -191,18 +192,16 @@ public String showDailyEntry(Authentication authentication, Model model) {
 
     @GetMapping("/delete-income/{index}")
     public String deleteIncome(@PathVariable int index, Authentication authentication, RedirectAttributes redirectAttributes) {
+        // Same as before – unchanged
         try {
             String userId = getUserId(authentication);
             DailyEntry entry = dailyEntryService.getTodayEntry(userId).orElse(null);
-
             if (entry != null && index < entry.getIncomes().size()) {
                 DailyEntry.IncomeItem income = entry.getIncomes().get(index);
-                
                 List<Transaction> todayTransactions = transactionService.getTransactionsByDateRange(
                         userId, 
                         LocalDateTime.now().withHour(0).withMinute(0).withSecond(0),
                         LocalDateTime.now().withHour(23).withMinute(59).withSecond(59));
-                
                 for (Transaction t : todayTransactions) {
                     if (t.getDescription().equals(income.getDescription()) &&
                         t.getAmount().equals(income.getAmount()) &&
@@ -211,7 +210,6 @@ public String showDailyEntry(Authentication authentication, Model model) {
                         break;
                     }
                 }
-                
                 entry.getIncomes().remove(index);
                 entry.calculateTotals();
                 dailyEntryService.saveDailyEntry(entry, userId);

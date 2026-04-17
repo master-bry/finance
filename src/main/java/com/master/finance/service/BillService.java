@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.master.finance.model.Bill;
-import com.master.finance.model.Transaction;
 import com.master.finance.repository.BillRepository;
 
 @Service
@@ -19,11 +18,8 @@ public class BillService {
     @Autowired
     private BillRepository billRepository;
 
-    @Autowired
-    private TransactionService transactionService;
-
-    @Autowired
-    private DailyEntryService dailyEntryService;
+    // Zote transactionService na dailyEntryService hazihitajiki kwa prepaid
+    // Unaweza kuzifuta au kuziacha (situmii)
 
     public List<Bill> getUserBills(String userId) {
         List<Bill> bills = billRepository.findByUserIdAndDeletedFalse(userId);
@@ -52,74 +48,15 @@ public class BillService {
         return billRepository.save(bill);
     }
 
-    public Bill markAsPaid(String billId) {
-        Bill bill = billRepository.findById(billId)
-                .orElseThrow(() -> new RuntimeException("Bill not found"));
-        if ("PAID".equals(bill.getStatus())) {
-            throw new IllegalStateException("Bill is already paid");
-        }
-
-        bill.setStatus("PAID");
-        bill.setPaidAt(LocalDateTime.now());
-        bill.setUpdatedAt(LocalDateTime.now());
-
-        // Create expense transaction
-        Transaction tx = new Transaction();
-        tx.setUserId(bill.getUserId());
-        tx.setDescription("Bill Payment: " + bill.getName());
-        tx.setAmount(bill.getAmount());
-        tx.setType("EXPENSE");
-        tx.setCategory(bill.getCategory() != null ? bill.getCategory() : "Bills");
-        tx.setDate(LocalDateTime.now());
-        tx.setDeleted(false);
-        transactionService.saveTransaction(tx);
-
-        // Update daily entry
-        dailyEntryService.getOrCreateTodayEntry(bill.getUserId());
-        dailyEntryService.recalculateBalancesFromDate(bill.getUserId(), LocalDateTime.now());
-
-        // Handle recurring
-        if (bill.isRecurring() && bill.getFrequency() != null && !bill.getFrequency().isEmpty()) {
-            Bill nextBill = new Bill();
-            nextBill.setUserId(bill.getUserId());
-            nextBill.setName(bill.getName());
-            nextBill.setAmount(bill.getAmount());
-            nextBill.setCategory(bill.getCategory());
-            nextBill.setRecurring(true);
-            nextBill.setFrequency(bill.getFrequency());
-            nextBill.setNotes(bill.getNotes());
-            nextBill.setStatus("PENDING");
-            LocalDate nextDue = bill.getDueDate();
-            if (nextDue != null) {
-                switch (bill.getFrequency()) {
-                    case "MONTHLY": nextDue = nextDue.plusMonths(1); break;
-                    case "WEEKLY":  nextDue = nextDue.plusWeeks(1); break;
-                    case "YEARLY":  nextDue = nextDue.plusYears(1); break;
-                }
-                nextBill.setDueDate(nextDue);
-            }
-            billRepository.save(nextBill);
-        }
-
-        return billRepository.save(bill);
-    }
-
-    public void deleteBill(String id) {
-        billRepository.findById(id).ifPresent(bill -> {
-            bill.setDeleted(true);
-            bill.setDeletedAt(LocalDateTime.now());
-            billRepository.save(bill);
-        });
-    }
-
+    // Kwa prepaid: hii itatumika wakati wa kulipa kutoka kwa expense form
     public Bill applyPayment(String billId, Double amount) {
         Bill bill = billRepository.findById(billId)
                 .orElseThrow(() -> new RuntimeException("Bill not found"));
-        if (!"PENDING".equals(bill.getStatus()) && !"PARTIAL".equals(bill.getStatus())) {
-            throw new IllegalStateException("Bill is already paid");
+        if ("PAID".equals(bill.getStatus())) {
+            throw new IllegalStateException("Bill is already fully used");
         }
         if (amount > bill.getAmount()) {
-            throw new IllegalArgumentException("Payment exceeds bill amount");
+            throw new IllegalArgumentException("Insufficient prepaid balance");
         }
 
         double newAmount = bill.getAmount() - amount;
@@ -132,6 +69,33 @@ public class BillService {
             bill.setAmount(newAmount);
         }
         bill.setUpdatedAt(LocalDateTime.now());
+
+        // Hakuna Transaction – prepaid haithiri cash balance
         return billRepository.save(bill);
+    }
+
+    // Kwa prepaid: markAsPaid haiumbi transaction pia
+    public Bill markAsPaid(String billId) {
+        Bill bill = billRepository.findById(billId)
+                .orElseThrow(() -> new RuntimeException("Bill not found"));
+        if ("PAID".equals(bill.getStatus())) {
+            throw new IllegalStateException("Bill is already paid");
+        }
+
+        bill.setStatus("PAID");
+        bill.setPaidAt(LocalDateTime.now());
+        bill.setAmount(0.0);
+        bill.setUpdatedAt(LocalDateTime.now());
+
+        // Hakuna transaction – prepaid haihusiki na cash balance
+        return billRepository.save(bill);
+    }
+
+    public void deleteBill(String id) {
+        billRepository.findById(id).ifPresent(bill -> {
+            bill.setDeleted(true);
+            bill.setDeletedAt(LocalDateTime.now());
+            billRepository.save(bill);
+        });
     }
 }

@@ -63,7 +63,7 @@
                 background: color-mix(in srgb, var(--primary-dark) 8%, white);
             }
             .payment-option input { accent-color: var(--primary-dark); }
-            #billSelectRow {
+            #prepaidSelectRow {
                 display: none;
                 margin-top: 0.5rem;
                 padding: 0.75rem;
@@ -71,7 +71,7 @@
                 border: 1px solid #f0c040;
                 border-radius: 10px;
             }
-            #billSelectRow.visible { display: block; }
+            #prepaidSelectRow.visible { display: block; }
             .bills-section {
                 background: var(--white);
                 border-radius: 15px;
@@ -89,14 +89,22 @@
             }
             .bill-item:last-child { border-bottom: none; }
             .bill-actions .btn-xs { margin-left: 0.25rem; }
-            .no-pending-notice {
+            .no-prepaid-notice {
                 padding: 0.6rem 0.75rem;
                 background: #fff3cd;
                 border-radius: 8px;
                 font-size: 0.9rem;
                 color: #856404;
             }
-            .no-pending-notice a { color: var(--primary-dark); font-weight: 600; }
+            .no-prepaid-notice a { color: var(--primary-dark); font-weight: 600; }
+            .prepaid-badge {
+                background: #17a2b8;
+                color: white;
+                padding: 0.2rem 0.5rem;
+                border-radius: 20px;
+                font-size: 0.7rem;
+                margin-left: 0.5rem;
+            }
         </style>
     </th:block>
 </head>
@@ -119,7 +127,7 @@
             <div class="stat-value income" th:text="${#numbers.formatDecimal(entry.totalIncome, 1, 0)} + ' TZS'">0 TZS</div>
         </div>
         <div class="stat-card">
-            <div class="stat-title">💸 Today's Expense</div>
+            <div class="stat-title">💸 Today's Expense (Cash)</div>
             <div class="stat-value expense" th:text="${#numbers.formatDecimal(entry.totalExpense, 1, 0)} + ' TZS'">0 TZS</div>
         </div>
         <div class="stat-card">
@@ -165,46 +173,46 @@
                 <label>Payment Method</label>
                 <div class="payment-method-group">
                     <label class="payment-option">
-                        <input type="radio" name="paymentMethod" value="CASH" checked onchange="toggleBillSelect(this)">
+                        <input type="radio" name="paymentMethod" value="CASH" checked onchange="togglePrepaidSelect(this)">
                         💵 Cash
                     </label>
                     <label class="payment-option">
-                        <input type="radio" name="paymentMethod" value="BILL" onchange="toggleBillSelect(this)">
-                        📋 Pay a Bill
+                        <input type="radio" name="paymentMethod" value="BILL" onchange="togglePrepaidSelect(this)">
+                        🎫 Use Prepaid Credit
                     </label>
                 </div>
             </div>
 
-            <!-- Bill selector -->
-            <div id="billSelectRow">
+            <!-- Prepaid selector -->
+            <div id="prepaidSelectRow">
                 <th:block th:if="${pendingBills != null and !pendingBills.empty}">
                     <label style="font-weight:600; display:block; margin-bottom:0.4rem;">
-                        Select Bill to Pay
+                        Select Prepaid Credit
                     </label>
-                    <select name="billId" id="billIdSelect" style="width:100%;" onchange="prefillBillAmount(this)">
-                        <option value="">-- Choose pending bill --</option>
+                    <select name="billId" id="prepaidSelect" style="width:100%;" onchange="prefillAmountFromPrepaid(this)">
+                        <option value="">-- Choose prepaid credit --</option>
                         <th:block th:each="bill : ${pendingBills}">
                             <option th:value="${bill.id}"
                                     th:attr="data-amount=${bill.amount}"
-                                    th:text="${bill.name} + ' — ' + ${#numbers.formatDecimal(bill.amount,1,0)} + ' TZS  (Due: ' + ${#temporals.format(bill.dueDate,'dd/MM/yyyy')} + ')'">
+                                    th:text="${bill.name} + ' — ' + ${#numbers.formatDecimal(bill.amount,1,0)} + ' TZS remaining'">
                             </option>
                         </th:block>
                     </select>
                     <small style="color:#6c757d; margin-top:0.4rem; display:block;">
-                        Amount will be prefilled. You can pay partial amount too.
+                        Amount will be prefilled. You can change it to use partial credit.
                     </small>
                     <div style="margin-top: 8px;">
                         <a href="/bills/add?redirectTo=/excel/daily-entry" class="btn-xs btn-primary">
-                            <i class="fas fa-plus"></i> Add new bill
+                            <i class="fas fa-plus"></i> Add new prepaid credit
                         </a>
                         <a href="/bills" class="btn-xs btn-secondary">
-                            <i class="fas fa-edit"></i> Manage bills
+                            <i class="fas fa-edit"></i> Manage prepaid credits
                         </a>
                     </div>
                 </th:block>
-                <div th:if="${pendingBills == null or pendingBills.empty}" class="no-pending-notice">
-                    ⚠️ No pending bills found.
-                    <a href="/bills/add?redirectTo=/excel/daily-entry">Add a bill first →</a>
+                <div th:if="${pendingBills == null or pendingBills.empty}" class="no-prepaid-notice">
+                    ⚠️ No prepaid credit available.
+                    <a href="/bills/add?redirectTo=/excel/daily-entry">Add prepaid credit first →</a>
                 </div>
             </div>
 
@@ -255,7 +263,8 @@
             <div>
                 <strong th:text="${exp.description}"></strong><br>
                 <small class="category-badge" th:text="${exp.category}"></small>
-                <span th:if="${exp.paymentMethod == 'BILL'}" class="badge badge-info" style="margin-left:0.5rem;">📋 Bill</span>
+                <span th:if="${exp.paymentMethod == 'BILL'}" class="prepaid-badge">🎫 Prepaid</span>
+                <span th:if="${exp.paymentMethod == 'CASH'}" class="badge badge-secondary">💵 Cash</span>
             </div>
             <div>
                 <span class="expense" th:text="'- ' + ${#numbers.formatDecimal(exp.amount, 1, 0)} + ' TZS'"></span>
@@ -288,41 +297,37 @@
         </div>
     </div>
 
-    <!-- ===== MANAGE BILLS TOGGLE ===== -->
+    <!-- ===== MANAGE PREPAID CREDITS TOGGLE ===== -->
     <div style="text-align:center; margin: 1.5rem 0 1rem;">
         <button type="button" id="toggleBillsBtn" class="btn btn-secondary" style="padding: 0.75rem 2rem;">
-            <i class="fas fa-file-invoice"></i> View All Bills
+            <i class="fas fa-file-invoice"></i> View All Prepaid Credits
         </button>
         <a href="/excel/history" class="btn btn-secondary" style="padding: 0.75rem 2rem; margin-left: 1rem;">
             <i class="fas fa-history"></i> View History
         </a>
     </div>
 
-    <!-- Bills List Section -->
+    <!-- Prepaid Credits List Section -->
     <div id="billsManagementSection" class="bills-section">
-        <div class="form-title"><i class="fas fa-file-invoice"></i> All Bills</div>
+        <div class="form-title"><i class="fas fa-file-invoice"></i> All Prepaid Credits</div>
         <div th:if="${allBills == null or allBills.empty}" class="empty-state" style="padding:1rem;">
-            <p>No bills yet.</p>
+            <p>No prepaid credits yet.</p>
         </div>
         <div th:each="bill : ${allBills}" class="bill-item">
             <div>
                 <strong th:text="${bill.name}"></strong>
                 <span class="badge"
                       th:classappend="${bill.status == 'PAID' ? 'badge-success' : (bill.status == 'PARTIAL' ? 'badge-warning' : 'badge-pending')}"
-                      th:text="${bill.status}"></span>
+                      th:text="${bill.status == 'PAID' ? 'USED UP' : (bill.status == 'PARTIAL' ? 'PARTIALLY USED' : 'AVAILABLE')}"></span>
                 <br>
-                <small th:text="${#numbers.formatDecimal(bill.amount,1,0)} + ' TZS | Due: ' + ${#temporals.format(bill.dueDate,'dd/MM/yyyy')}"></small>
-                <span th:if="${bill.isOverdue()}" style="color:var(--danger); font-size:0.78rem; margin-left:0.5rem;">⚠️ Overdue</span>
+                <small th:text="${#numbers.formatDecimal(bill.amount,1,0)} + ' TZS remaining'"></small>
             </div>
             <div class="bill-actions">
-                <a th:if="${bill.status != 'PAID'}"
-                   th:href="@{/bills/pay/{id}(id=${bill.id})}?redirectTo=/excel/daily-entry"
-                   class="btn-xs btn-success">Pay</a>
-                <a th:href="@{/bills/edit/{id}(id=${bill.id})}?redirectTo=/excel/daily-entry"
+                <a th:href="@{/bills/edit/{id}(id=${bill.id}, redirectTo='/excel/daily-entry')}"
                    class="btn-xs btn-edit">Edit</a>
-                <a th:href="@{/bills/delete/{id}(id=${bill.id})}?redirectTo=/excel/daily-entry"
+                <a th:href="@{/bills/delete/{id}(id=${bill.id}, redirectTo='/excel/daily-entry')}"
                    class="btn-xs btn-delete"
-                   onclick="return confirm('Delete this bill?')">Del</a>
+                   onclick="return confirm('Delete this prepaid credit?')">Delete</a>
             </div>
         </div>
     </div>
@@ -331,18 +336,18 @@
 
 <th:block layout:fragment="scripts">
 <script>
-    function toggleBillSelect(radio) {
-        const row = document.getElementById('billSelectRow');
+    function togglePrepaidSelect(radio) {
+        const row = document.getElementById('prepaidSelectRow');
         if (!row) return;
         if (radio.value === 'BILL') {
             row.classList.add('visible');
         } else {
             row.classList.remove('visible');
-            const sel = document.getElementById('billIdSelect');
+            const sel = document.getElementById('prepaidSelect');
             if (sel) sel.value = '';
         }
     }
-    function prefillBillAmount(sel) {
+    function prefillAmountFromPrepaid(sel) {
         const amountInput = document.getElementById('expenseAmount');
         if (!amountInput) return;
         const opt = sel.options[sel.selectedIndex];
@@ -356,7 +361,7 @@
         if (btn && section) {
             btn.addEventListener('click', function () {
                 const isActive = section.classList.toggle('active');
-                btn.innerHTML = isActive ? '<i class="fas fa-times"></i> Hide Bills' : '<i class="fas fa-file-invoice"></i> View All Bills';
+                btn.innerHTML = isActive ? '<i class="fas fa-times"></i> Hide Prepaid Credits' : '<i class="fas fa-file-invoice"></i> View All Prepaid Credits';
             });
         }
     });
