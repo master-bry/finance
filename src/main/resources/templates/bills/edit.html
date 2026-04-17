@@ -10,6 +10,9 @@
     <div class="form-container">
         <h2 style="color: var(--primary-dark); margin-bottom: 1.5rem;">✏️ Edit Bill</h2>
         <form th:action="@{/bills/edit/{id}(id=${bill.id})}" th:object="${bill}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <input type="hidden" name="redirectTo" th:value="${param.redirectTo != null ? param.redirectTo : '/bills'}" />
+
             <div class="form-group">
                 <label>Bill Name *</label>
                 <input type="text" th:field="*{name}" required>
@@ -22,7 +25,6 @@
                 <div class="form-group">
                     <label>Category</label>
                     <select th:field="*{category}">
-                        <option value="food">🍔 Food</option>
                         <option value="Rent">🏠 Rent</option>
                         <option value="Utilities">💡 Utilities</option>
                         <option value="Internet">🌐 Internet</option>
@@ -69,7 +71,7 @@
             </div>
             <div class="btn-group">
                 <button type="submit" class="btn btn-primary">Update Bill</button>
-                <a href="/bills" class="btn btn-secondary">Cancel</a>
+                <a th:href="@{/bills}" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
     </div>
