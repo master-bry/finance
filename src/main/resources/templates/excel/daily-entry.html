@@ -4,7 +4,7 @@
       layout:decorate="~{layout}">
 <head>
     <title>Daily Entry</title>
-    
+
     <th:block layout:fragment="styles">
         <style>
             .btn-submit {
@@ -18,6 +18,7 @@
                 font-weight: 600;
             }
             .btn-submit:hover { background: var(--secondary); }
+
             .entry-list {
                 background: var(--white);
                 border-radius: 15px;
@@ -33,6 +34,7 @@
             }
             .entry-item:last-child { border-bottom: none; }
             .delete-btn { color: var(--danger); text-decoration: none; margin-left: 1rem; }
+
             .form-title {
                 font-size: 1.2rem;
                 margin-bottom: 1rem;
@@ -42,13 +44,80 @@
             }
             .income { color: var(--success); }
             .expense { color: var(--danger); }
-            .bill-select-row { margin-top: 0.5rem; }
-            
-            .bills-section {
-                margin-top: 1.5rem;
-                padding: 1.5rem;
+
+            /* Payment method toggle */
+            .payment-method-group {
+                display: flex;
+                gap: 1rem;
+                margin-top: 0.25rem;
+            }
+            .payment-option {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.6rem 1rem;
+                border: 2px solid var(--gray-200);
+                border-radius: 10px;
+                cursor: pointer;
+                transition: all 0.2s;
+                font-weight: 500;
+            }
+            .payment-option:has(input:checked) {
+                border-color: var(--primary-dark);
+                background: color-mix(in srgb, var(--primary-dark) 8%, white);
+            }
+            .payment-option input { accent-color: var(--primary-dark); }
+
+            /* Bill select row */
+            #billSelectRow {
+                display: none;
+                margin-top: 0.5rem;
+                padding: 0.75rem;
+                background: #fffbf0;
+                border: 1px solid #f0c040;
+                border-radius: 10px;
+            }
+            #billSelectRow.visible { display: block; }
+
+            /* Quick Add Bill section */
+            .quick-add-bill-section {
                 background: var(--white);
                 border-radius: 15px;
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+                border: 2px dashed var(--gray-300);
+            }
+            .quick-add-bill-section.open {
+                border-style: solid;
+                border-color: var(--accent);
+            }
+            .quick-add-bill-toggle {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                cursor: pointer;
+                user-select: none;
+            }
+            .quick-add-bill-toggle h4 {
+                margin: 0;
+                color: var(--primary-dark);
+                font-size: 1rem;
+            }
+            .quick-add-bill-body {
+                display: none;
+                margin-top: 1.25rem;
+                padding-top: 1.25rem;
+                border-top: 1px solid var(--gray-200);
+            }
+            .quick-add-bill-body.open { display: block; }
+
+            /* Bills list section */
+            .bills-section {
+                background: var(--white);
+                border-radius: 15px;
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
                 display: none;
             }
             .bills-section.active { display: block; }
@@ -56,305 +125,367 @@
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 0.5rem 0;
+                padding: 0.6rem 0;
                 border-bottom: 1px solid var(--gray-200);
             }
+            .bill-item:last-child { border-bottom: none; }
             .bill-actions .btn-xs { margin-left: 0.25rem; }
-            .inline-form {
-                margin-top: 1rem;
-                padding-top: 1rem;
-                border-top: 1px dashed var(--gray-300);
+
+            /* No pending bills notice */
+            .no-pending-notice {
+                padding: 0.6rem 0.75rem;
+                background: #fff3cd;
+                border-radius: 8px;
+                font-size: 0.9rem;
+                color: #856404;
             }
+            .no-pending-notice a { color: var(--primary-dark); font-weight: 600; }
         </style>
     </th:block>
 </head>
 <body>
-    <div layout:fragment="content">
-        <!-- Current Balance Card -->
-        <div class="balance-card">
-            <div><i class="fas fa-wallet"></i> Current Balance</div>
-            <div class="balance-amount">
-                <span th:text="${#numbers.formatDecimal(currentBalance, 1, 0)}"></span> TZS
-            </div>
-            <div th:text="${#temporals.format(#temporals.createNow(), 'EEEE, MMMM d, yyyy')}"></div>
+<div layout:fragment="content">
+
+    <!-- Current Balance Card -->
+    <div class="balance-card">
+        <div><i class="fas fa-wallet"></i> Current Balance</div>
+        <div class="balance-amount">
+            <span th:text="${#numbers.formatDecimal(currentBalance, 1, 0)}"></span> TZS
         </div>
-        
-        <!-- Today's Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-title">💰 Today's Income</div>
-                <div class="stat-value income" th:text="${#numbers.formatDecimal(entry.totalIncome, 1, 0)} + ' TZS'">0 TZS</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-title">💸 Today's Expense</div>
-                <div class="stat-value expense" th:text="${#numbers.formatDecimal(entry.totalExpense, 1, 0)} + ' TZS'">0 TZS</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-title">📊 Today's Savings</div>
-                <div class="stat-value" th:class="${(entry.totalIncome - entry.totalExpense) >= 0 ? 'income' : 'expense'}"
-                     th:text="${#numbers.formatDecimal(entry.totalIncome - entry.totalExpense, 1, 0)} + ' TZS'">0 TZS</div>
-            </div>
+        <div th:text="${#temporals.format(#temporals.createNow(), 'EEEE, MMMM d, yyyy')}"></div>
+    </div>
+
+    <!-- Today's Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-title">💰 Today's Income</div>
+            <div class="stat-value income" th:text="${#numbers.formatDecimal(entry.totalIncome, 1, 0)} + ' TZS'">0 TZS</div>
         </div>
-        
-        <!-- Add Expense Form with Bill Option -->
-        <div class="section-card">
-            <div class="form-title"><i class="fas fa-shopping-cart"></i> Add Expense</div>
-            <form action="/excel/add-expense" method="post">
+        <div class="stat-card">
+            <div class="stat-title">💸 Today's Expense</div>
+            <div class="stat-value expense" th:text="${#numbers.formatDecimal(entry.totalExpense, 1, 0)} + ' TZS'">0 TZS</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">📊 Today's Savings</div>
+            <div class="stat-value"
+                 th:class="${(entry.totalIncome - entry.totalExpense) >= 0 ? 'stat-value income' : 'stat-value expense'}"
+                 th:text="${#numbers.formatDecimal(entry.totalIncome - entry.totalExpense, 1, 0)} + ' TZS'">0 TZS</div>
+        </div>
+    </div>
+
+    <!-- ===== ADD EXPENSE FORM ===== -->
+    <div class="section-card">
+        <div class="form-title"><i class="fas fa-shopping-cart"></i> Add Expense</div>
+        <form action="/excel/add-expense" method="post" id="expenseForm">
+            <div class="row">
+                <div class="form-group">
+                    <input type="text" name="description" placeholder="What did you buy?" required>
+                </div>
+                <div class="form-group">
+                    <input type="number" step="0.01" name="amount" id="expenseAmount" placeholder="Amount (TZS)" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <select name="category" required>
+                        <option value="">Select Category</option>
+                        <option value="Food">🍔 Food</option>
+                        <option value="Transport">🚗 Transport</option>
+                        <option value="Rent">🏠 Rent</option>
+                        <option value="Utilities">💡 Utilities</option>
+                        <option value="Entertainment">🎬 Entertainment</option>
+                        <option value="Shopping">🛍️ Shopping</option>
+                        <option value="Healthcare">🏥 Healthcare</option>
+                        <option value="Education">📚 Education</option>
+                        <option value="Bills">📋 Bills</option>
+                        <option value="Other">📌 Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="form-group">
+                <label>Payment Method</label>
+                <div class="payment-method-group">
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="CASH" checked onchange="toggleBillSelect(this)">
+                        💵 Cash
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="BILL" onchange="toggleBillSelect(this)">
+                        📋 Pay a Bill
+                    </label>
+                </div>
+            </div>
+
+            <!-- Bill selector — shows when "Pay a Bill" is selected -->
+            <div id="billSelectRow">
+                <th:block th:if="${pendingBills != null and !pendingBills.empty}">
+                    <label style="font-weight:600; display:block; margin-bottom:0.4rem;">
+                        Select Bill to Pay
+                    </label>
+                    <select name="billId" id="billIdSelect" style="width:100%;" onchange="prefillBillAmount(this)">
+                        <option value="">-- Choose pending bill --</option>
+                        <th:block th:each="bill : ${pendingBills}">
+                            <option th:value="${bill.id}"
+                                    th:attr="data-amount=${bill.amount}"
+                                    th:text="${bill.name} + ' — ' + ${#numbers.formatDecimal(bill.amount,1,0)} + ' TZS  (Due: ' + ${#temporals.format(bill.dueDate,'dd/MM/yyyy')} + ')'">
+                            </option>
+                        </th:block>
+                    </select>
+                    <small style="color:#6c757d; margin-top:0.4rem; display:block;">
+                        Amount will be prefilled. You can pay partial amount too.
+                    </small>
+                </th:block>
+                <div th:if="${pendingBills == null or pendingBills.empty}" class="no-pending-notice">
+                    ⚠️ No pending bills found.
+                    <a href="#quickAddBill" onclick="openQuickAddBill()">Add a bill first ↓</a>
+                </div>
+            </div>
+
+            <div class="row" style="margin-top:1rem;">
+                <div class="form-group">
+                    <button type="submit" class="btn-submit"><i class="fas fa-plus-circle"></i> Add Expense</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- ===== ADD INCOME FORM ===== -->
+    <div class="section-card">
+        <div class="form-title"><i class="fas fa-money-bill-wave"></i> Add Income</div>
+        <form action="/excel/add-income" method="post">
+            <div class="row">
+                <div class="form-group">
+                    <input type="text" name="description" placeholder="Income description" required>
+                </div>
+                <div class="form-group">
+                    <input type="number" step="0.01" name="amount" placeholder="Amount (TZS)" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <select name="source" required>
+                        <option value="">Select Source</option>
+                        <option value="Salary">💼 Salary</option>
+                        <option value="Freelance">💻 Freelance</option>
+                        <option value="Business">🏪 Business</option>
+                        <option value="Investment">📈 Investment</option>
+                        <option value="Gift">🎁 Gift</option>
+                        <option value="Other">📌 Other</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn-submit" style="background: #217346;"><i class="fas fa-plus-circle"></i> Add Income</button>
+        </form>
+    </div>
+
+    <!-- ===== QUICK ADD BILL (inline, always visible as collapsible) ===== -->
+    <div class="quick-add-bill-section" id="quickAddBill">
+        <div class="quick-add-bill-toggle" onclick="toggleQuickAddBill()">
+            <h4><i class="fas fa-plus-circle"></i> &nbsp;Add New Bill</h4>
+            <span id="quickAddBillArrow" style="font-size:1.2rem; color:var(--primary-dark);">▼</span>
+        </div>
+        <div class="quick-add-bill-body" id="quickAddBillBody">
+            <form action="/bills/add" method="post">
+                <input type="hidden" name="redirectTo" value="/excel/daily-entry">
                 <div class="row">
                     <div class="form-group">
-                        <input type="text" name="description" placeholder="What did you buy?" required>
+                        <label>Bill Name *</label>
+                        <input type="text" name="name" placeholder="e.g., Rent, Electricity" required>
                     </div>
                     <div class="form-group">
-                        <input type="number" step="0.01" name="amount" placeholder="Amount (TZS)" required>
+                        <label>Amount (TZS) *</label>
+                        <input type="number" step="0.01" name="amount" placeholder="e.g., 50000" required>
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group">
-                        <select name="category" required>
-                            <option value="">Select Category</option>
-                            <option value="Food">🍔 Food</option>
-                            <option value="Transport">🚗 Transport</option>
+                        <label>Category</label>
+                        <select name="category">
                             <option value="Rent">🏠 Rent</option>
                             <option value="Utilities">💡 Utilities</option>
-                            <option value="Entertainment">🎬 Entertainment</option>
-                            <option value="Shopping">🛍️ Shopping</option>
-                            <option value="Healthcare">🏥 Healthcare</option>
-                            <option value="Education">📚 Education</option>
-                            <option value="Bills">📋 Bills</option>
-                            <option value="Other">📌 Other</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <label>Payment Method</label>
-                        <div style="display: flex; gap: 1.5rem; align-items: center;">
-                            <label><input type="radio" name="paymentMethod" value="CASH" checked onchange="toggleBillSelect()"> 💵 Cash</label>
-                            <label><input type="radio" name="paymentMethod" value="BILL" onchange="toggleBillSelect()"> 📋 Bill</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="row bill-select-row" id="billSelectRow" style="display: none;">
-                    <div class="form-group">
-                        <label>Select Bill to Pay</label>
-                        <select name="billId">
-                            <option value="">-- Choose pending bill --</option>
-                            <th:block th:if="${pendingBills != null}">
-                                <option th:each="bill : ${pendingBills}" th:value="${bill.id}" th:inline="text">
-                                    [[${bill.name}]] ([[${#numbers.formatDecimal(bill.amount,1,0)}]] TZS, Due: [[${#temporals.format(bill.dueDate,'dd/MM')}]])
-                                </option>
-                            </th:block>
-                        </select>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <button type="submit" class="btn-submit"><i class="fas fa-plus-circle"></i> Add Expense</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-        
-        <!-- Add Income Form -->
-        <div class="section-card">
-            <div class="form-title"><i class="fas fa-money-bill-wave"></i> Add Income</div>
-            <form action="/excel/add-income" method="post">
-                <div class="row">
-                    <div class="form-group">
-                        <input type="text" name="description" placeholder="Income source" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="number" step="0.01" name="amount" min="0.01" placeholder="Amount (TZS)" required>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <select name="source" required>
-                            <option value="">Select Source</option>
-                            <option value="Salary">💰 Salary</option>
-                            <option value="Business">💼 Business</option>
-                            <option value="Investment">📈 Investment</option>
-                            <option value="Gift">🎁 Gift</option>
+                            <option value="Internet">🌐 Internet</option>
+                            <option value="Insurance">🛡️ Insurance</option>
+                            <option value="Subscription">📺 Subscription</option>
                             <option value="Other">📌 Other</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <button type="submit" class="btn-submit"><i class="fas fa-plus-circle"></i> Add Income</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-        
-        <!-- Excel Upload -->
-        <div class="section-card">
-            <div class="form-title"><i class="fas fa-file-excel"></i> Upload Excel File</div>
-            <form action="/excel/upload" method="post" enctype="multipart/form-data">
-                <div class="row">
-                    <div class="form-group">
-                        <input type="number" step="0.01" name="openingBalance" min="0.01" placeholder="Opening Balance (TZS)" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="file" name="file" accept=".xlsx, .xls" required>
+                        <label>Due Date *</label>
+                        <input type="date" name="dueDate" required>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="form-group">
-                        <button type="submit" class="btn-submit" style="background: #217346;"><i class="fas fa-upload"></i> Upload Excel</button>
+                    <div class="form-group" style="display:flex; align-items:center; gap:0.75rem; padding-top:1.5rem;">
+                        <input type="checkbox" name="recurring" value="true" id="recurringCheck"
+                               onchange="document.getElementById('freqGroup').style.display = this.checked ? 'block' : 'none'"
+                               style="width:auto;">
+                        <label for="recurringCheck" style="margin:0; cursor:pointer;">🔄 Recurring bill?</label>
                     </div>
-                    <div class="form-group">
-                        <a href="/excel/download-template" class="btn-submit" style="background: #217346; display: block; text-align: center; text-decoration: none;">
-                            <i class="fas fa-download"></i> Download Template
-                        </a>
+                    <div class="form-group" id="freqGroup" style="display:none;">
+                        <label>Frequency</label>
+                        <select name="frequency">
+                            <option value="MONTHLY">Monthly</option>
+                            <option value="WEEKLY">Weekly</option>
+                            <option value="YEARLY">Yearly</option>
+                        </select>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea name="notes" placeholder="Optional notes..." rows="2"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Bill</button>
             </form>
         </div>
-        
-        <!-- Today's Expenses List -->
-        <div class="entry-list">
-            <div class="form-title"><i class="fas fa-list"></i> Today's Expenses</div>
-            <div th:if="${entry.expenses.empty}" class="empty-state" style="padding: 1rem;">
-                <p>No expenses recorded today</p>
-            </div>
-            <div th:each="exp, stat : ${entry.expenses}" class="entry-item">
-                <div>
-                    <strong th:text="${exp.description}"></strong><br>
-                    <small class="category-badge" th:text="${exp.category}"></small>
-                    <span th:if="${exp.paymentMethod == 'BILL'}" class="badge badge-info" style="margin-left: 0.5rem;">📋 Bill</span>
-                </div>
-                <div>
-                    <span class="expense" th:text="'- ' + ${#numbers.formatDecimal(exp.amount, 1, 0)} + ' TZS'"></span>
-                    <a th:href="'/excel/delete-expense/' + ${stat.index}" class="delete-btn" onclick="return confirm('Delete this expense?')">
-                        <i class="fas fa-trash"></i>
-                    </a>
-                </div>
-            </div>
+    </div>
+
+    <!-- ===== TODAY'S EXPENSES LIST ===== -->
+    <div class="entry-list">
+        <div class="form-title"><i class="fas fa-list"></i> Today's Expenses</div>
+        <div th:if="${entry.expenses.empty}" class="empty-state" style="padding: 1rem;">
+            <p>No expenses recorded today</p>
         </div>
-        
-        <!-- Today's Income List -->
-        <div class="entry-list">
-            <div class="form-title"><i class="fas fa-list"></i> Today's Income</div>
-            <div th:if="${entry.incomes.empty}" class="empty-state" style="padding: 1rem;">
-                <p>No income recorded today</p>
+        <div th:each="exp, stat : ${entry.expenses}" class="entry-item">
+            <div>
+                <strong th:text="${exp.description}"></strong><br>
+                <small class="category-badge" th:text="${exp.category}"></small>
+                <span th:if="${exp.paymentMethod == 'BILL'}" class="badge badge-info" style="margin-left:0.5rem;">📋 Bill</span>
             </div>
-            <div th:each="inc, stat : ${entry.incomes}" class="entry-item">
-                <div>
-                    <strong th:text="${inc.description}"></strong><br>
-                    <small class="category-badge" th:text="${inc.source}"></small>
-                </div>
-                <div>
-                    <span class="income" th:text="'+ ' + ${#numbers.formatDecimal(inc.amount, 1, 0)} + ' TZS'"></span>
-                    <a th:href="'/excel/delete-income/' + ${stat.index}" class="delete-btn" onclick="return confirm('Delete this income?')">
-                        <i class="fas fa-trash"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Toggle Button for Bills Management -->
-        <div style="text-align: center; margin: 1.5rem 0 1rem;">
-            <button type="button" id="toggleBillsBtn" class="btn btn-secondary" style="padding: 0.75rem 2rem;">
-                <i class="fas fa-file-invoice"></i> Manage Bills
-            </button>
-            <a href="/excel/history" class="btn btn-secondary" style="padding: 0.75rem 2rem; margin-left: 1rem;">
-                <i class="fas fa-history"></i> View History
-            </a>
-        </div>
-        
-        <!-- Bills Management Section -->
-        <div id="billsManagementSection" class="bills-section">
-            <div class="section-header">
-                <h4><i class="fas fa-file-invoice"></i> Manage Bills</h4>
-            </div>
-            
-            <!-- Add Bill Form -->
-            <div class="inline-form">
-                <h5 style="margin-bottom: 1rem;">➕ Add New Bill</h5>
-                <form action="/bills/add" method="post">
-                    <input type="hidden" name="redirectTo" value="/excel/daily-entry">
-                    <div class="row">
-                        <div class="form-group">
-                            <input type="text" name="name" placeholder="Bill Name" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="number" step="0.01" name="amount" placeholder="Amount (TZS)" required>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="form-group">
-                            <select name="category">
-                                <option value="Rent">🏠 Rent</option>
-                                <option value="Utilities">💡 Utilities</option>
-                                <option value="Internet">🌐 Internet</option>
-                                <option value="Insurance">🛡️ Insurance</option>
-                                <option value="Subscription">📺 Subscription</option>
-                                <option value="Other">📌 Other</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <input type="date" name="dueDate" required>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="form-group">
-                            <label><input type="checkbox" name="recurring" value="true"> Recurring?</label>
-                        </div>
-                        <div class="form-group">
-                            <select name="frequency">
-                                <option value="MONTHLY">Monthly</option>
-                                <option value="WEEKLY">Weekly</option>
-                                <option value="YEARLY">Yearly</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <textarea name="notes" placeholder="Notes" rows="2"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-sm">Save Bill</button>
-                </form>
-            </div>
-            
-            <!-- List of All Bills -->
-            <div style="margin-top: 1.5rem;">
-                <h5>📋 All Bills</h5>
-                <div th:if="${allBills == null or allBills.empty}" class="empty-state" style="padding: 1rem;">
-                    <p>No bills yet. Add one above.</p>
-                </div>
-                <div th:each="bill : ${allBills}" class="bill-item">
-                    <div>
-                        <strong th:text="${bill.name}"></strong>
-                        <span class="badge" th:classappend="${bill.status == 'PAID' ? 'badge-success' : (bill.status == 'PARTIAL' ? 'badge-warning' : 'badge-pending')}"
-                              th:text="${bill.status}"></span>
-                        <br>
-                        <small th:text="${#numbers.formatDecimal(bill.amount,1,0)} + ' TZS' + ' | Due: ' + ${#temporals.format(bill.dueDate, 'dd/MM/yyyy')}"></small>
-                    </div>
-                    <div class="bill-actions">
-                        <a th:if="${bill.status != 'PAID'}" th:href="@{/bills/pay/{id}(id=${bill.id})}?redirectTo=/excel/daily-entry" class="btn-xs btn-success">Pay</a>
-                        <a th:href="@{/bills/delete/{id}(id=${bill.id})}?redirectTo=/excel/daily-entry" class="btn-xs btn-delete" onclick="return confirm('Delete this bill?')">Del</a>
-                    </div>
-                </div>
+            <div>
+                <span class="expense" th:text="'- ' + ${#numbers.formatDecimal(exp.amount, 1, 0)} + ' TZS'"></span>
+                <a th:href="'/excel/delete-expense/' + ${stat.index}" class="delete-btn"
+                   onclick="return confirm('Delete this expense?')">
+                    <i class="fas fa-trash"></i>
+                </a>
             </div>
         </div>
     </div>
-    
-    <th:block layout:fragment="scripts">
-        <script>
-            function toggleBillSelect() {
-                const billRadio = document.querySelector('input[value="BILL"]');
-                const row = document.getElementById('billSelectRow');
-                if (row) row.style.display = billRadio && billRadio.checked ? 'block' : 'none';
-            }
-            
-            document.addEventListener('DOMContentLoaded', function() {
-                const toggleBtn = document.getElementById('toggleBillsBtn');
-                const section = document.getElementById('billsManagementSection');
-                if (toggleBtn && section) {
-                    toggleBtn.addEventListener('click', function() {
-                        section.classList.toggle('active');
-                    });
-                }
+
+    <!-- ===== TODAY'S INCOME LIST ===== -->
+    <div class="entry-list">
+        <div class="form-title"><i class="fas fa-list"></i> Today's Income</div>
+        <div th:if="${entry.incomes.empty}" class="empty-state" style="padding: 1rem;">
+            <p>No income recorded today</p>
+        </div>
+        <div th:each="inc, stat : ${entry.incomes}" class="entry-item">
+            <div>
+                <strong th:text="${inc.description}"></strong><br>
+                <small class="category-badge" th:text="${inc.source}"></small>
+            </div>
+            <div>
+                <span class="income" th:text="'+ ' + ${#numbers.formatDecimal(inc.amount, 1, 0)} + ' TZS'"></span>
+                <a th:href="'/excel/delete-income/' + ${stat.index}" class="delete-btn"
+                   onclick="return confirm('Delete this income?')">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MANAGE BILLS TOGGLE ===== -->
+    <div style="text-align:center; margin: 1.5rem 0 1rem;">
+        <button type="button" id="toggleBillsBtn" class="btn btn-secondary" style="padding: 0.75rem 2rem;">
+            <i class="fas fa-file-invoice"></i> View All Bills
+        </button>
+        <a href="/excel/history" class="btn btn-secondary" style="padding: 0.75rem 2rem; margin-left: 1rem;">
+            <i class="fas fa-history"></i> View History
+        </a>
+    </div>
+
+    <!-- Bills List Section -->
+    <div id="billsManagementSection" class="bills-section">
+        <div class="form-title"><i class="fas fa-file-invoice"></i> All Bills</div>
+        <div th:if="${allBills == null or allBills.empty}" class="empty-state" style="padding:1rem;">
+            <p>No bills yet.</p>
+        </div>
+        <div th:each="bill : ${allBills}" class="bill-item">
+            <div>
+                <strong th:text="${bill.name}"></strong>
+                <span class="badge"
+                      th:classappend="${bill.status == 'PAID' ? ' badge-success' : (bill.status == 'PARTIAL' ? ' badge-warning' : ' badge-pending')}"
+                      th:text="${bill.status}"></span>
+                <br>
+                <small th:text="${#numbers.formatDecimal(bill.amount,1,0)} + ' TZS | Due: ' + ${#temporals.format(bill.dueDate,'dd/MM/yyyy')}"></small>
+                <span th:if="${bill.isOverdue()}" style="color:var(--danger); font-size:0.78rem; margin-left:0.5rem;">⚠️ Overdue</span>
+            </div>
+            <div class="bill-actions">
+                <a th:if="${bill.status != 'PAID'}"
+                   th:href="@{/bills/pay/{id}(id=${bill.id})}?redirectTo=/excel/daily-entry"
+                   class="btn-xs btn-success">Pay</a>
+                <a th:href="@{/bills/edit/{id}(id=${bill.id})}?redirectTo=/excel/daily-entry"
+                   class="btn-xs btn-edit">Edit</a>
+                <a th:href="@{/bills/delete/{id}(id=${bill.id})}?redirectTo=/excel/daily-entry"
+                   class="btn-xs btn-delete"
+                   onclick="return confirm('Delete this bill?')">Del</a>
+            </div>
+        </div>
+    </div>
+
+</div><!-- end layout:fragment content -->
+
+<th:block layout:fragment="scripts">
+<script>
+    /* ---- Payment method toggle ---- */
+    function toggleBillSelect(radio) {
+        const row = document.getElementById('billSelectRow');
+        if (!row) return;
+        if (radio.value === 'BILL') {
+            row.classList.add('visible');
+        } else {
+            row.classList.remove('visible');
+            // Clear bill selection when switching back to cash
+            const sel = document.getElementById('billIdSelect');
+            if (sel) sel.value = '';
+        }
+    }
+
+    /* ---- Prefill amount from selected bill ---- */
+    function prefillBillAmount(sel) {
+        const amountInput = document.getElementById('expenseAmount');
+        if (!amountInput) return;
+        const opt = sel.options[sel.selectedIndex];
+        if (opt && opt.dataset.amount) {
+            amountInput.value = opt.dataset.amount;
+        }
+    }
+
+    /* ---- Quick Add Bill collapsible ---- */
+    function toggleQuickAddBill() {
+        const body   = document.getElementById('quickAddBillBody');
+        const arrow  = document.getElementById('quickAddBillArrow');
+        const wrap   = document.getElementById('quickAddBill');
+        const isOpen = body.classList.contains('open');
+        body.classList.toggle('open', !isOpen);
+        wrap.classList.toggle('open', !isOpen);
+        arrow.textContent = isOpen ? '▼' : '▲';
+    }
+
+    function openQuickAddBill() {
+        const body   = document.getElementById('quickAddBillBody');
+        const arrow  = document.getElementById('quickAddBillArrow');
+        const wrap   = document.getElementById('quickAddBill');
+        body.classList.add('open');
+        wrap.classList.add('open');
+        arrow.textContent = '▲';
+        document.getElementById('quickAddBill').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    /* ---- All Bills toggle ---- */
+    document.addEventListener('DOMContentLoaded', function () {
+        const btn     = document.getElementById('toggleBillsBtn');
+        const section = document.getElementById('billsManagementSection');
+        if (btn && section) {
+            btn.addEventListener('click', function () {
+                const isActive = section.classList.toggle('active');
+                btn.innerHTML = isActive
+                    ? '<i class="fas fa-times"></i> Hide Bills'
+                    : '<i class="fas fa-file-invoice"></i> View All Bills';
             });
-        </script>
-    </th:block>
+        }
+    });
+</script>
+</th:block>
 </body>
 </html>
