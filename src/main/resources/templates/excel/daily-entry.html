@@ -80,38 +80,6 @@
             }
             #billSelectRow.visible { display: block; }
 
-            /* Quick Add Bill section */
-            .quick-add-bill-section {
-                background: var(--white);
-                border-radius: 15px;
-                padding: 1.5rem;
-                margin-bottom: 1.5rem;
-                border: 2px dashed var(--gray-300);
-            }
-            .quick-add-bill-section.open {
-                border-style: solid;
-                border-color: var(--accent);
-            }
-            .quick-add-bill-toggle {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                cursor: pointer;
-                user-select: none;
-            }
-            .quick-add-bill-toggle h4 {
-                margin: 0;
-                color: var(--primary-dark);
-                font-size: 1rem;
-            }
-            .quick-add-bill-body {
-                display: none;
-                margin-top: 1.25rem;
-                padding-top: 1.25rem;
-                border-top: 1px solid var(--gray-200);
-            }
-            .quick-add-bill-body.open { display: block; }
-
             /* Bills list section */
             .bills-section {
                 background: var(--white);
@@ -236,10 +204,18 @@
                     <small style="color:#6c757d; margin-top:0.4rem; display:block;">
                         Amount will be prefilled. You can pay partial amount too.
                     </small>
+                    <div style="margin-top: 8px;">
+                        <a href="/bills/add?redirectTo=/excel/daily-entry" class="btn-xs btn-primary">
+                            <i class="fas fa-plus"></i> Add new bill
+                        </a>
+                        <a href="/bills" class="btn-xs btn-secondary">
+                            <i class="fas fa-edit"></i> Manage bills
+                        </a>
+                    </div>
                 </th:block>
                 <div th:if="${pendingBills == null or pendingBills.empty}" class="no-pending-notice">
                     ⚠️ No pending bills found.
-                    <a href="#quickAddBill" onclick="openQuickAddBill()">Add a bill first ↓</a>
+                    <a href="/bills/add?redirectTo=/excel/daily-entry">Add a bill first →</a>
                 </div>
             </div>
 
@@ -278,67 +254,6 @@
             </div>
             <button type="submit" class="btn-submit" style="background: #217346;"><i class="fas fa-plus-circle"></i> Add Income</button>
         </form>
-    </div>
-
-    <!-- ===== QUICK ADD BILL (inline, always visible as collapsible) ===== -->
-    <div class="quick-add-bill-section" id="quickAddBill">
-        <div class="quick-add-bill-toggle" onclick="toggleQuickAddBill()">
-            <h4><i class="fas fa-plus-circle"></i> &nbsp;Add New Bill</h4>
-            <span id="quickAddBillArrow" style="font-size:1.2rem; color:var(--primary-dark);">▼</span>
-        </div>
-        <div class="quick-add-bill-body" id="quickAddBillBody">
-            <form action="/bills/add" method="post">
-                <input type="hidden" name="redirectTo" value="/excel/daily-entry">
-                <div class="row">
-                    <div class="form-group">
-                        <label>Bill Name *</label>
-                        <input type="text" name="name" placeholder="e.g., Rent, Electricity" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Amount (TZS) *</label>
-                        <input type="number" step="0.01" name="amount" placeholder="e.g., 50000" required>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <label>Category</label>
-                        <select name="category">
-                            <option value="Rent">🏠 Rent</option>
-                            <option value="Utilities">💡 Utilities</option>
-                            <option value="Internet">🌐 Internet</option>
-                            <option value="Insurance">🛡️ Insurance</option>
-                            <option value="Subscription">📺 Subscription</option>
-                            <option value="Other">📌 Other</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Due Date *</label>
-                        <input type="date" name="dueDate" required>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="form-group" style="display:flex; align-items:center; gap:0.75rem; padding-top:1.5rem;">
-                        <input type="checkbox" name="recurring" value="true" id="recurringCheck"
-                               onchange="document.getElementById('freqGroup').style.display = this.checked ? 'block' : 'none'"
-                               style="width:auto;">
-                        <label for="recurringCheck" style="margin:0; cursor:pointer;">🔄 Recurring bill?</label>
-                    </div>
-                    <div class="form-group" id="freqGroup" style="display:none;">
-                        <label>Frequency</label>
-                        <select name="frequency">
-                            <option value="MONTHLY">Monthly</option>
-                            <option value="WEEKLY">Weekly</option>
-                            <option value="YEARLY">Yearly</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Notes</label>
-                    <textarea name="notes" placeholder="Optional notes..." rows="2"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Bill</button>
-            </form>
-        </div>
     </div>
 
     <!-- ===== TODAY'S EXPENSES LIST ===== -->
@@ -449,27 +364,6 @@
         if (opt && opt.dataset.amount) {
             amountInput.value = opt.dataset.amount;
         }
-    }
-
-    /* ---- Quick Add Bill collapsible ---- */
-    function toggleQuickAddBill() {
-        const body   = document.getElementById('quickAddBillBody');
-        const arrow  = document.getElementById('quickAddBillArrow');
-        const wrap   = document.getElementById('quickAddBill');
-        const isOpen = body.classList.contains('open');
-        body.classList.toggle('open', !isOpen);
-        wrap.classList.toggle('open', !isOpen);
-        arrow.textContent = isOpen ? '▼' : '▲';
-    }
-
-    function openQuickAddBill() {
-        const body   = document.getElementById('quickAddBillBody');
-        const arrow  = document.getElementById('quickAddBillArrow');
-        const wrap   = document.getElementById('quickAddBill');
-        body.classList.add('open');
-        wrap.classList.add('open');
-        arrow.textContent = '▲';
-        document.getElementById('quickAddBill').scrollIntoView({ behavior: 'smooth' });
     }
 
     /* ---- All Bills toggle ---- */
