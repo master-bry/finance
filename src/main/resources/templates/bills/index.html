@@ -64,7 +64,7 @@
                             <div class="actions">
                                 <a th:if="${bill.status != 'PAID'}" th:href="@{/bills/pay/{id}(id=${bill.id})}" class="btn-xs btn-success">Pay</a>
                                 <a th:href="@{/bills/edit/{id}(id=${bill.id})}" class="btn-xs btn-edit">Edit</a>
-                                <a href="#" class="btn-xs btn-delete" th:data-id="${bill.id}" th:data-name="${bill.name}" onclick="confirmDelete(this)">Delete</a>
+                                <a th:href="@{/bills/delete/{id}(id=${bill.id})}" class="btn-xs btn-delete" th:data-id="${bill.id}" th:data-name="${bill.name}" onclick="confirmDelete(this)">Delete</a>
                             </div>
                         </td>
                     </tr>

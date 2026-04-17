@@ -4,12 +4,56 @@
       layout:decorate="~{layout}">
 <head>
     <title>Transactions</title>
+    <style>
+        /* Make filter section responsive */
+        .filter-section-top {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .filter-group-left {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1rem;
+            flex: 2;
+        }
+        .page-size-selector-top {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--white);
+            padding: 0.4rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--gray-200);
+        }
+        .page-size-selector-top select {
+            padding: 0.3rem 0.5rem;
+            border-radius: 6px;
+            border: 1px solid var(--gray-300);
+        }
+        @media (max-width: 768px) {
+            .filter-section-top {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-group-left {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .page-size-selector-top {
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body>
     <div layout:fragment="content">
         <div class="header-section">
             <h1><i class="fas fa-exchange-alt"></i> All Transactions</h1>
-            <!-- <a href="/transactions/add" class="btn btn-primary">➕ Add Transaction</a> -->
         </div>
         
         <!-- Summary Stats -->
@@ -33,15 +77,26 @@
             </div>
         </div>
         
-        <!-- Search and Filter -->
-        <div class="filter-section">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="🔍 Search by description or category..." onkeyup="searchTransactions()">
+        <!-- Filter Section (Top) with Search, Type Filter, and Show Entries -->
+        <div class="filter-section-top">
+            <div class="filter-group-left">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Search by description or category..." onkeyup="applyFiltersAndPagination()">
+                </div>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterType('all')">All</button>
+                    <button class="filter-btn" onclick="filterType('INCOME')">Income</button>
+                    <button class="filter-btn" onclick="filterType('EXPENSE')">Expense</button>
+                </div>
             </div>
-            <div class="filter-buttons">
-                <button class="filter-btn active" onclick="filterType('all')">All</button>
-                <button class="filter-btn" onclick="filterType('INCOME')">Income</button>
-                <button class="filter-btn" onclick="filterType('EXPENSE')">Expense</button>
+            <div class="page-size-selector-top">
+                <label>Show:</label>
+                <select id="pageSizeSelect" onchange="changePageSize()">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                </select>
+                <span>entries</span>
             </div>
         </div>
         
@@ -58,83 +113,178 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr th:each="trans : ${transactions}" th:attr="data-type=${trans.type}">
-                        <td th:text="${#temporals.format(trans.date, 'yyyy-MM-dd HH:mm')}"></td>
-                        <td th:text="${trans.description}"></td>
-                        <td><span class="category-badge" th:text="${trans.category}"></span></td>
-                        <td th:class="${trans.type == 'INCOME' ? 'positive' : 'negative'}">
-                            <span th:if="${trans.type == 'INCOME'}">+</span>
-                            <span th:if="${trans.type == 'EXPENSE'}">-</span>
-                            <span th:text="${#numbers.formatDecimal(trans.amount, 1, 0)}"></span> TZS
-                        </td>
-                        <td>
-                            <span th:if="${trans.type == 'INCOME'}" class="badge badge-income">💰 Income</span>
-                            <span th:if="${trans.type == 'EXPENSE'}" class="badge badge-expense">💸 Expense</span>
-                        </td>
-                        <td>
-                            <div class="actions">
-                                <a th:href="'/transactions/edit/' + ${trans.id}" class="btn-xs btn-edit">✏️ Edit</a>
-                                <a th:href="'/transactions/delete/' + ${trans.id}" class="btn-xs btn-delete" 
-                                   onclick="return confirm('Are you sure?')">🗑️ Delete</a>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr th:if="${transactions.empty}">
-                        <td colspan="6">
-                            <div class="empty-state">
-                                <i class="fas fa-receipt"></i>
-                                <p>No transactions found. Go to Daily Entry to Add your first transaction!</a></p>
-                            </div>
-                        </td>
-                    </tr>
+                <tbody id="transactionsTableBody">
+                    <!-- Rows will be populated dynamically by JavaScript for pagination -->
                 </tbody>
             </table>
+        </div>
+
+        <!-- Pagination Controls (Bottom) -->
+        <div class="pagination-controls" style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap;">
+            <div></div> <!-- empty spacer for balance -->
+            <div class="pagination-buttons">
+                <button id="prevPageBtn" onclick="changePage(-1)" disabled>&laquo; Previous</button>
+                <span id="pageInfo">Page 1 of 1</span>
+                <button id="nextPageBtn" onclick="changePage(1)" disabled>Next &raquo;</button>
+            </div>
         </div>
     </div>
     
     <th:block layout:fragment="scripts">
-        <script>
+        <script th:inline="javascript">
+            // Get transactions data from server (Thymeleaf renders as JSON)
+            const transactions = /*[[${transactions}]]*/ [];
             let currentFilter = 'all';
-            
+            let currentPage = 1;
+            let pageSize = 10;   // default 10, will be set by dropdown
+            let filteredTransactions = [];
+
+            // Helper: format date
+            function formatDate(dateValue) {
+                if (!dateValue) return '';
+                let date = new Date(dateValue);
+                return date.toISOString().slice(0,10) + ' ' + date.toISOString().slice(11,16);
+            }
+
+            // Helper: format amount
+            function formatAmount(amount) {
+                return amount.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+            }
+
+            // Apply search and type filter to get filteredTransactions
+            function updateFilteredTransactions() {
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                filteredTransactions = transactions.filter(trans => {
+                    if (currentFilter !== 'all' && trans.type !== currentFilter) return false;
+                    if (searchTerm) {
+                        const desc = (trans.description || '').toLowerCase();
+                        const cat = (trans.category || '').toLowerCase();
+                        if (!desc.includes(searchTerm) && !cat.includes(searchTerm)) return false;
+                    }
+                    return true;
+                });
+            }
+
+            // Render current page of transactions
+            function renderTransactions() {
+                const tbody = document.getElementById('transactionsTableBody');
+                if (!tbody) return;
+                const start = (currentPage - 1) * pageSize;
+                const end = start + pageSize;
+                const pageTransactions = filteredTransactions.slice(start, end);
+                
+                if (pageTransactions.length === 0 && filteredTransactions.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fas fa-receipt"></i><p>No transactions found. Go to Daily Entry to add your first transaction!</p></div></td></tr>';
+                } else if (pageTransactions.length === 0 && filteredTransactions.length > 0) {
+                    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state">No transactions on this page.</div></td></tr>';
+                } else {
+                    let html = '';
+                    for (let trans of pageTransactions) {
+                        const dateStr = formatDate(trans.date);
+                        const amountClass = trans.type === 'INCOME' ? 'positive' : 'negative';
+                        const sign = trans.type === 'INCOME' ? '+' : '-';
+                        const badgeClass = trans.type === 'INCOME' ? 'badge-income' : 'badge-expense';
+                        const badgeIcon = trans.type === 'INCOME' ? '💰 Income' : '💸 Expense';
+                        html += `<tr data-type="${trans.type}">
+                                    <td>${dateStr}</td>
+                                    <td>${escapeHtml(trans.description)}</td>
+                                    <td><span class="category-badge">${escapeHtml(trans.category)}</span></td>
+                                    <td class="${amountClass}">${sign} ${formatAmount(trans.amount)} TZS</td>
+                                    <td><span class="badge ${badgeClass}">${badgeIcon}</span></td>
+                                    <td><div class="actions">
+                                        <a href="/transactions/edit/${trans.id}" class="btn-xs btn-edit">✏️ Edit</a>
+                                        <a href="/transactions/delete/${trans.id}" class="btn-xs btn-delete" onclick="return confirm('Are you sure?')">🗑️ Delete</a>
+                                    </div></td>
+                                </tr>`;
+                    }
+                    tbody.innerHTML = html;
+                }
+                updatePaginationButtons();
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return str.replace(/[&<>]/g, function(m) {
+                    if (m === '&') return '&amp;';
+                    if (m === '<') return '&lt;';
+                    if (m === '>') return '&gt;';
+                    return m;
+                });
+            }
+
+            function updatePaginationButtons() {
+                const totalPages = Math.ceil(filteredTransactions.length / pageSize);
+                if (totalPages === 0) {
+                    document.getElementById('pageInfo').innerText = 'Page 0 of 0';
+                    document.getElementById('prevPageBtn').disabled = true;
+                    document.getElementById('nextPageBtn').disabled = true;
+                    return;
+                }
+                if (currentPage < 1) currentPage = 1;
+                if (currentPage > totalPages) currentPage = totalPages;
+                document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages}`;
+                document.getElementById('prevPageBtn').disabled = (currentPage === 1);
+                document.getElementById('nextPageBtn').disabled = (currentPage === totalPages);
+            }
+
+            function changePage(delta) {
+                const totalPages = Math.ceil(filteredTransactions.length / pageSize);
+                let newPage = currentPage + delta;
+                if (newPage < 1) newPage = 1;
+                if (newPage > totalPages) newPage = totalPages;
+                if (newPage !== currentPage) {
+                    currentPage = newPage;
+                    renderTransactions();
+                }
+            }
+
+            function changePageSize() {
+                const select = document.getElementById('pageSizeSelect');
+                pageSize = parseInt(select.value, 10);
+                currentPage = 1;
+                applyFiltersAndPagination();
+            }
+
+            function applyFiltersAndPagination() {
+                updateFilteredTransactions();
+                currentPage = 1;
+                renderTransactions();
+            }
+
             function filterType(type) {
                 currentFilter = type;
-                const rows = document.querySelectorAll('#transactionsTable tbody tr');
-                rows.forEach(row => {
-                    if (row.cells && row.cells.length > 0) {
-                        const transactionType = row.getAttribute('data-type');
-                        if (type === 'all' || transactionType === type) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    }
-                });
-                
+                // Update active class on buttons
                 document.querySelectorAll('.filter-btn').forEach(btn => {
                     btn.classList.remove('active');
                 });
-                event.target.classList.add('active');
-            }
-            
-            function searchTransactions() {
-                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-                const rows = document.querySelectorAll('#transactionsTable tbody tr');
-                
-                rows.forEach(row => {
-                    if (row.cells && row.cells.length > 0) {
-                        const description = row.cells[1]?.textContent.toLowerCase() || '';
-                        const category = row.cells[2]?.textContent.toLowerCase() || '';
-                        const matches = description.includes(searchTerm) || category.includes(searchTerm);
-                        
-                        if (matches && (currentFilter === 'all' || row.getAttribute('data-type') === currentFilter)) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
+                const buttons = document.querySelectorAll('.filter-btn');
+                for (let btn of buttons) {
+                    if (btn.innerText.toLowerCase() === (type === 'all' ? 'all' : (type === 'INCOME' ? 'income' : 'expense'))) {
+                        btn.classList.add('active');
+                        break;
                     }
-                });
+                }
+                applyFiltersAndPagination();
             }
+
+            // Expose functions to global scope
+            window.filterType = filterType;
+            window.changePageSize = changePageSize;
+            window.changePage = changePage;
+            window.applyFiltersAndPagination = applyFiltersAndPagination;
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const sizeSelect = document.getElementById('pageSizeSelect');
+                if (sizeSelect) pageSize = parseInt(sizeSelect.value, 10);
+                updateFilteredTransactions();
+                renderTransactions();
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.addEventListener('keyup', function() {
+                        applyFiltersAndPagination();
+                    });
+                }
+            });
         </script>
     </th:block>
 </body>
