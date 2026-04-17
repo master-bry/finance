@@ -8,9 +8,8 @@
 <body>
 <div layout:fragment="content">
     <div class="form-container">
-        <h2 style="color: var(--primary-dark); margin-bottom: 1.5rem;">✏️ Edit Bill</h2>
+        <h2>✏️ Edit Bill</h2>
         <form th:action="@{/bills/edit/{id}(id=${bill.id})}" th:object="${bill}" method="post">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <input type="hidden" name="redirectTo" th:value="${param.redirectTo != null ? param.redirectTo : '/bills'}" />
 
             <div class="form-group">

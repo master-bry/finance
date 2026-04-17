@@ -6,7 +6,6 @@
     <title>Daily Entry</title>
     <th:block layout:fragment="styles">
         <style>
-            /* your styles remain same */
             .btn-submit {
                 background: var(--primary-dark);
                 color: white;
@@ -103,7 +102,8 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <!-- Balance and stats (same as before) -->
+
+    <!-- Current Balance Card -->
     <div class="balance-card">
         <div><i class="fas fa-wallet"></i> Current Balance</div>
         <div class="balance-amount">
@@ -112,6 +112,7 @@
         <div th:text="${#temporals.format(#temporals.createNow(), 'EEEE, MMMM d, yyyy')}"></div>
     </div>
 
+    <!-- Today's Stats -->
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-title">💰 Today's Income</div>
@@ -129,11 +130,10 @@
         </div>
     </div>
 
-    <!-- ADD EXPENSE FORM with CSRF -->
+    <!-- ===== ADD EXPENSE FORM ===== -->
     <div class="section-card">
         <div class="form-title"><i class="fas fa-shopping-cart"></i> Add Expense</div>
         <form action="/excel/add-expense" method="post" id="expenseForm">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <div class="row">
                 <div class="form-group">
                     <input type="text" name="description" placeholder="What did you buy?" required>
@@ -159,6 +159,8 @@
                     </select>
                 </div>
             </div>
+
+            <!-- Payment Method -->
             <div class="form-group">
                 <label>Payment Method</label>
                 <div class="payment-method-group">
@@ -172,21 +174,32 @@
                     </label>
                 </div>
             </div>
+
+            <!-- Bill selector -->
             <div id="billSelectRow">
                 <th:block th:if="${pendingBills != null and !pendingBills.empty}">
-                    <label style="font-weight:600; display:block; margin-bottom:0.4rem;">Select Bill to Pay</label>
+                    <label style="font-weight:600; display:block; margin-bottom:0.4rem;">
+                        Select Bill to Pay
+                    </label>
                     <select name="billId" id="billIdSelect" style="width:100%;" onchange="prefillBillAmount(this)">
                         <option value="">-- Choose pending bill --</option>
                         <th:block th:each="bill : ${pendingBills}">
-                            <option th:value="${bill.id}" th:attr="data-amount=${bill.amount}"
+                            <option th:value="${bill.id}"
+                                    th:attr="data-amount=${bill.amount}"
                                     th:text="${bill.name} + ' — ' + ${#numbers.formatDecimal(bill.amount,1,0)} + ' TZS  (Due: ' + ${#temporals.format(bill.dueDate,'dd/MM/yyyy')} + ')'">
                             </option>
                         </th:block>
                     </select>
-                    <small style="color:#6c757d; margin-top:0.4rem; display:block;">Amount will be prefilled. You can pay partial amount too.</small>
+                    <small style="color:#6c757d; margin-top:0.4rem; display:block;">
+                        Amount will be prefilled. You can pay partial amount too.
+                    </small>
                     <div style="margin-top: 8px;">
-                        <a href="/bills/add?redirectTo=/excel/daily-entry" class="btn-xs btn-primary">➕ Add new bill</a>
-                        <a href="/bills" class="btn-xs btn-secondary">📋 Manage bills</a>
+                        <a href="/bills/add?redirectTo=/excel/daily-entry" class="btn-xs btn-primary">
+                            <i class="fas fa-plus"></i> Add new bill
+                        </a>
+                        <a href="/bills" class="btn-xs btn-secondary">
+                            <i class="fas fa-edit"></i> Manage bills
+                        </a>
                     </div>
                 </th:block>
                 <div th:if="${pendingBills == null or pendingBills.empty}" class="no-pending-notice">
@@ -194,6 +207,7 @@
                     <a href="/bills/add?redirectTo=/excel/daily-entry">Add a bill first →</a>
                 </div>
             </div>
+
             <div class="row" style="margin-top:1rem;">
                 <div class="form-group">
                     <button type="submit" class="btn-submit"><i class="fas fa-plus-circle"></i> Add Expense</button>
@@ -202,11 +216,10 @@
         </form>
     </div>
 
-    <!-- ADD INCOME FORM with CSRF -->
+    <!-- ===== ADD INCOME FORM ===== -->
     <div class="section-card">
         <div class="form-title"><i class="fas fa-money-bill-wave"></i> Add Income</div>
         <form action="/excel/add-income" method="post">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <div class="row">
                 <div class="form-group">
                     <input type="text" name="description" placeholder="Income description" required>
@@ -232,10 +245,12 @@
         </form>
     </div>
 
-    <!-- TODAY'S EXPENSES LIST -->
+    <!-- ===== TODAY'S EXPENSES LIST ===== -->
     <div class="entry-list">
         <div class="form-title"><i class="fas fa-list"></i> Today's Expenses</div>
-        <div th:if="${entry.expenses.empty}" class="empty-state" style="padding: 1rem;"><p>No expenses recorded today</p></div>
+        <div th:if="${entry.expenses.empty}" class="empty-state" style="padding: 1rem;">
+            <p>No expenses recorded today</p>
+        </div>
         <div th:each="exp, stat : ${entry.expenses}" class="entry-item">
             <div>
                 <strong th:text="${exp.description}"></strong><br>
@@ -244,15 +259,20 @@
             </div>
             <div>
                 <span class="expense" th:text="'- ' + ${#numbers.formatDecimal(exp.amount, 1, 0)} + ' TZS'"></span>
-                <a th:href="'/excel/delete-expense/' + ${stat.index}" class="delete-btn" onclick="return confirm('Delete this expense?')"><i class="fas fa-trash"></i></a>
+                <a th:href="'/excel/delete-expense/' + ${stat.index}" class="delete-btn"
+                   onclick="return confirm('Delete this expense?')">
+                    <i class="fas fa-trash"></i>
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- TODAY'S INCOME LIST -->
+    <!-- ===== TODAY'S INCOME LIST ===== -->
     <div class="entry-list">
         <div class="form-title"><i class="fas fa-list"></i> Today's Income</div>
-        <div th:if="${entry.incomes.empty}" class="empty-state" style="padding: 1rem;"><p>No income recorded today</p></div>
+        <div th:if="${entry.incomes.empty}" class="empty-state" style="padding: 1rem;">
+            <p>No income recorded today</p>
+        </div>
         <div th:each="inc, stat : ${entry.incomes}" class="entry-item">
             <div>
                 <strong th:text="${inc.description}"></strong><br>
@@ -260,35 +280,53 @@
             </div>
             <div>
                 <span class="income" th:text="'+ ' + ${#numbers.formatDecimal(inc.amount, 1, 0)} + ' TZS'"></span>
-                <a th:href="'/excel/delete-income/' + ${stat.index}" class="delete-btn" onclick="return confirm('Delete this income?')"><i class="fas fa-trash"></i></a>
+                <a th:href="'/excel/delete-income/' + ${stat.index}" class="delete-btn"
+                   onclick="return confirm('Delete this income?')">
+                    <i class="fas fa-trash"></i>
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- MANAGE BILLS TOGGLE -->
+    <!-- ===== MANAGE BILLS TOGGLE ===== -->
     <div style="text-align:center; margin: 1.5rem 0 1rem;">
-        <button type="button" id="toggleBillsBtn" class="btn btn-secondary" style="padding: 0.75rem 2rem;"><i class="fas fa-file-invoice"></i> View All Bills</button>
-        <a href="/excel/history" class="btn btn-secondary" style="padding: 0.75rem 2rem; margin-left: 1rem;"><i class="fas fa-history"></i> View History</a>
+        <button type="button" id="toggleBillsBtn" class="btn btn-secondary" style="padding: 0.75rem 2rem;">
+            <i class="fas fa-file-invoice"></i> View All Bills
+        </button>
+        <a href="/excel/history" class="btn btn-secondary" style="padding: 0.75rem 2rem; margin-left: 1rem;">
+            <i class="fas fa-history"></i> View History
+        </a>
     </div>
 
     <!-- Bills List Section -->
     <div id="billsManagementSection" class="bills-section">
         <div class="form-title"><i class="fas fa-file-invoice"></i> All Bills</div>
-        <div th:if="${allBills == null or allBills.empty}" class="empty-state" style="padding:1rem;"><p>No bills yet.</p></div>
+        <div th:if="${allBills == null or allBills.empty}" class="empty-state" style="padding:1rem;">
+            <p>No bills yet.</p>
+        </div>
         <div th:each="bill : ${allBills}" class="bill-item">
             <div>
                 <strong th:text="${bill.name}"></strong>
-                <span class="badge" th:classappend="${bill.status == 'PAID' ? 'badge-success' : (bill.status == 'PARTIAL' ? 'badge-warning' : 'badge-pending')}" th:text="${bill.status}"></span><br>
+                <span class="badge"
+                      th:classappend="${bill.status == 'PAID' ? 'badge-success' : (bill.status == 'PARTIAL' ? 'badge-warning' : 'badge-pending')}"
+                      th:text="${bill.status}"></span>
+                <br>
                 <small th:text="${#numbers.formatDecimal(bill.amount,1,0)} + ' TZS | Due: ' + ${#temporals.format(bill.dueDate,'dd/MM/yyyy')}"></small>
                 <span th:if="${bill.isOverdue()}" style="color:var(--danger); font-size:0.78rem; margin-left:0.5rem;">⚠️ Overdue</span>
             </div>
             <div class="bill-actions">
-                <a th:if="${bill.status != 'PAID'}" th:href="@{/bills/pay/{id}(id=${bill.id})}?redirectTo=/excel/daily-entry" class="btn-xs btn-success">Pay</a>
-                <a th:href="@{/bills/edit/{id}(id=${bill.id})}?redirectTo=/excel/daily-entry" class="btn-xs btn-edit">Edit</a>
-                <a th:href="@{/bills/delete/{id}(id=${bill.id})}?redirectTo=/excel/daily-entry" class="btn-xs btn-delete" onclick="return confirm('Delete this bill?')">Del</a>
+                <a th:if="${bill.status != 'PAID'}"
+                   th:href="@{/bills/pay/{id}(id=${bill.id})}?redirectTo=/excel/daily-entry"
+                   class="btn-xs btn-success">Pay</a>
+                <a th:href="@{/bills/edit/{id}(id=${bill.id})}?redirectTo=/excel/daily-entry"
+                   class="btn-xs btn-edit">Edit</a>
+                <a th:href="@{/bills/delete/{id}(id=${bill.id})}?redirectTo=/excel/daily-entry"
+                   class="btn-xs btn-delete"
+                   onclick="return confirm('Delete this bill?')">Del</a>
             </div>
         </div>
     </div>
+
 </div>
 
 <th:block layout:fragment="scripts">
