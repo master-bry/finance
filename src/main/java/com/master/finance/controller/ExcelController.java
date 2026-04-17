@@ -49,7 +49,7 @@ public class ExcelController {
         Double currentBalance = dailyEntryService.getCurrentBalance(userId);
         List<DailyEntry> history = dailyEntryService.getUserEntries(userId);
         List<Bill> allBills = billService.getUserBills(userId);
-        List<Bill> pendingBills = billService.getPendingBills(userId);
+        List<Bill> pendingBills = billService.getPendingBills(userId); // prepaid with status != PAID
 
         model.addAttribute("entry", todayEntry);
         model.addAttribute("currentBalance", currentBalance);
@@ -73,15 +73,24 @@ public class ExcelController {
                              RedirectAttributes redirectAttributes) {
         try {
             String userId = getUserId(authentication);
+            DailyEntry entry = dailyEntryService.getOrCreateTodayEntry(userId);
 
-            // Ikiwa ni BILL (prepaid), toa kwenye bill, usiweke Transaction
+            DailyEntry.ExpenseItem expense = new DailyEntry.ExpenseItem();
+            expense.setDescription(description);
+            expense.setAmount(amount);
+            expense.setCategory(category);
+            expense.setTime(LocalDateTime.now());
+            expense.setPaymentMethod(paymentMethod);
+
             if ("BILL".equals(paymentMethod) && billId != null && !billId.isEmpty()) {
                 Bill bill = billService.applyPayment(billId, amount);
+                expense.setBillId(billId);
+                entry.getPrepaidExpenses().add(expense);
                 redirectAttributes.addFlashAttribute("success",
-                    "Used " + amount + " TZS from prepaid bill '" + bill.getName() +
-                    "'. Remaining prepaid: " + bill.getAmount() + " TZS");
+                    "Used " + amount + " TZS from prepaid '" + bill.getName() +
+                    "'. Remaining: " + bill.getAmount() + " TZS");
             } else {
-                // CASH – normal expense, inaathiri cash balance
+                // Cash expense – create transaction
                 Transaction transaction = new Transaction();
                 transaction.setUserId(userId);
                 transaction.setDescription(description);
@@ -91,24 +100,12 @@ public class ExcelController {
                 transaction.setDate(LocalDateTime.now());
                 transaction.setDeleted(false);
                 transactionService.saveTransaction(transaction);
-                redirectAttributes.addFlashAttribute("success", "Expense added: " + amount + " TZS");
+                entry.getExpenses().add(expense);
+                redirectAttributes.addFlashAttribute("success", "Cash expense added: " + amount + " TZS");
             }
 
-            // Kwa CASH na BILL, ongeza expense kwenye DailyEntry (kwa ajili ya kuonyesha)
-            DailyEntry entry = dailyEntryService.getOrCreateTodayEntry(userId);
-            DailyEntry.ExpenseItem expense = new DailyEntry.ExpenseItem();
-            expense.setDescription(description);
-            expense.setAmount(amount);
-            expense.setCategory(category);
-            expense.setTime(LocalDateTime.now());
-            expense.setPaymentMethod(paymentMethod);
-            if ("BILL".equals(paymentMethod)) {
-                expense.setBillId(billId);
-            }
-            entry.getExpenses().add(expense);
+            entry.calculateTotals();
             dailyEntryService.saveDailyEntry(entry, userId);
-
-            // Recalculate balances kutoka leo – kwa BILL hakuna transaction, hivyo cash balance haibadiliki
             dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
 
         } catch (Exception e) {
@@ -142,6 +139,7 @@ public class ExcelController {
             income.setSource(source);
             income.setTime(LocalDateTime.now());
             entry.getIncomes().add(income);
+            entry.calculateTotals();
             dailyEntryService.saveDailyEntry(entry, userId);
             dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
 
@@ -152,6 +150,7 @@ public class ExcelController {
         return "redirect:/excel/daily-entry";
     }
 
+    // Delete cash expense
     @GetMapping("/delete-expense/{index}")
     public String deleteExpense(@PathVariable int index, Authentication authentication, RedirectAttributes redirectAttributes) {
         try {
@@ -159,47 +158,60 @@ public class ExcelController {
             DailyEntry entry = dailyEntryService.getTodayEntry(userId).orElse(null);
             if (entry != null && index < entry.getExpenses().size()) {
                 DailyEntry.ExpenseItem expense = entry.getExpenses().get(index);
-                // Kwa BILL, tunahitaji kurejesha kiasi kwenye bill (reverse payment)
-                if ("BILL".equals(expense.getPaymentMethod()) && expense.getBillId() != null) {
-                    // Optional: revert bill amount – kwa sasa tunaruka kwa urahisi
-                    // Unaweza kuongeza method revertPayment kwenye BillService
-                } else {
-                    // Kwa CASH, futa transaction
-                    List<Transaction> todayTransactions = transactionService.getTransactionsByDateRange(
-                            userId, 
-                            LocalDateTime.now().withHour(0).withMinute(0).withSecond(0),
-                            LocalDateTime.now().withHour(23).withMinute(59).withSecond(59));
-                    for (Transaction t : todayTransactions) {
-                        if (t.getDescription().equals(expense.getDescription()) &&
-                            t.getAmount().equals(expense.getAmount()) &&
-                            "EXPENSE".equals(t.getType())) {
-                            transactionService.deleteTransaction(t.getId());
-                            break;
-                        }
+                // Find and delete matching transaction
+                List<Transaction> todayTransactions = transactionService.getTransactionsByDateRange(
+                        userId,
+                        LocalDateTime.now().withHour(0).withMinute(0).withSecond(0),
+                        LocalDateTime.now().withHour(23).withMinute(59).withSecond(59));
+                for (Transaction t : todayTransactions) {
+                    if (t.getDescription().equals(expense.getDescription()) &&
+                        t.getAmount().equals(expense.getAmount()) &&
+                        "EXPENSE".equals(t.getType())) {
+                        transactionService.deleteTransaction(t.getId());
+                        break;
                     }
                 }
                 entry.getExpenses().remove(index);
                 entry.calculateTotals();
                 dailyEntryService.saveDailyEntry(entry, userId);
                 dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
-                redirectAttributes.addFlashAttribute("success", "Expense removed");
+                redirectAttributes.addFlashAttribute("success", "Cash expense removed");
             }
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error removing expense");
+            redirectAttributes.addFlashAttribute("error", "Error removing expense: " + e.getMessage());
+        }
+        return "redirect:/excel/daily-entry";
+    }
+
+    // Delete prepaid expense
+    @GetMapping("/delete-prepaid-expense/{index}")
+    public String deletePrepaidExpense(@PathVariable int index, Authentication authentication, RedirectAttributes redirectAttributes) {
+        try {
+            String userId = getUserId(authentication);
+            DailyEntry entry = dailyEntryService.getTodayEntry(userId).orElse(null);
+            if (entry != null && index < entry.getPrepaidExpenses().size()) {
+                // Optional: revert bill amount – for now just remove from list
+                entry.getPrepaidExpenses().remove(index);
+                entry.calculateTotals();
+                dailyEntryService.saveDailyEntry(entry, userId);
+                // No transaction to delete because prepaid doesn't create one
+                redirectAttributes.addFlashAttribute("success", "Prepaid expense removed");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error removing prepaid expense: " + e.getMessage());
         }
         return "redirect:/excel/daily-entry";
     }
 
     @GetMapping("/delete-income/{index}")
     public String deleteIncome(@PathVariable int index, Authentication authentication, RedirectAttributes redirectAttributes) {
-        // Same as before – unchanged
         try {
             String userId = getUserId(authentication);
             DailyEntry entry = dailyEntryService.getTodayEntry(userId).orElse(null);
             if (entry != null && index < entry.getIncomes().size()) {
                 DailyEntry.IncomeItem income = entry.getIncomes().get(index);
                 List<Transaction> todayTransactions = transactionService.getTransactionsByDateRange(
-                        userId, 
+                        userId,
                         LocalDateTime.now().withHour(0).withMinute(0).withSecond(0),
                         LocalDateTime.now().withHour(23).withMinute(59).withSecond(59));
                 for (Transaction t : todayTransactions) {
@@ -217,7 +229,7 @@ public class ExcelController {
                 redirectAttributes.addFlashAttribute("success", "Income removed");
             }
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error removing income");
+            redirectAttributes.addFlashAttribute("error", "Error removing income: " + e.getMessage());
         }
         return "redirect:/excel/daily-entry";
     }

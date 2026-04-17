@@ -105,6 +105,18 @@
                 font-size: 0.7rem;
                 margin-left: 0.5rem;
             }
+            .bill-remaining {
+                margin-top: 0.5rem;
+                font-size: 0.85rem;
+                color: #0c5460;
+                background: #d1ecf1;
+                padding: 0.4rem;
+                border-radius: 6px;
+                display: none;
+            }
+            .bill-remaining.show {
+                display: block;
+            }
         </style>
     </th:block>
 </head>
@@ -113,7 +125,7 @@
 
     <!-- Current Balance Card -->
     <div class="balance-card">
-        <div><i class="fas fa-wallet"></i> Current Balance</div>
+        <div><i class="fas fa-wallet"></i> Current Balance (Cash)</div>
         <div class="balance-amount">
             <span th:text="${#numbers.formatDecimal(currentBalance, 1, 0)}"></span> TZS
         </div>
@@ -127,11 +139,11 @@
             <div class="stat-value income" th:text="${#numbers.formatDecimal(entry.totalIncome, 1, 0)} + ' TZS'">0 TZS</div>
         </div>
         <div class="stat-card">
-            <div class="stat-title">💸 Today's Expense (Cash)</div>
+            <div class="stat-title">💸 Today's Cash Expense</div>
             <div class="stat-value expense" th:text="${#numbers.formatDecimal(entry.totalExpense, 1, 0)} + ' TZS'">0 TZS</div>
         </div>
         <div class="stat-card">
-            <div class="stat-title">📊 Today's Savings</div>
+            <div class="stat-title">📊 Today's Cash Savings</div>
             <div class="stat-value"
                  th:class="${(entry.totalIncome - entry.totalExpense) >= 0 ? 'stat-value income' : 'stat-value expense'}"
                  th:text="${#numbers.formatDecimal(entry.totalIncome - entry.totalExpense, 1, 0)} + ' TZS'">0 TZS</div>
@@ -189,7 +201,7 @@
                     <label style="font-weight:600; display:block; margin-bottom:0.4rem;">
                         Select Prepaid Credit
                     </label>
-                    <select name="billId" id="prepaidSelect" style="width:100%;" onchange="prefillAmountFromPrepaid(this)">
+                    <select name="billId" id="prepaidSelect" style="width:100%;" onchange="showRemainingBalance(this)">
                         <option value="">-- Choose prepaid credit --</option>
                         <th:block th:each="bill : ${pendingBills}">
                             <option th:value="${bill.id}"
@@ -198,8 +210,9 @@
                             </option>
                         </th:block>
                     </select>
+                    <div id="remainingBalanceDisplay" class="bill-remaining"></div>
                     <small style="color:#6c757d; margin-top:0.4rem; display:block;">
-                        Amount will be prefilled. You can change it to use partial credit.
+                        Enter the amount you want to use from this prepaid credit (partial payment allowed).
                     </small>
                     <div style="margin-top: 8px;">
                         <a href="/bills/add?redirectTo=/excel/daily-entry" class="btn-xs btn-primary">
@@ -253,23 +266,44 @@
         </form>
     </div>
 
-    <!-- ===== TODAY'S EXPENSES LIST ===== -->
+    <!-- ===== CASH EXPENSES LIST ===== -->
     <div class="entry-list">
-        <div class="form-title"><i class="fas fa-list"></i> Today's Expenses</div>
-        <div th:if="${entry.expenses.empty}" class="empty-state" style="padding: 1rem;">
-            <p>No expenses recorded today</p>
+        <div class="form-title"><i class="fas fa-money-bill-wave"></i> Cash Expenses</div>
+        <div th:if="${entry.expenses.empty}" class="empty-state">
+            <p>No cash expenses today</p>
         </div>
         <div th:each="exp, stat : ${entry.expenses}" class="entry-item">
             <div>
                 <strong th:text="${exp.description}"></strong><br>
                 <small class="category-badge" th:text="${exp.category}"></small>
-                <span th:if="${exp.paymentMethod == 'BILL'}" class="prepaid-badge">🎫 Prepaid</span>
-                <span th:if="${exp.paymentMethod == 'CASH'}" class="badge badge-secondary">💵 Cash</span>
+                <span class="badge badge-secondary">💵 Cash</span>
             </div>
             <div>
                 <span class="expense" th:text="'- ' + ${#numbers.formatDecimal(exp.amount, 1, 0)} + ' TZS'"></span>
                 <a th:href="'/excel/delete-expense/' + ${stat.index}" class="delete-btn"
-                   onclick="return confirm('Delete this expense?')">
+                   onclick="return confirm('Delete this cash expense?')">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PREPAID EXPENSES LIST ===== -->
+    <div class="entry-list">
+        <div class="form-title"><i class="fas fa-ticket-alt"></i> Prepaid Expenses (from credits)</div>
+        <div th:if="${entry.prepaidExpenses.empty}" class="empty-state">
+            <p>No prepaid expenses today</p>
+        </div>
+        <div th:each="exp, stat : ${entry.prepaidExpenses}" class="entry-item">
+            <div>
+                <strong th:text="${exp.description}"></strong><br>
+                <small class="category-badge" th:text="${exp.category}"></small>
+                <span class="prepaid-badge">🎫 Prepaid</span>
+            </div>
+            <div>
+                <span class="expense" th:text="'- ' + ${#numbers.formatDecimal(exp.amount, 1, 0)} + ' TZS'"></span>
+                <a th:href="'/excel/delete-prepaid-expense/' + ${stat.index}" class="delete-btn"
+                   onclick="return confirm('Delete this prepaid expense?')">
                     <i class="fas fa-trash"></i>
                 </a>
             </div>
@@ -279,7 +313,7 @@
     <!-- ===== TODAY'S INCOME LIST ===== -->
     <div class="entry-list">
         <div class="form-title"><i class="fas fa-list"></i> Today's Income</div>
-        <div th:if="${entry.incomes.empty}" class="empty-state" style="padding: 1rem;">
+        <div th:if="${entry.incomes.empty}" class="empty-state">
             <p>No income recorded today</p>
         </div>
         <div th:each="inc, stat : ${entry.incomes}" class="entry-item">
@@ -310,7 +344,7 @@
     <!-- Prepaid Credits List Section -->
     <div id="billsManagementSection" class="bills-section">
         <div class="form-title"><i class="fas fa-file-invoice"></i> All Prepaid Credits</div>
-        <div th:if="${allBills == null or allBills.empty}" class="empty-state" style="padding:1rem;">
+        <div th:if="${allBills == null or allBills.empty}" class="empty-state">
             <p>No prepaid credits yet.</p>
         </div>
         <div th:each="bill : ${allBills}" class="bill-item">
@@ -345,16 +379,26 @@
             row.classList.remove('visible');
             const sel = document.getElementById('prepaidSelect');
             if (sel) sel.value = '';
+            document.getElementById('remainingBalanceDisplay').classList.remove('show');
+            document.getElementById('remainingBalanceDisplay').innerHTML = '';
         }
     }
-    function prefillAmountFromPrepaid(sel) {
-        const amountInput = document.getElementById('expenseAmount');
-        if (!amountInput) return;
+
+    function showRemainingBalance(sel) {
         const opt = sel.options[sel.selectedIndex];
-        if (opt && opt.dataset.amount) {
-            amountInput.value = opt.dataset.amount;
+        const displayDiv = document.getElementById('remainingBalanceDisplay');
+        if (opt && opt.value !== '') {
+            const remaining = opt.getAttribute('data-amount');
+            const billName = opt.text.split(' — ')[0];
+            displayDiv.innerHTML = '💰 Remaining balance: <strong>' + parseFloat(remaining).toLocaleString() + ' TZS</strong> for "' + billName + '"';
+            displayDiv.classList.add('show');
+        } else {
+            displayDiv.classList.remove('show');
+            displayDiv.innerHTML = '';
         }
+        // DO NOT prefill amount input
     }
+
     document.addEventListener('DOMContentLoaded', function () {
         const btn = document.getElementById('toggleBillsBtn');
         const section = document.getElementById('billsManagementSection');
