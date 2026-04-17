@@ -68,7 +68,8 @@
                             <div class="actions">
                                 <a th:if="${bill.status != 'PAID'}" th:href="@{/bills/pay/{id}(id=${bill.id})}" class="btn-xs btn-success">Pay</a>
                                 <a th:href="@{/bills/edit/{id}(id=${bill.id})}" class="btn-xs btn-edit">Edit</a>
-                                <a href="#" th:onclick="'showDeleteModal(\'Delete this bill?\', function() { window.location.href=\'/bills/delete/' + ${bill.id} + '\'; }); return false;'" class="btn-xs btn-delete">Delete</a>
+                                <!-- Use data attribute and JavaScript instead of th:onclick -->
+                                <a href="#" class="btn-xs btn-delete" th:data-id="${bill.id}" th:data-name="${bill.name}" onclick="confirmDelete(this)">Delete</a>
                             </div>
                         </td>
                     </tr>
@@ -84,5 +85,16 @@
         <a href="/excel/daily-entry" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Daily Entry</a>
     </div>
 </div>
+
+<script>
+    function confirmDelete(element) {
+        var billId = element.getAttribute('data-id');
+        var billName = element.getAttribute('data-name');
+        if (confirm('Delete bill "' + billName + '"? This action cannot be undone.')) {
+            window.location.href = '/bills/delete/' + billId + '?redirectTo=/bills';
+        }
+        return false;
+    }
+</script>
 </body>
 </html>
