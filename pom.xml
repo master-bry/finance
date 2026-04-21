@@ -33,22 +33,14 @@
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 	
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-sync</artifactId>
-         </dependency>
-		 <!-- Dotenv Java for reading .env files -->
-       <dependency>
-           <groupId>io.github.cdimascio</groupId>
-           <artifactId>dotenv-java</artifactId>
-           <version>3.0.0</version>
-      </dependency>
+        <!-- Removed mongodb-driver-sync because it's pulled by starter-data-mongodb -->
    
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
         </dependency>
         
+        <!-- Only one instance of validation (duplicate removed) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
@@ -63,10 +55,14 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
+        
+        <!-- Only one instance of dotenv-java (duplicate removed) -->
         <dependency>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-validation</artifactId>
-          </dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
@@ -79,12 +75,6 @@
         </dependency>
         
         <dependency>
-            <groupId>io.github.cdimascio</groupId>
-            <artifactId>dotenv-java</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-        
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
@@ -92,10 +82,10 @@
         </dependency>
 
         <!-- Thymeleaf Layout Dialect -->
-            <dependency>
-              <groupId>nz.net.ultraq.thymeleaf</groupId>
-              <artifactId>thymeleaf-layout-dialect</artifactId>
-            </dependency>
+        <dependency>
+            <groupId>nz.net.ultraq.thymeleaf</groupId>
+            <artifactId>thymeleaf-layout-dialect</artifactId>
+        </dependency>
         
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -104,15 +94,15 @@
         </dependency>
     </dependencies>
     
-   <build>
-    <plugins>
-        <plugin>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-            <configuration>
-                <mainClass>com.master.finance.FinanceApplication</mainClass>
-            </configuration>
-        </plugin>
-    </plugins>
-</build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.master.finance.FinanceApplication</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
