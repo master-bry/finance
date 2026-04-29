@@ -18,16 +18,18 @@ public class BillService {
     @Autowired
     private BillRepository billRepository;
 
-    // Zote transactionService na dailyEntryService hazihitajiki kwa prepaid
-    // Unaweza kuzifuta au kuziacha (situmii)
-
     public List<Bill> getUserBills(String userId) {
         List<Bill> bills = billRepository.findByUserIdAndDeletedFalse(userId);
         return bills != null ? bills : Collections.emptyList();
     }
 
+    /**
+     * Returns all bills with usable balance: status PENDING or PARTIAL.
+     * Previously only returned PENDING — this caused PARTIAL bills to disappear
+     * from the dropdown after a partial payment was made.
+     */
     public List<Bill> getPendingBills(String userId) {
-        List<Bill> bills = billRepository.findByUserIdAndStatus(userId, "PENDING");
+        List<Bill> bills = billRepository.findAvailableBills(userId);
         return bills != null ? bills : Collections.emptyList();
     }
 
@@ -48,7 +50,11 @@ public class BillService {
         return billRepository.save(bill);
     }
 
-    // Kwa prepaid: hii itatumika wakati wa kulipa kutoka kwa expense form
+    /**
+     * Apply a partial or full payment from a prepaid bill.
+     * Updates status to PARTIAL if balance remains, or PAID if fully used.
+     * Does NOT create a Transaction — prepaid bills do not affect cash balance.
+     */
     public Bill applyPayment(String billId, Double amount) {
         Bill bill = billRepository.findById(billId)
                 .orElseThrow(() -> new RuntimeException("Bill not found"));
@@ -70,11 +76,13 @@ public class BillService {
         }
         bill.setUpdatedAt(LocalDateTime.now());
 
-        // Hakuna Transaction – prepaid haithiri cash balance
         return billRepository.save(bill);
     }
 
-    // Kwa prepaid: markAsPaid haiumbi transaction pia
+    /**
+     * Mark a bill as fully paid/used up manually.
+     * Does NOT create a Transaction — prepaid bills do not affect cash balance.
+     */
     public Bill markAsPaid(String billId) {
         Bill bill = billRepository.findById(billId)
                 .orElseThrow(() -> new RuntimeException("Bill not found"));
@@ -87,7 +95,6 @@ public class BillService {
         bill.setAmount(0.0);
         bill.setUpdatedAt(LocalDateTime.now());
 
-        // Hakuna transaction – prepaid haihusiki na cash balance
         return billRepository.save(bill);
     }
 
