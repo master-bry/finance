@@ -18,4 +18,8 @@ public interface BillRepository extends MongoRepository<Bill, String> {
 
     @Query("{ 'userId': ?0, 'deleted': false, 'dueDate': { $lte: ?1 }, 'status': 'PENDING' }")
     List<Bill> findOverdueBills(String userId, LocalDate date);
+
+    // Returns all bills that still have usable balance (PENDING or PARTIAL)
+    @Query("{ 'userId': ?0, 'status': { $in: ['PENDING', 'PARTIAL'] }, 'deleted': false }")
+    List<Bill> findAvailableBills(String userId);
 }
