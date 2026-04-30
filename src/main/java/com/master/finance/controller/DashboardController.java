@@ -33,9 +33,9 @@ public class DashboardController {
     @GetMapping("/dashboard")
     public String dashboard(Authentication authentication, Model model) {
         String username = authentication.getName();
-        String userId = userService.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"))
-                .getId();
+        var user = userService.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        String userId = user.getId();
 
         LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0);
         LocalDateTime now = LocalDateTime.now();
@@ -53,10 +53,10 @@ public class DashboardController {
         double totalInvested = investments.stream()
                 .mapToDouble(i -> i.getAmountInvested() != null ? i.getAmountInvested() : 0)
                 .sum();
-        double totalProfitLoss = investments.stream()
-                .mapToDouble(i -> (i.getCurrentValue() != null ? i.getCurrentValue() : 0) -
-                        (i.getAmountInvested() != null ? i.getAmountInvested() : 0))
+        double totalCurrentValue = investments.stream()
+                .mapToDouble(i -> i.getCurrentValue() != null ? i.getCurrentValue() : 0)
                 .sum();
+        double totalProfitLoss = totalCurrentValue - totalInvested;
         double profitLossPercentage = totalInvested > 0 ? (totalProfitLoss / totalInvested) * 100 : 0;
 
         Map<String, Object> stats = new HashMap<>();
@@ -73,11 +73,11 @@ public class DashboardController {
 
         model.addAttribute("stats", stats);
         model.addAttribute("recentTransactions",
-                transactionService.getUserTransactions(userId).stream().limit(10).toList());
+                transactionService.getRecentTransactions(userId, 10));
         model.addAttribute("activeGoals", goalService.getActiveGoals(userId));
 
         // Notifications – we'll pass them as a list to be shown as toasts via JavaScript
-        List<String> notifications = userService.getNotifications(userId);
+        List<String> notifications = user.getNotifications();
         model.addAttribute("notifications", notifications);
 
         // Chart data – expense and income by category

@@ -2,14 +2,19 @@ package com.master.finance.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
 import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Document(collection = "transactions")
+@CompoundIndex(name = "user_date_idx", def = "{'userId': 1, 'date': -1}")
+@CompoundIndex(name = "user_type_date_idx", def = "{'userId': 1, 'type': 1, 'date': -1}")
 public class Transaction {
     @Id
     private String id;
+    @Indexed
     private String userId;
     
     @NotBlank(message = "Description is required")

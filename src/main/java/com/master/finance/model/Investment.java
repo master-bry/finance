@@ -2,6 +2,7 @@ package com.master.finance.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import java.util.List;
 public class Investment {
     @Id
     private String id;
+    @Indexed
     private String userId;
     private String name;
     private String type;

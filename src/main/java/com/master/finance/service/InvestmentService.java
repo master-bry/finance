@@ -74,14 +74,14 @@ public class InvestmentService {
                 .mapToDouble(Investment::getAmountInvested)
                 .sum();
     }
-    
+
     public Double getTotalCurrentValue(String userId) {
         return investmentRepository.findByUserIdAndDeletedFalse(userId)
                 .stream()
                 .mapToDouble(Investment::getCurrentValue)
                 .sum();
     }
-    
+
     public Double getTotalProfitLoss(String userId) {
         return getTotalCurrentValue(userId) - getTotalInvested(userId);
     }

@@ -2,6 +2,8 @@ package com.master.finance.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -10,9 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "goals")
+@CompoundIndex(name = "user_achieved_idx", def = "{'userId': 1, 'achieved': 1}")
+@CompoundIndex(name = "user_priority_idx", def = "{'userId': 1, 'priority': 1}")
 public class Goal {
     @Id
     private String id;
+    @Indexed
     private String userId;
     private String name;
     private String category;

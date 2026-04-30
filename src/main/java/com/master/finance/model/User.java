@@ -18,22 +18,28 @@ public class User {
     @Indexed(unique = true)
     private String email;
     
+    @Indexed
+    private boolean enabled;
+    
+    @Indexed
+    private boolean deleted;
+    
     private String password;
     private String fullName;
     private String phoneNumber;
     private String currency = "TZS";
     private String role = "USER";
-    private boolean enabled = true;
     private LocalDateTime createdAt;
     private LocalDateTime lastLogin;
     private List<String> notifications = new ArrayList<>();
     
     // Soft delete fields
-    private boolean deleted = false;
     private LocalDateTime deletedAt;
     
     public User() {
         this.createdAt = LocalDateTime.now();
+        this.enabled = true;
+        this.deleted = false;
     }
     
     // Getters and Setters

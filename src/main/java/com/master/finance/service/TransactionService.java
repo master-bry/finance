@@ -106,7 +106,7 @@ public class TransactionService {
     }
 
     public List<Transaction> getRecentTransactions(String userId, int limit) {
-        return transactionRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId)
+        return transactionRepository.findRecentTransactionsByUserId(userId)
                 .stream()
                 .limit(limit)
                 .toList();
