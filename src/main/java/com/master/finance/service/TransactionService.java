@@ -72,16 +72,18 @@ public class TransactionService {
     }
 
     public Double getTotalIncome(String userId, LocalDateTime start, LocalDateTime end) {
-        return transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end)
-                .stream()
+        List<Transaction> transactions = transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end);
+        System.out.println("TransactionService.getTotalIncome: userId=" + userId + ", start=" + start + ", end=" + end + ", transactions found=" + transactions.size());
+        return transactions.stream()
                 .filter(t -> "INCOME".equals(t.getType()))
                 .mapToDouble(Transaction::getAmount)
                 .sum();
     }
 
     public Double getTotalExpense(String userId, LocalDateTime start, LocalDateTime end) {
-        return transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end)
-                .stream()
+        List<Transaction> transactions = transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end);
+        System.out.println("TransactionService.getTotalExpense: userId=" + userId + ", start=" + start + ", end=" + end + ", transactions found=" + transactions.size());
+        return transactions.stream()
                 .filter(t -> "EXPENSE".equals(t.getType()))
                 .mapToDouble(Transaction::getAmount)
                 .sum();

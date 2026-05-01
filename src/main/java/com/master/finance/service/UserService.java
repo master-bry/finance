@@ -3,8 +3,6 @@ package com.master.finance.service;
 import com.master.finance.model.User;
 import com.master.finance.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -49,7 +47,6 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
     
-    @CacheEvict(value = "users", key = "#username")
     public void updateLastLogin(String username) {
         userRepository.findByUsername(username).ifPresent(user -> {
             user.setLastLogin(LocalDateTime.now());
@@ -84,7 +81,6 @@ public class UserService {
         });
     }
     
-    @CacheEvict(value = "users", key = "#userId")
     public User updateProfile(String userId, User updatedUser) {
         return userRepository.findById(userId).map(user -> {
             user.setFullName(updatedUser.getFullName());

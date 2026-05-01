@@ -40,10 +40,15 @@ public class DashboardController {
         LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0);
         LocalDateTime now = LocalDateTime.now();
 
+        System.out.println("Dashboard: userId=" + userId);
+        System.out.println("Dashboard: startOfMonth=" + startOfMonth + ", now=" + now);
+
         double totalIncome = transactionService.getTotalIncome(userId, startOfMonth, now);
         double totalExpense = transactionService.getTotalExpense(userId, startOfMonth, now);
         double balance = totalIncome - totalExpense;
         double savingsRate = totalIncome > 0 ? (balance / totalIncome) * 100 : 0;
+
+        System.out.println("Dashboard: totalIncome=" + totalIncome + ", totalExpense=" + totalExpense + ", balance=" + balance);
 
         double totalOwedToMe = debtService.getTotalOwedToMe(userId);
         double totalIOwe = debtService.getTotalIOwe(userId);

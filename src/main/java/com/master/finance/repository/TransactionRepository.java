@@ -17,7 +17,7 @@ public interface TransactionRepository extends MongoRepository<Transaction, Stri
     @Query(value = "{ 'userId': ?0, 'deleted': false }", sort = "{ 'date': -1 }")
     List<Transaction> findByUserIdAndDeletedFalseOrderByDateDesc(String userId);
 
-    @Query(value = "{ 'userId': ?0, 'deleted': false }", sort = "{ 'date': -1 }", fields = "{ 'description': 1, 'amount': 1, 'type': 1, 'category': 1, 'date': 1 }")
+    @Query(value = "{ 'userId': ?0, 'deleted': false }", sort = "{ 'date': -1 }")
     List<Transaction> findRecentTransactionsByUserId(String userId);
 
     @Query("{ 'userId': ?0, 'type': ?1, 'deleted': false }")
