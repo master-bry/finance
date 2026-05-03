@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Finance Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
     <style>
         :root {
             --primary-dark: #2F6B3F;
@@ -167,6 +168,20 @@
             margin-bottom: 20px;
         }
     </style>
+    <script th:src="@{/js/toast.js}"></script>
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const message = /*[[${message}]]*/ null;
+            const success = /*[[${success}]]*/ null;
+
+            if (message) {
+                showSuccessToast(message);
+            }
+            if (success) {
+                showSuccessToast(success);
+            }
+        });
+    </script>
 </head>
 <body>
     <div class="login-container">
@@ -175,8 +190,6 @@
         <p class="subtitle">Manage your finances with ease</p>
 
         <div th:if="${error}" class="alert alert-error" role="alert" th:text="${error}"></div>
-        <div th:if="${message}" class="alert alert-success" role="status" th:text="${message}"></div>
-        <div th:if="${success}" class="alert alert-success" role="status" th:text="${success}"></div>
 
         <form action="/login" method="post">
             <div class="form-group">
