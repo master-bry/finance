@@ -63,5 +63,15 @@
             </div>
         </div>
     </div>
+
+    <th:block layout:fragment="scripts">
+        <script th:inline="javascript">
+            function confirmDelete(id) {
+                showDeleteModal('Are you sure you want to delete this goal?', function() {
+                    window.location.href = '/goals/delete/' + id;
+                });
+            }
+        </script>
+    </th:block>
 </body>
 </html>
