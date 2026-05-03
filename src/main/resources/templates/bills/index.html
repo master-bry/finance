@@ -85,9 +85,9 @@
     function confirmDelete(element) {
         var billId = element.getAttribute('data-id');
         var billName = element.getAttribute('data-name');
-        if (confirm('Delete bill "' + billName + '"? This action cannot be undone.')) {
+        showDeleteModal('Delete bill "' + billName + '"? This action cannot be undone.', function() {
             window.location.href = '/bills/delete/' + billId + '?redirectTo=/bills';
-        }
+        });
         return false;
     }
 </script>
