@@ -29,6 +29,11 @@ public class TransactionService {
         return transactionRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId);
     }
 
+    /**
+     * Get a transaction by ID
+     * @param id the transaction ID
+     * @return Optional containing the transaction if found
+     */
     public Optional<Transaction> getTransaction(String id) {
         return transactionRepository.findById(id);
     }
