@@ -122,14 +122,14 @@
 <div id="deleteModal" class="modal-overlay" style="display: none;">
     <div class="modal-container">
         <div class="modal-header">
-            <h3><i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i> Are you sure?</h3>
+            <h3 id="deleteModalTitle"><i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i> Are you sure?</h3>
             <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
         </div>
         <div class="modal-body">
             <p id="deleteModalMessage">Are you sure you want to remove this item?</p>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeDeleteModal()">Close</button>
+            <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
             <button class="btn btn-danger" id="deleteConfirmBtn">Yes, Delete It!</button>
         </div>
     </div>
@@ -153,9 +153,10 @@
             }
         });
         let deleteCallback = null;
-    
-    function showDeleteModal(message, onConfirm) {
+
+    function showDeleteModal(message, onConfirm, confirmText = 'Yes, Delete It!') {
         document.getElementById('deleteModalMessage').textContent = message || 'Are you sure you want to remove this item?';
+        document.getElementById('deleteConfirmBtn').textContent = confirmText;
         deleteCallback = onConfirm;
         document.getElementById('deleteModal').style.display = 'flex';
     }
@@ -235,7 +236,7 @@
     function confirmLogout() {
         showDeleteModal('Are you sure you want to logout?', function() {
             window.location.href = '/logout';
-        });
+        }, 'Yes, Logout');
     }
     </script>
     
