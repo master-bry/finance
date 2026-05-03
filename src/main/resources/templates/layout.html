@@ -90,7 +90,7 @@
                 <p th:text="${pageSubtitle}">Manage your finances</p>
             </div>
             <div class="user-info">
-                <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                <a href="#" onclick="confirmLogout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>
 
@@ -230,6 +230,12 @@
 
     function showWarningToast(message, title = 'Warning') {
         showToast(message, 'warning', title);
+    }
+
+    function confirmLogout() {
+        showDeleteModal('Are you sure you want to logout?', function() {
+            window.location.href = '/logout';
+        });
     }
     </script>
     
