@@ -32,7 +32,7 @@
                     <a th:href="'/goals/progress/' + ${goal.id}" class="btn-xs btn-progress"><i class="fas fa-plus-circle"></i> Add Progress</a>
                     <a th:href="'/goals/edit/' + ${goal.id}" class="btn-xs btn-edit"><i class="fas fa-edit"></i> Edit</a>
                     <a th:href="'/goals/mark/' + ${goal.id}" class="btn-xs btn-complete"><i class="fas fa-check-circle"></i> Mark Complete</a>
-                    <a th:href="'/goals/delete/' + ${goal.id}" class="btn-xs btn-delete" onclick="return confirm('Delete this goal?')"><i class="fas fa-trash"></i> Delete</a>
+                    <button class="btn-xs btn-delete" onclick="confirmDelete('${goal.id}')"><i class="fas fa-trash"></i> Delete</button>
                 </div>
                 <div th:if="${goal.targetDate != null}" style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--gray-500);">
                     <i class="fas fa-calendar"></i> Target Date: <span th:text="${#temporals.format(goal.targetDate, 'yyyy-MM-dd')}"></span>
