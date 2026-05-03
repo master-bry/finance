@@ -51,6 +51,11 @@ public class TransactionService {
         return transactionRepository.save(transaction);
     }
 
+    /**
+     * Update an existing transaction
+     * @param transaction the transaction to update
+     * @return the updated transaction
+     */
     public Transaction updateTransaction(Transaction transaction) {
         Transaction existing = transactionRepository.findById(transaction.getId())
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));

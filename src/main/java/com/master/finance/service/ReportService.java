@@ -13,7 +13,9 @@ import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.*;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import org.apache.poi.ss.usermodel.*;
@@ -24,8 +26,12 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -180,7 +186,7 @@ public class ReportService {
         int rowNum = 0;
         Row titleRow = sheet.createRow(rowNum++);
         titleRow.createCell(0).setCellValue("Monthly Financial Report - " + month + "/" + year);
-        
+
         rowNum++;
         String[] labels = {"Total Income", "Total Expenses", "Net Savings", "Savings Rate", "Transaction Count"};
         Object[] values = {
@@ -190,13 +196,13 @@ public class ReportService {
             summary.get("savingsRate") + "%",
             summary.get("transactionCount")
         };
-        
+
         for (int i = 0; i < labels.length; i++) {
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(labels[i]);
             row.createCell(1).setCellValue(values[i].toString());
         }
-        
+
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);
     }
@@ -208,7 +214,7 @@ public class ReportService {
         for (int i = 0; i < headers.length; i++) {
             headerRow.createCell(i).setCellValue(headers[i]);
         }
-        
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         for (Transaction tx : transactions) {
             Row row = sheet.createRow(rowNum++);
@@ -218,7 +224,7 @@ public class ReportService {
             row.createCell(3).setCellValue(tx.getType());
             row.createCell(4).setCellValue(tx.getAmount());
         }
-        
+
         for (int i = 0; i < headers.length; i++) {
             sheet.autoSizeColumn(i);
         }
@@ -229,13 +235,13 @@ public class ReportService {
         Row headerRow = sheet.createRow(rowNum++);
         headerRow.createCell(0).setCellValue("Category");
         headerRow.createCell(1).setCellValue("Amount (TZS)");
-        
+
         for (Map.Entry<String, Double> entry : expensesByCategory.entrySet()) {
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(entry.getKey());
             row.createCell(1).setCellValue(entry.getValue());
         }
-        
+
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);
     }
@@ -244,7 +250,7 @@ public class ReportService {
         int rowNum = 0;
         Row titleRow = sheet.createRow(rowNum++);
         titleRow.createCell(0).setCellValue("Debt Summary");
-        
+
         rowNum++;
         String[] labels = {"Owed to Me", "I Owe", "Net Position", "Active Debts"};
         Object[] values = {
@@ -253,13 +259,13 @@ public class ReportService {
             debtReport.get("netPosition"),
             debtReport.get("activeDebtsCount")
         };
-        
+
         for (int i = 0; i < labels.length; i++) {
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(labels[i]);
             row.createCell(1).setCellValue(values[i].toString());
         }
-        
+
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);
     }
@@ -268,7 +274,7 @@ public class ReportService {
         int rowNum = 0;
         Row titleRow = sheet.createRow(rowNum++);
         titleRow.createCell(0).setCellValue("Investment Summary");
-        
+
         rowNum++;
         String[] labels = {"Total Invested", "Current Value", "Profit/Loss", "ROI (%)", "Investment Count"};
         Object[] values = {
@@ -278,13 +284,13 @@ public class ReportService {
             investmentReport.get("roiPercent") + "%",
             investmentReport.get("investmentCount")
         };
-        
+
         for (int i = 0; i < labels.length; i++) {
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(labels[i]);
             row.createCell(1).setCellValue(values[i].toString());
         }
-        
+
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);
     }
