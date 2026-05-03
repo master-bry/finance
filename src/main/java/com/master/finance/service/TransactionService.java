@@ -20,6 +20,11 @@ public class TransactionService {
     @Autowired
     private DailyEntryService dailyEntryService;
 
+    /**
+     * Get all transactions for a user, ordered by date descending (newest first)
+     * @param userId the user ID
+     * @return list of transactions
+     */
     public List<Transaction> getUserTransactions(String userId) {
         return transactionRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId);
     }
