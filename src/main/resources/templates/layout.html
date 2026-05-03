@@ -98,6 +98,21 @@
         <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
         <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
 
+        <!-- Flash Messages for Toast Notifications -->
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                const success = /*[[${success}]]*/ null;
+                const error = /*[[${error}]]*/ null;
+
+                if (success) {
+                    showSuccessToast(success);
+                }
+                if (error) {
+                    showErrorToast(error);
+                }
+            });
+        </script>
+
         <!-- Page Content -->
         <div layout:fragment="content">
             <!-- Page-specific content goes here -->
