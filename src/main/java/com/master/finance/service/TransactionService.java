@@ -38,6 +38,11 @@ public class TransactionService {
         return transactionRepository.findById(id);
     }
 
+    /**
+     * Save a new transaction
+     * @param transaction the transaction to save
+     * @return the saved transaction
+     */
     public Transaction saveTransaction(Transaction transaction) {
         if (transaction.getDate() == null) {
             transaction.setDate(LocalDateTime.now());
