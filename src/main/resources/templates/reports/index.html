@@ -79,9 +79,14 @@
                         <option value="0" th:selected="${limit == 0}">All transactions</option>
                     </select>
                 </div>
-                <a th:href="@{/reports/download(year=${reportYear}, month=${reportMonth})}" class="btn-download">
-                    <i class="fas fa-download"></i> Download Excel Report
-                </a>
+                <div style="display: flex; gap: 0.5rem;">
+                    <a th:href="@{/reports/download-pdf(year=${reportYear}, month=${reportMonth})}" class="btn-download" style="background: var(--danger);">
+                        <i class="fas fa-file-pdf"></i> Download PDF
+                    </a>
+                    <a th:href="@{/reports/download(year=${reportYear}, month=${reportMonth})}" class="btn-download">
+                        <i class="fas fa-file-excel"></i> Download Excel
+                    </a>
+                </div>
             </div>
         </form>
 

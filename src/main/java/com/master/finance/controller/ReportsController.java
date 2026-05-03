@@ -69,7 +69,7 @@ public class ReportsController {
                                                             @RequestParam int month) {
         String userId = getUserId(authentication);
         byte[] excelData = reportService.generateMonthlyReportExcel(userId, year, month);
-        
+
         String monthName = Month.of(month).getDisplayName(TextStyle.FULL, Locale.ENGLISH);
         String filename = "Finance_Report_" + monthName + "_" + year + ".xlsx";
 
@@ -77,6 +77,22 @@ public class ReportsController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(new ByteArrayResource(excelData));
+    }
+
+    @GetMapping("/download-pdf")
+    public ResponseEntity<ByteArrayResource> downloadPdfReport(Authentication authentication,
+                                                               @RequestParam int year,
+                                                               @RequestParam int month) {
+        String userId = getUserId(authentication);
+        byte[] pdfData = reportService.generateMonthlyReportPdf(userId, year, month);
+
+        String monthName = Month.of(month).getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+        String filename = "Finance_Report_" + monthName + "_" + year + ".pdf";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(new ByteArrayResource(pdfData));
     }
 
     private String getUserId(Authentication authentication) {
