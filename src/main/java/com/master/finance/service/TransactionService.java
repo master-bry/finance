@@ -75,6 +75,10 @@ public class TransactionService {
 
         dailyEntryService.syncTransactionToDailyEntry(saved.getUserId(), saved, false);
         dailyEntryService.recalculateBalancesFromDate(saved.getUserId(), saved.getDate());
+        
+        // Update budget actuals for updated transaction
+        updateBudgetActuals(saved.getUserId(), saved.getDate());
+        
         return saved;
     }
 
