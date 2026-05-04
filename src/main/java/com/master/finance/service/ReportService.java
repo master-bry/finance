@@ -47,6 +47,13 @@ public class ReportService {
 
     // ─── MONTHLY REPORT ───────────────────────────────────────────────────────
 
+    /**
+     * Generate monthly financial report for a user
+     * @param userId the user ID
+     * @param year the year
+     * @param month the month (1-12)
+     * @return map containing monthly financial statistics
+     */
     public Map<String, Object> generateMonthlyReport(String userId, int year, int month) {
         List<Transaction> transactions = getMonthTransactions(userId, year, month);
 
