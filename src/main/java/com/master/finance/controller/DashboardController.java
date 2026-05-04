@@ -97,25 +97,43 @@ public class DashboardController {
         model.addAttribute("notifications", notifications);
 
         // Chart data – expense and income by category
-        var expensesByCategory = transactionService.getExpenseByCategory(userId, startOfMonth, now);
-        var incomeByCategory = transactionService.getIncomeByCategory(userId, startOfMonth, now);
+        var expensesByCategory = transactionService.getExpenseByCategory(userId, startOfMonth, endOfMonth);
+        var incomeByCategory = transactionService.getIncomeByCategory(userId, startOfMonth, endOfMonth);
 
         model.addAttribute("expenseCategories", expensesByCategory.keySet());
         model.addAttribute("expenseAmounts", expensesByCategory.values());
         model.addAttribute("incomeCategories", incomeByCategory.keySet());
         model.addAttribute("incomeAmounts", incomeByCategory.values());
 
-        // Weekly data
+        // Weekly data for the selected month
         List<Double> weeklyIncome = new ArrayList<>();
         List<Double> weeklyExpense = new ArrayList<>();
-        for (int i = 3; i >= 0; i--) {
-            LocalDateTime weekStart = now.minus(i * 7L, ChronoUnit.DAYS).withHour(0).withMinute(0);
+        List<String> weekLabels = new ArrayList<>();
+        
+        // Calculate weeks for the selected month
+        int daysInMonth = selectedPeriod.lengthOfMonth();
+        int weekCount = (int) Math.ceil((double) daysInMonth / 7);
+        
+        for (int i = 0; i < weekCount; i++) {
+            LocalDateTime weekStart = startOfMonth.plus(i * 7L, ChronoUnit.DAYS);
             LocalDateTime weekEnd = weekStart.plus(7, ChronoUnit.DAYS);
+            if (weekEnd.isAfter(endOfMonth)) {
+                weekEnd = endOfMonth;
+            }
+            
             weeklyIncome.add(transactionService.getTotalIncome(userId, weekStart, weekEnd));
             weeklyExpense.add(transactionService.getTotalExpense(userId, weekStart, weekEnd));
+            weekLabels.add("Week " + (i + 1));
         }
+        
         model.addAttribute("weeklyIncome", weeklyIncome);
         model.addAttribute("weeklyExpense", weeklyExpense);
+        model.addAttribute("weekLabels", weekLabels);
+        
+        // Add filter parameters to model for UI
+        model.addAttribute("selectedMonth", selectedPeriod.getMonthValue());
+        model.addAttribute("selectedYear", selectedPeriod.getYear());
+        model.addAttribute("selectedMonthName", selectedPeriod.getMonth().toString());
 
         // Clear notifications after fetching
         userService.clearNotifications(userId);
