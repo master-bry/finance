@@ -56,10 +56,15 @@ public class DashboardController {
 
         double totalIncome = transactionService.getTotalIncome(userId, startOfMonth, endOfMonth);
         double totalExpense = transactionService.getTotalExpense(userId, startOfMonth, endOfMonth);
-        double balance = totalIncome - totalExpense;
-        double savingsRate = totalIncome > 0 ? (balance / totalIncome) * 100 : 0;
+        
+        // Get previous month balance to carry forward
+        double previousMonthBalance = getPreviousMonthBalance(userId, selectedPeriod);
+        double currentMonthBalance = totalIncome - totalExpense;
+        double totalBalance = previousMonthBalance + currentMonthBalance;
+        
+        double savingsRate = totalIncome > 0 ? (currentMonthBalance / totalIncome) * 100 : 0;
 
-        System.out.println("Dashboard: totalIncome=" + totalIncome + ", totalExpense=" + totalExpense + ", balance=" + balance);
+        System.out.println("Dashboard: totalIncome=" + totalIncome + ", totalExpense=" + totalExpense + ", currentMonthBalance=" + currentMonthBalance + ", previousMonthBalance=" + previousMonthBalance + ", totalBalance=" + totalBalance);
 
         double totalOwedToMe = debtService.getTotalOwedToMe(userId);
         double totalIOwe = debtService.getTotalIOwe(userId);
@@ -78,7 +83,9 @@ public class DashboardController {
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalIncome", totalIncome);
         stats.put("totalExpense", totalExpense);
-        stats.put("balance", balance);
+        stats.put("balance", totalBalance); // Use total balance including previous month
+        stats.put("currentMonthBalance", currentMonthBalance); // Current month only
+        stats.put("previousMonthBalance", previousMonthBalance); // Previous month carry forward
         stats.put("savingsRate", Math.round(savingsRate));
         stats.put("totalOwedToMe", totalOwedToMe);
         stats.put("totalIOwe", totalIOwe);
@@ -144,5 +151,41 @@ public class DashboardController {
         model.addAttribute("title", "Dashboard");
 
         return "dashboard";
+    }
+
+    /**
+     * Calculate balance from all previous months up to the month before selected period
+     */
+    private double getPreviousMonthBalance(String userId, YearMonth selectedPeriod) {
+        // If this is January 2024 or earlier, no previous months to calculate
+        if (selectedPeriod.getYear() <= 2024 && selectedPeriod.getMonthValue() == 1) {
+            return 0.0;
+        }
+        
+        YearMonth previousMonth = selectedPeriod.minusMonths(1);
+        double cumulativeBalance = 0.0;
+        
+        // Calculate from January 2024 up to the month before selected period
+        YearMonth current = YearMonth.of(2024, 1); // Start from January 2024
+        YearMonth endPeriod = previousMonth;
+        
+        while (!current.isAfter(endPeriod)) {
+            LocalDateTime monthStart = current.atDay(1).atStartOfDay();
+            LocalDateTime monthEnd = current.atEndOfMonth().atTime(23, 59, 59);
+            
+            double monthIncome = transactionService.getTotalIncome(userId, monthStart, monthEnd);
+            double monthExpense = transactionService.getTotalExpense(userId, monthStart, monthEnd);
+            double monthBalance = monthIncome - monthExpense;
+            
+            cumulativeBalance += monthBalance;
+            
+            System.out.println("Previous month balance calculation: " + current + 
+                    " - Income: " + monthIncome + ", Expense: " + monthExpense + 
+                    ", Month Balance: " + monthBalance + ", Cumulative: " + cumulativeBalance);
+            
+            current = current.plusMonths(1);
+        }
+        
+        return cumulativeBalance;
     }
 }
