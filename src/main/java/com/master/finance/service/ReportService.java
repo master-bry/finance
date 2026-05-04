@@ -140,6 +140,11 @@ public class ReportService {
 
     // ─── INVESTMENT REPORT ────────────────────────────────────────────────────
 
+    /**
+     * Generate investment report for a user
+     * @param userId the user ID
+     * @return map containing investment statistics and performance metrics
+     */
     public Map<String, Object> generateInvestmentReport(String userId) {
         List<Investment> investments = investmentRepository.findByUserIdAndDeletedFalse(userId);
 
