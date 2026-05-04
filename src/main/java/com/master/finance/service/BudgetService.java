@@ -300,6 +300,21 @@ public class BudgetService {
     }
 
     /**
+     * Update budget actuals for a specific month (public method for transaction sync)
+     */
+    public void updateBudgetActuals(String userId, String month) {
+        Optional<Budget> budgetOpt = getBudget(userId, month);
+        if (budgetOpt.isPresent()) {
+            Budget budget = budgetOpt.get();
+            updateActualsFromTransactions(budget);
+            budgetRepository.save(budget);
+            
+            // Check for alerts after updating
+            checkBudgetAlerts(budget, userId);
+        }
+    }
+
+    /**
      * Utility method to clean duplicates (call once if needed).
      */
     public void cleanDuplicates(String userId, String month) {
