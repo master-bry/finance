@@ -135,42 +135,6 @@ public class BudgetService {
         }
     }
 
-    private void checkBudgetAlerts(Budget budget, String userId) {
-        List<String> alerts = new ArrayList<>();
-        
-        if (budget.getCategoryBudgets() != null) {
-            for (Map.Entry<String, Budget.CategoryBudget> entry : budget.getCategoryBudgets().entrySet()) {
-                String category = entry.getKey();
-                Budget.CategoryBudget catBudget = entry.getValue();
-                
-                if (catBudget.getPlanned() > 0 && catBudget.getActual() > catBudget.getPlanned()) {
-                    double overAmount = catBudget.getActual() - catBudget.getPlanned();
-                    double percentage = (overAmount / catBudget.getPlanned()) * 100;
-                    alerts.add(String.format("⚠️ You've exceeded your %s budget by %.2f TZS (%.1f%%)!",
-                            category, overAmount, percentage));
-                }
-                
-                if (catBudget.getPlanned() > 0 && catBudget.getActual() > catBudget.getPlanned() * 1.2) {
-                    alerts.add(String.format("🔴 CRITICAL: %s budget is 20%% over! Review your spending.", category));
-                }
-            }
-        }
-        
-        if (budget.getTotalExpense() > budget.getTotalIncome() && budget.getTotalIncome() > 0) {
-            double deficit = budget.getTotalExpense() - budget.getTotalIncome();
-            alerts.add(String.format("⚠️ Your expenses exceed your income by %.2f TZS this month!", deficit));
-        }
-        
-        if (budget.getSavingsTarget() > 0 && budget.getActualSavings() < budget.getSavingsTarget()) {
-            double shortfall = budget.getSavingsTarget() - budget.getActualSavings();
-            alerts.add(String.format("💰 You're %.2f TZS short of your savings target this month!", shortfall));
-        }
-        
-        if (!alerts.isEmpty()) {
-            userService.addNotifications(userId, alerts);
-        }
-    }
-
     public Optional<Budget> getBudget(String userId, String month) {
         List<Budget> budgets = budgetRepository.findByUserIdAndMonth(userId, month);
         // Return the latest (by updatedAt) or first
