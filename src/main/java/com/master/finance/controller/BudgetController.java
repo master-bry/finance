@@ -48,6 +48,7 @@ public class BudgetController {
         
         model.addAttribute("budget", budget);
         model.addAttribute("comparison", budgetService.getBudgetVsActual(userId, budget.getMonth()));
+        model.addAttribute("recommendations", budgetService.getBudgetRecommendations(userId));
         
         // Layout attributes
         model.addAttribute("currentPage", "budget");
