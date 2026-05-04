@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,9 @@ public class TransactionService {
 
     @Autowired
     private DailyEntryService dailyEntryService;
+
+    @Autowired
+    private BudgetService budgetService;
 
     /**
      * Get all transactions for a user, ordered by date descending (newest first)
@@ -48,7 +52,12 @@ public class TransactionService {
             transaction.setDate(LocalDateTime.now());
         }
         transaction.setDeleted(false);
-        return transactionRepository.save(transaction);
+        Transaction saved = transactionRepository.save(transaction);
+        
+        // Update budget actuals immediately
+        updateBudgetActuals(saved.getUserId(), saved.getDate());
+        
+        return saved;
     }
 
     /**
@@ -89,6 +98,19 @@ public class TransactionService {
 
     public List<Transaction> getTransactionsByDateRange(String userId, LocalDateTime start, LocalDateTime end) {
         return transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end);
+    }
+
+    /**
+     * Update budget actuals when transaction is added/updated
+     */
+    private void updateBudgetActuals(String userId, LocalDateTime transactionDate) {
+        try {
+            String month = transactionDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            budgetService.updateBudgetActuals(userId, month);
+        } catch (Exception e) {
+            // Log error but don't fail transaction
+            System.err.println("Failed to update budget actuals: " + e.getMessage());
+        }
     }
 
     public Double getTotalIncome(String userId, LocalDateTime start, LocalDateTime end) {
