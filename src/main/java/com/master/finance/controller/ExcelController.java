@@ -143,7 +143,7 @@ public class ExcelController {
             DailyEntry entry = dailyEntryService.getOrCreateTodayEntry(userId);
             DailyEntry.IncomeItem income = new DailyEntry.IncomeItem();
             income.setDescription(description);
-            income.setAmount(amount);
+             income.setAmount(amount);
             income.setSource(source);
             income.setTime(LocalDateTime.now());
             entry.getIncomes().add(income);
