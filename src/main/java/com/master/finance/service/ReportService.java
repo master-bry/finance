@@ -73,13 +73,18 @@ public class ReportService {
     // ─── TRANSACTIONS FOR REPORT PAGE ─────────────────────────────────────────
 
     /**
-     * Returns all transactions for the given month, newest first, limited by limit.
+     * Get all transactions for the given month, newest first, limited by limit.
+     * @param userId the user ID
+     * @param year the year
+     * @param month the month (1-12)
+     * @param limit maximum number of transactions to return (0 for all)
+     * @return list of transactions sorted by date descending
      */
     public List<Transaction> getRecentTransactions(String userId, int year, int month, int limit) {
         List<Transaction> transactions = getMonthTransactions(userId, year, month);
         return transactions.stream()
                 .sorted(Comparator.comparing(Transaction::getDate).reversed())
-                .limit(limit)
+                .limit(limit == 0 ? Long.MAX_VALUE : limit)
                 .collect(Collectors.toList());
     }
 
