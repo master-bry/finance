@@ -89,13 +89,23 @@ public class TransactionService {
             transactionRepository.save(transaction);
             dailyEntryService.syncTransactionToDailyEntry(transaction.getUserId(), transaction, true);
             dailyEntryService.recalculateBalancesFromDate(transaction.getUserId(), transaction.getDate());
+            
+            // Update budget actuals for deleted transaction
+            updateBudgetActuals(transaction.getUserId(), transaction.getDate());
         });
     }
 
     public void permanentDeleteTransaction(String id) {
         transactionRepository.findById(id).ifPresent(transaction -> {
+            transaction.setDeleted(true);
+            transaction.setDeletedAt(LocalDateTime.now());
+            transactionRepository.save(transaction);
             dailyEntryService.syncTransactionToDailyEntry(transaction.getUserId(), transaction, true);
             dailyEntryService.recalculateBalancesFromDate(transaction.getUserId(), transaction.getDate());
+            
+            // Update budget actuals for deleted transaction
+            updateBudgetActuals(transaction.getUserId(), transaction.getDate());
+            
             transactionRepository.deleteById(id);
         });
     }
