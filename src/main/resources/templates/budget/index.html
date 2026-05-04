@@ -100,6 +100,9 @@
         <div class="section-card">
             <div class="section-header">
                 <h4><i class="fas fa-chart-line"></i> Budget Summary</h4>
+                <div class="days-remaining" th:if="${budget != null}">
+                    <i class="fas fa-calendar"></i> <span th:text="${#numbers.formatDecimal(T(#temporals.create(T(#temporals.createNow()).toLocalDate().withDayOfMonth(T(#temporals.createNow()).toLocalDate().lengthOfMonth())).toLocalDate()).toLocalDate().dayOfMonth - T(#temporals.createNow()).toLocalDate().dayOfMonth, 0, 0)}"></span> days left
+                </div>
             </div>
             <div class="stats-grid">
                 <div class="stat-card">
@@ -107,17 +110,40 @@
                     <div class="stat-value">
                         <span th:text="${budget != null ? #numbers.formatDecimal(budget.totalIncome, 1, 0) : '0'}"></span> TZS
                     </div>
+                    <div class="spending-velocity" th:if="${budget != null && budget.totalIncome > 0}">
+                        Actual: <span th:text="${#numbers.formatDecimal(budget.totalIncome, 1, 0)}"></span> TZS
+                    </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">💸 Planned Expenses</div>
                     <div class="stat-value">
                         <span th:text="${budget != null ? #numbers.formatDecimal(budget.totalExpense, 1, 0) : '0'}"></span> TZS
                     </div>
+                    <div class="spending-velocity" th:if="${budget != null && budget.totalExpense > 0}">
+                        Actual: <span th:text="${#numbers.formatDecimal(budget.totalExpense, 1, 0)}"></span> TZS
+                    </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">🎯 Savings Target</div>
                     <div class="stat-value">
                         <span th:text="${budget != null ? #numbers.formatDecimal(budget.savingsTarget, 1, 0) : '0'}"></span> TZS
+                    </div>
+                    <div class="spending-velocity" th:if="${budget != null}">
+                        Actual: <span th:text="${#numbers.formatDecimal(budget.actualSavings, 1, 0)}"></span> TZS
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">📊 Budget Status</div>
+                    <div class="stat-value">
+                        <span th:if="${budget != null}" 
+                              th:classappend="${budget.totalExpense > budget.totalIncome ? 'over-budget' : 'under-budget'}"
+                              th:text="${budget.totalExpense > budget.totalIncome ? 'Over Budget' : 'On Track'}">
+                        </span>
+                        <span th:if="${budget == null}">Not Set</span>
+                    </div>
+                    <div class="budget-status" th:if="${budget != null}"
+                         th:classappend="${budget.totalExpense > budget.totalIncome ? 'status-critical' : (budget.actualSavings < budget.savingsTarget ? 'status-warning' : 'status-on-track')}"
+                         th:text="${budget.totalExpense > budget.totalIncome ? 'Critical' : (budget.actualSavings < budget.savingsTarget ? 'Warning' : 'On Track')}">
                     </div>
                 </div>
             </div>
