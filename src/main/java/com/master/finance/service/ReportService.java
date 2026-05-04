@@ -329,6 +329,13 @@ public class ReportService {
 
     // ─── PDF EXPORT ────────────────────────────────────────────────────────────
 
+    /**
+     * Generate PDF report for monthly financial data
+     * @param userId the user ID
+     * @param year the year
+     * @param month the month (1-12)
+     * @return byte array containing PDF file data
+     */
     public byte[] generateMonthlyReportPdf(String userId, int year, int month) {
         List<Transaction> transactions = getMonthTransactions(userId, year, month);
         Map<String, Object> summary = generateMonthlyReport(userId, year, month);
