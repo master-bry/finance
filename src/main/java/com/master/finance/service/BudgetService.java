@@ -386,6 +386,115 @@ public class BudgetService {
     }
 
     /**
+     * Get budget recommendations based on spending history
+     */
+    public Map<String, Object> getBudgetRecommendations(String userId) {
+        Map<String, Object> recommendations = new HashMap<>();
+        
+        // Get last 3 months of spending data
+        List<Map<String, Object>> monthlySpending = new ArrayList<>();
+        for (int i = 2; i >= 0; i--) {
+            String month = LocalDateTime.now().minusMonths(i).format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            Map<String, Object> monthData = getBudgetVsActual(userId, month);
+            if (monthData.containsKey("budget")) {
+                monthlySpending.add(monthData);
+            }
+        }
+        
+        if (monthlySpending.isEmpty()) {
+            recommendations.put("message", "No spending history available for recommendations");
+            return recommendations;
+        }
+        
+        // Calculate average spending by category
+        Map<String, Double> avgCategorySpending = new HashMap<>();
+        Map<String, Integer> categoryCount = new HashMap<>();
+        
+        for (Map<String, Object> monthData : monthlySpending) {
+            Budget budget = (Budget) monthData.get("budget");
+            if (budget.getCategoryBudgets() != null) {
+                for (Map.Entry<String, Budget.CategoryBudget> entry : budget.getCategoryBudgets().entrySet()) {
+                    String category = entry.getKey();
+                    Double actual = entry.getValue().getActual();
+                    if (actual > 0) {
+                        avgCategorySpending.merge(category, actual, Double::sum);
+                        categoryCount.merge(category, 1, Integer::sum);
+                    }
+                }
+            }
+        }
+        
+        // Calculate averages
+        for (String category : avgCategorySpending.keySet()) {
+            avgCategorySpending.put(category, avgCategorySpending.get(category) / categoryCount.get(category));
+        }
+        
+        // Calculate average income and expenses
+        double avgIncome = monthlySpending.stream()
+                .mapToDouble(m -> ((Budget) m.get("budget")).getTotalIncome())
+                .average().orElse(0.0);
+        
+        double avgExpense = monthlySpending.stream()
+                .mapToDouble(m -> ((Budget) m.get("budget")).getTotalExpense())
+                .average().orElse(0.0);
+        
+        double avgSavings = avgIncome - avgExpense;
+        
+        // Generate recommendations
+        List<String> recommendationsList = new ArrayList<>();
+        
+        // Income recommendation
+        if (avgIncome > 0) {
+            recommendationsList.add(String.format("💰 Based on history, plan for income of %.0f TZS", avgIncome));
+        }
+        
+        // Expense recommendations
+        if (avgExpense > 0) {
+            double recommendedExpense = avgIncome * 0.8; // 80% of income
+            recommendationsList.add(String.format("💸 Consider budgeting %.0f TZS for expenses (80%% of income)", recommendedExpense));
+        }
+        
+        // Category recommendations
+        for (Map.Entry<String, Double> entry : avgCategorySpending.entrySet()) {
+            String category = entry.getKey();
+            Double avgSpending = entry.getValue();
+            
+            // Add 10% buffer for unexpected expenses
+            double recommendedBudget = avgSpending * 1.1;
+            recommendationsList.add(String.format("📊 %s: Budget %.0f TZS (based on %.0f TZS average)", 
+                    category, recommendedBudget, avgSpending));
+        }
+        
+        // Savings recommendation
+        if (avgSavings > 0) {
+            double recommendedSavings = avgIncome * 0.2; // 20% savings rate
+            recommendationsList.add(String.format("🎯 Target savings of %.0f TZS (20%% of income)", recommendedSavings));
+        } else {
+            recommendationsList.add("💡 Focus on reducing expenses to achieve positive savings");
+        }
+        
+        // High spending alerts
+        for (Map.Entry<String, Double> entry : avgCategorySpending.entrySet()) {
+            String category = entry.getKey();
+            Double avgSpending = entry.getValue();
+            
+            if (avgIncome > 0 && (avgSpending / avgIncome) > 0.3) { // More than 30% of income
+                recommendationsList.add(String.format("⚠️ %s consumes %.1f%% of income - consider reducing", 
+                        category, (avgSpending / avgIncome) * 100));
+            }
+        }
+        
+        recommendations.put("recommendations", recommendationsList);
+        recommendations.put("avgIncome", avgIncome);
+        recommendations.put("avgExpense", avgExpense);
+        recommendations.put("avgSavings", avgSavings);
+        recommendations.put("categoryAverages", avgCategorySpending);
+        recommendations.put("monthsAnalyzed", monthlySpending.size());
+        
+        return recommendations;
+    }
+
+    /**
      * Utility method to clean duplicates (call once if needed).
      */
     public void cleanDuplicates(String userId, String month) {
