@@ -111,6 +111,11 @@ public class ReportService {
 
     // ─── DEBT REPORT ──────────────────────────────────────────────────────────
 
+    /**
+     * Generate debt report for a user
+     * @param userId the user ID
+     * @return map containing debt statistics and totals
+     */
     public Map<String, Object> generateDebtReport(String userId) {
         List<Debt> debts = debtRepository.findByUserIdAndDeletedFalse(userId);
 
