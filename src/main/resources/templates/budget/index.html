@@ -201,6 +201,38 @@
                 <p><a href="/budget/edit" style="color: var(--primary-dark); font-weight: 600;">Create your budget</a></p>
             </div>
         </div>
+        
+        <!-- Budget Recommendations -->
+        <div class="section-card" th:if="${recommendations != null && recommendations.containsKey('recommendations')}">
+            <div class="section-header">
+                <h4><i class="fas fa-lightbulb"></i> Smart Recommendations</h4>
+                <small style="color: var(--gray-500);">Based on your last <span th:text="${recommendations.monthsAnalyzed}">3</span> months</small>
+            </div>
+            <div style="padding: 1rem;">
+                <div th:each="rec : ${recommendations.recommendations}" 
+                     style="padding: 0.75rem; margin-bottom: 0.5rem; background: var(--gray-50); border-left: 4px solid var(--primary-dark); border-radius: 4px;">
+                    <span th:text="${rec}" style="font-size: 0.9rem;"></span>
+                </div>
+                
+                <div th:if="${recommendations.avgIncome > 0}" style="margin-top: 1rem; padding: 1rem; background: var(--gray-100); border-radius: 8px;">
+                    <h6 style="margin-bottom: 0.5rem; color: var(--primary-dark);">📊 Your Spending Pattern</h6>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; font-size: 0.85rem;">
+                        <div>
+                            <strong>Avg Income:</strong><br>
+                            <span th:text="${#numbers.formatDecimal(recommendations.avgIncome, 1, 0)} + ' TZS'"></span>
+                        </div>
+                        <div>
+                            <strong>Avg Expenses:</strong><br>
+                            <span th:text="${#numbers.formatDecimal(recommendations.avgExpense, 1, 0)} + ' TZS'"></span>
+                        </div>
+                        <div>
+                            <strong>Avg Savings:</strong><br>
+                            <span th:text="${#numbers.formatDecimal(recommendations.avgSavings, 1, 0)} + ' TZS'"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>
