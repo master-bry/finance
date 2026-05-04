@@ -95,6 +95,10 @@ public class ReportService {
 
     /**
      * Returns a map of { category -> total amount } for expenses in the given month.
+     * @param userId the user ID
+     * @param year the year
+     * @param month the month (1-12)
+     * @return map of category names to total expense amounts
      */
     public Map<String, Double> getExpenseByCategory(String userId, int year, int month) {
         return getMonthTransactions(userId, year, month).stream()
