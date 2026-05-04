@@ -5,6 +5,7 @@ import com.master.finance.model.Transaction;
 import com.master.finance.repository.BudgetRepository;
 import com.master.finance.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -311,6 +312,76 @@ public class BudgetService {
             
             // Check for alerts after updating
             checkBudgetAlerts(budget, userId);
+        }
+    }
+
+    /**
+     * Auto-create monthly budgets for all users (runs on 1st of each month)
+     */
+    @Scheduled(cron = "0 0 0 1 * ?") // 1st of every month at midnight
+    public void createMonthlyBudgetsForAllUsers() {
+        try {
+            String currentMonth = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            
+            // This would require getting all users - for now, we'll create on-demand
+            // Implementation would depend on UserService.getAllUsers() method
+            System.out.println("Monthly budget creation scheduled for: " + currentMonth);
+        } catch (Exception e) {
+            System.err.println("Error in monthly budget creation: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Enhanced budget alerts with multiple warning levels
+     */
+    private void checkBudgetAlerts(Budget budget, String userId) {
+        List<String> alerts = new ArrayList<>();
+        
+        if (budget.getCategoryBudgets() != null) {
+            for (Map.Entry<String, Budget.CategoryBudget> entry : budget.getCategoryBudgets().entrySet()) {
+                String category = entry.getKey();
+                Budget.CategoryBudget catBudget = entry.getValue();
+                
+                if (catBudget.getPlanned() > 0) {
+                    double percentage = (catBudget.getActual() / catBudget.getPlanned()) * 100;
+                    
+                    // Warning at 80%
+                    if (percentage >= 80 && percentage < 100) {
+                        alerts.add(String.format("⚠️ %s budget at %.1f%% (%.0f TZS remaining)", 
+                                category, percentage, catBudget.getPlanned() - catBudget.getActual()));
+                    }
+                    // Critical at 100%
+                    else if (percentage >= 100 && percentage < 120) {
+                        alerts.add(String.format("🔴 %s budget exceeded by %.0f TZS!", 
+                                category, catBudget.getActual() - catBudget.getPlanned()));
+                    }
+                    // Emergency at 120%+
+                    else if (percentage >= 120) {
+                        alerts.add(String.format("🚨 EMERGENCY: %s budget 20%%+ over! Stop spending!", category));
+                    }
+                }
+            }
+        }
+        
+        // Overall budget alerts
+        if (budget.getTotalExpense() > budget.getTotalIncome() && budget.getTotalIncome() > 0) {
+            double deficit = budget.getTotalExpense() - budget.getTotalIncome();
+            alerts.add(String.format("💸 Monthly deficit: %.0f TZS. Review expenses!", deficit));
+        }
+        
+        // Savings target alerts
+        if (budget.getSavingsTarget() > 0) {
+            double savingsRate = budget.getSavingsRate();
+            if (savingsRate < 0) {
+                alerts.add("💰 No savings this month. Focus on reducing expenses!");
+            } else if (savingsRate < (budget.getSavingsTarget() / budget.getTotalIncome()) * 100) {
+                double shortfall = budget.getSavingsTarget() - budget.getActualSavings();
+                alerts.add(String.format("🎯 %.0f TZS short of savings target", shortfall));
+            }
+        }
+        
+        if (!alerts.isEmpty()) {
+            userService.addNotifications(userId, alerts);
         }
     }
 
