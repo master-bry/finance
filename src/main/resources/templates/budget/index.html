@@ -160,6 +160,7 @@
                             <th>Category</th>
                             <th>Planned (TZS)</th>
                             <th>Actual (TZS)</th>
+                            <th>Progress</th>
                             <th>Variance</th>
                             <th>Status</th>
                         </tr>
@@ -169,6 +170,17 @@
                             <td th:text="${entry.key}">Category</td>
                             <td th:text="${#numbers.formatDecimal(entry.value.planned, 1, 0)}">Planned</td>
                             <td th:text="${#numbers.formatDecimal(entry.value.actual, 1, 0)}">Actual</td>
+                            <td>
+                                <div class="progress-container" th:if="${entry.value.planned > 0}">
+                                    <div class="progress-bar" 
+                                         th:classappend="${entry.value.actual > entry.value.planned ? 'progress-danger' : (entry.value.actual > entry.value.planned * 0.8 ? 'progress-warning' : 'progress-safe')}"
+                                         th:style="'width: ' + ${#numbers.formatDecimal((entry.value.actual / entry.value.planned) * 100, 1, 1)} + '%;'">
+                                    </div>
+                                </div>
+                                <div class="spending-velocity" th:if="${entry.value.planned > 0}">
+                                    <span th:text="${#numbers.formatDecimal((entry.value.actual / entry.value.planned) * 100, 1, 1)}"></span>%
+                                </div>
+                            </td>
                             <td th:class="${entry.value.variance > 0 ? 'over-budget' : 'under-budget'}" 
                                 th:text="${(entry.value.variance > 0 ? '+' : '') + #numbers.formatDecimal(entry.value.variance, 1, 0)}">Variance</td>
                             <td>
