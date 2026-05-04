@@ -5,9 +5,108 @@
       layout:decorate="~{layout}">
 <head>
     <title>Dashboard</title>
+    
+    <style layout:fragment="styles">
+        .period-filter {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .period-filter h3 {
+            margin: 0;
+            color: var(--primary-dark);
+            font-size: 1.1rem;
+        }
+        
+        .filter-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .filter-controls select {
+            padding: 0.5rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            background: white;
+        }
+        
+        .filter-controls button {
+            background: var(--primary-dark);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .filter-controls button:hover {
+            background: var(--secondary);
+        }
+        
+        .current-period {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+        
+        @media (max-width: 768px) {
+            .period-filter {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .filter-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
 </head>
 <body>
     <div layout:fragment="content">
+        <!-- Period Filter -->
+        <div class="period-filter">
+            <div>
+                <h3>📊 Financial Overview</h3>
+                <div class="current-period" th:text="'Showing data for ' + ${selectedMonthName} + ' ' + ${selectedYear}">Showing data for current month</div>
+            </div>
+            <form method="get" action="/dashboard" class="filter-controls">
+                <select name="month" th:value="${selectedMonth}">
+                    <option value="1" th:selected="${selectedMonth == 1}">January</option>
+                    <option value="2" th:selected="${selectedMonth == 2}">February</option>
+                    <option value="3" th:selected="${selectedMonth == 3}">March</option>
+                    <option value="4" th:selected="${selectedMonth == 4}">April</option>
+                    <option value="5" th:selected="${selectedMonth == 5}">May</option>
+                    <option value="6" th:selected="${selectedMonth == 6}">June</option>
+                    <option value="7" th:selected="${selectedMonth == 7}">July</option>
+                    <option value="8" th:selected="${selectedMonth == 8}">August</option>
+                    <option value="9" th:selected="${selectedMonth == 9}">September</option>
+                    <option value="10" th:selected="${selectedMonth == 10}">October</option>
+                    <option value="11" th:selected="${selectedMonth == 11}">November</option>
+                    <option value="12" th:selected="${selectedMonth == 12}">December</option>
+                </select>
+                <select name="year" th:value="${selectedYear}">
+                    <option value="2022" th:selected="${selectedYear == 2022}">2022</option>
+                    <option value="2023" th:selected="${selectedYear == 2023}">2023</option>
+                    <option value="2024" th:selected="${selectedYear == 2024}">2024</option>
+                    <option value="2025" th:selected="${selectedYear == 2025}">2025</option>
+                    <option value="2026" th:selected="${selectedYear == 2026}">2026</option>
+                </select>
+                <button type="submit">🔍 Apply Filter</button>
+                <a href="/dashboard" style="background: var(--gray-500); color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none;">↺ Current</a>
+            </form>
+        </div>
+        
         <!-- Stats Grid -->
         <div class="stats-grid">
             <div class="stat-card">
