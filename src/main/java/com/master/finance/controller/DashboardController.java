@@ -6,8 +6,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,20 +33,29 @@ public class DashboardController {
     private UserService userService;
 
     @GetMapping("/dashboard")
-    public String dashboard(Authentication authentication, Model model) {
+    public String dashboard(Authentication authentication, 
+                           @RequestParam(required = false) Integer month,
+                           @RequestParam(required = false) Integer year,
+                           Model model) {
         String username = authentication.getName();
         var user = userService.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         String userId = user.getId();
 
-        LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0);
+        // Default to current month if not specified
+        YearMonth selectedPeriod = (month != null && year != null) 
+                ? YearMonth.of(year, month)
+                : YearMonth.now();
+        
+        LocalDateTime startOfMonth = selectedPeriod.atDay(1).atStartOfDay();
+        LocalDateTime endOfMonth = selectedPeriod.atEndOfMonth().atTime(23, 59, 59);
         LocalDateTime now = LocalDateTime.now();
 
         System.out.println("Dashboard: userId=" + userId);
-        System.out.println("Dashboard: startOfMonth=" + startOfMonth + ", now=" + now);
+        System.out.println("Dashboard: period=" + selectedPeriod + ", startOfMonth=" + startOfMonth + ", endOfMonth=" + endOfMonth);
 
-        double totalIncome = transactionService.getTotalIncome(userId, startOfMonth, now);
-        double totalExpense = transactionService.getTotalExpense(userId, startOfMonth, now);
+        double totalIncome = transactionService.getTotalIncome(userId, startOfMonth, endOfMonth);
+        double totalExpense = transactionService.getTotalExpense(userId, startOfMonth, endOfMonth);
         double balance = totalIncome - totalExpense;
         double savingsRate = totalIncome > 0 ? (balance / totalIncome) * 100 : 0;
 
