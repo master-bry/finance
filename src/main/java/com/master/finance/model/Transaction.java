@@ -11,6 +11,9 @@ import java.time.format.DateTimeFormatter;
 @Document(collection = "transactions")
 @CompoundIndex(name = "user_date_idx", def = "{'userId': 1, 'date': -1}")
 @CompoundIndex(name = "user_type_date_idx", def = "{'userId': 1, 'type': 1, 'date': -1}")
+@CompoundIndex(name = "user_deleted_idx", def = "{'userId': 1, 'deleted': 1}")
+@CompoundIndex(name = "user_deleted_date_idx", def = "{'userId': 1, 'deleted': 1, 'date': -1}")
+@CompoundIndex(name = "user_type_deleted_idx", def = "{'userId': 1, 'type': 1, 'deleted': 1}")
 public class Transaction {
     @Id
     private String id;
@@ -30,10 +33,12 @@ public class Transaction {
     @NotBlank(message = "Category is required")
     private String category;
     
+    @Indexed
     private LocalDateTime date;
     private String notes;
     
     // Soft delete fields
+    @Indexed
     private boolean deleted = false;
     private LocalDateTime deletedAt;
     
