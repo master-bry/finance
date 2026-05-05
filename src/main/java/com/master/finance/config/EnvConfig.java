@@ -62,8 +62,8 @@ public class EnvConfig {
         if (uri != null && !uri.isEmpty()) {
             return uri;
         }
-        // Default to MongoDB Atlas for better performance
-        return "mongodb+srv://finance-tracker.mongodb.net/finance-tracker?retryWrites=true&w=majority";
+        // Default to localhost for development (change to Atlas in production)
+        return "mongodb://localhost:27017/finance-tracker";
     }
     
     private String getMongoDatabase() {
@@ -83,7 +83,7 @@ public class EnvConfig {
     }
     
     private void setDefaultValues() {
-        System.setProperty("MONGODB_URI", "mongodb+srv://finance-tracker.mongodb.net/finance-tracker?retryWrites=true&w=majority");
+        System.setProperty("MONGODB_URI", "mongodb://localhost:27017/finance-tracker");
         System.setProperty("MONGODB_DATABASE", "finance-tracker");
         System.setProperty("SERVER_PORT", "8080");
     }
