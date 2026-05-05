@@ -63,10 +63,13 @@ public class EnvConfig {
     private String getMongoUri() {
         String uri = dotenv.get("MONGODB_URI");
         if (uri != null && !uri.isEmpty()) {
+            System.out.println("📁 Using MongoDB URI from .env: " + maskUri(uri));
             return uri;
         }
         // Default to localhost for development (change to Atlas in production)
-        return "mongodb://localhost:27017/finance-tracker";
+        String defaultUri = "mongodb://localhost:27017/finance-tracker";
+        System.out.println("📁 Using default MongoDB URI: " + defaultUri);
+        return defaultUri;
     }
     
     private String getMongoDatabase() {
