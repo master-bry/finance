@@ -7,11 +7,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title layout:title-pattern="$CONTENT_TITLE - Finance Tracker">Finance Tracker</title>
     
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Font Awesome (optimized loading) -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
     
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js (deferred loading) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Main Layout CSS -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
@@ -238,6 +239,37 @@
             window.location.href = '/logout';
         }, 'Yes, Logout');
     }
+    </script>
+    
+    <!-- Performance optimization script -->
+    <script>
+        // Optimize page loading performance
+        document.addEventListener('DOMContentLoaded', function() {
+            // Preload critical resources
+            const criticalLinks = document.querySelectorAll('link[rel="preload"]');
+            criticalLinks.forEach(link => {
+                if (link.rel === 'preload' && link.as === 'style') {
+                    link.onload = function() {
+                        link.rel = 'stylesheet';
+                    };
+                }
+            });
+            
+            // Lazy load images if any
+            const images = document.querySelectorAll('img[data-src]');
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.removeAttribute('data-src');
+                        observer.unobserve(img);
+                    }
+                });
+            });
+            
+            images.forEach(img => imageObserver.observe(img));
+        });
     </script>
     
     <!-- Page-specific JavaScript placeholder -->
