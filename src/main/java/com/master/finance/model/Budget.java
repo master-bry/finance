@@ -2,15 +2,21 @@ package com.master.finance.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 @Document(collection = "budgets")
+@CompoundIndex(name = "budget_user_month_idx", def = "{'userId': 1, 'month': -1}")
+@CompoundIndex(name = "budget_user_deleted_idx", def = "{'userId': 1, 'deleted': 1}")
 public class Budget {
     @Id
     private String id;
+    @Indexed
     private String userId;
+    @Indexed
     private String month; // Format: "2024-01"
     private Double totalIncome;
     private Double totalExpense;
@@ -22,6 +28,7 @@ public class Budget {
     private LocalDateTime updatedAt;
     
     // Soft delete fields
+    @Indexed
     private boolean deleted = false;
     private LocalDateTime deletedAt;
     
