@@ -3,6 +3,8 @@ package com.master.finance.service;
 import com.master.finance.model.Transaction;
 import com.master.finance.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,6 +31,7 @@ public class TransactionService {
      * @param userId the user ID
      * @return list of transactions
      */
+    @Cacheable(value = "transactions", key = "#userId")
     public List<Transaction> getUserTransactions(String userId) {
         return transactionRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId);
     }
@@ -47,6 +50,7 @@ public class TransactionService {
      * @param transaction the transaction to save
      * @return the saved transaction
      */
+    @CacheEvict(value = {"transactions", "dashboard", "reports"}, key = "#transaction.userId")
     public Transaction saveTransaction(Transaction transaction) {
         if (transaction.getDate() == null) {
             transaction.setDate(LocalDateTime.now());
@@ -65,6 +69,7 @@ public class TransactionService {
      * @param transaction the transaction to update
      * @return the updated transaction
      */
+    @CacheEvict(value = {"transactions", "dashboard", "reports"}, key = "#transaction.userId")
     public Transaction updateTransaction(Transaction transaction) {
         Transaction existing = transactionRepository.findById(transaction.getId())
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
@@ -127,6 +132,7 @@ public class TransactionService {
         }
     }
 
+    @Cacheable(value = "dashboard", key = "#userId + '_income_' + #start.toString() + '_' + #end.toString()")
     public Double getTotalIncome(String userId, LocalDateTime start, LocalDateTime end) {
         List<Transaction> transactions = transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end);
         System.out.println("TransactionService.getTotalIncome: userId=" + userId + ", start=" + start + ", end=" + end + ", transactions found=" + transactions.size());
@@ -136,9 +142,9 @@ public class TransactionService {
                 .sum();
     }
 
+    @Cacheable(value = "dashboard", key = "#userId + '_expense_' + #start.toString() + '_' + #end.toString()")
     public Double getTotalExpense(String userId, LocalDateTime start, LocalDateTime end) {
         List<Transaction> transactions = transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end);
-        System.out.println("TransactionService.getTotalExpense: userId=" + userId + ", start=" + start + ", end=" + end + ", transactions found=" + transactions.size());
         return transactions.stream()
                 .filter(t -> "EXPENSE".equals(t.getType()))
                 .mapToDouble(Transaction::getAmount)
