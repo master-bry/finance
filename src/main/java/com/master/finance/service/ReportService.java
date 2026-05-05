@@ -21,6 +21,7 @@ import com.itextpdf.layout.properties.UnitValue;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -31,6 +32,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -172,6 +174,23 @@ public class ReportService {
     // ─── EXCEL EXPORT ─────────────────────────────────────────────────────────
 
     /**
+     * Generate Excel report for monthly financial data (async version)
+     * @param userId the user ID
+     * @param year the year
+     * @param month the month (1-12)
+     * @return CompletableFuture with byte array containing Excel file data
+     */
+    @Async("reportExecutor")
+    public CompletableFuture<byte[]> generateMonthlyReportExcelAsync(String userId, int year, int month) {
+        try {
+            byte[] result = generateMonthlyReportExcelSync(userId, year, month);
+            return CompletableFuture.completedFuture(result);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    /**
      * Generate Excel report for monthly financial data
      * @param userId the user ID
      * @param year the year
@@ -179,6 +198,13 @@ public class ReportService {
      * @return byte array containing Excel file data
      */
     public byte[] generateMonthlyReportExcel(String userId, int year, int month) {
+        return generateMonthlyReportExcelSync(userId, year, month);
+    }
+
+    /**
+     * Internal sync method for Excel generation
+     */
+    private byte[] generateMonthlyReportExcelSync(String userId, int year, int month) {
         List<Transaction> transactions = getMonthTransactions(userId, year, month);
         Map<String, Object> summary = generateMonthlyReport(userId, year, month);
         Map<String, Double> expensesByCategory = getExpenseByCategory(userId, year, month);
@@ -330,6 +356,23 @@ public class ReportService {
     // ─── PDF EXPORT ────────────────────────────────────────────────────────────
 
     /**
+     * Generate PDF report for monthly financial data (async version)
+     * @param userId the user ID
+     * @param year the year
+     * @param month the month (1-12)
+     * @return CompletableFuture with byte array containing PDF file data
+     */
+    @Async("reportExecutor")
+    public CompletableFuture<byte[]> generateMonthlyReportPdfAsync(String userId, int year, int month) {
+        try {
+            byte[] result = generateMonthlyReportPdfSync(userId, year, month);
+            return CompletableFuture.completedFuture(result);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    /**
      * Generate PDF report for monthly financial data
      * @param userId the user ID
      * @param year the year
@@ -337,6 +380,13 @@ public class ReportService {
      * @return byte array containing PDF file data
      */
     public byte[] generateMonthlyReportPdf(String userId, int year, int month) {
+        return generateMonthlyReportPdfSync(userId, year, month);
+    }
+
+    /**
+     * Internal sync method for PDF generation
+     */
+    private byte[] generateMonthlyReportPdfSync(String userId, int year, int month) {
         List<Transaction> transactions = getMonthTransactions(userId, year, month);
         Map<String, Object> summary = generateMonthlyReport(userId, year, month);
         Map<String, Double> expensesByCategory = getExpenseByCategory(userId, year, month);
