@@ -32,7 +32,8 @@ public class EnvConfig {
             Map<String, Object> envMap = new HashMap<>();
             
             // Add MongoDB configuration
-            envMap.put("MONGODB_URI", getMongoUri());
+            String mongoUri = getMongoUri();
+            envMap.put("MONGODB_URI", mongoUri);
             envMap.put("MONGODB_DATABASE", getMongoDatabase());
             envMap.put("SERVER_PORT", getServerPort());
             
@@ -41,14 +42,16 @@ public class EnvConfig {
             environment.getPropertySources().addFirst(propertySource);
             
             // Set system properties for Spring Boot to use
-            System.setProperty("MONGODB_URI", getMongoUri());
+            System.setProperty("MONGODB_URI", mongoUri);
             System.setProperty("MONGODB_DATABASE", getMongoDatabase());
             System.setProperty("SERVER_PORT", getServerPort());
             
             System.out.println("\n✅ Environment Configuration Loaded Successfully!");
-            System.out.println("📁 MongoDB URI: " + maskUri(getMongoUri()));
+            System.out.println("📁 MongoDB URI: " + maskUri(mongoUri));
             System.out.println("📁 Database: " + getMongoDatabase());
             System.out.println("📁 Server Port: " + getServerPort());
+            System.out.println("📁 Raw URI Length: " + (mongoUri != null ? mongoUri.length() : "null"));
+            System.out.println("📁 URI Starts with: " + (mongoUri != null && mongoUri.length() > 10 ? mongoUri.substring(0, 10) : "invalid"));
             System.out.println("========================================\n");
             
         } catch (Exception e) {
