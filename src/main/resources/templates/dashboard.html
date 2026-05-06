@@ -252,6 +252,7 @@
     
     <th:block layout:fragment="scripts">
         <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
             // Display notifications as toasts
             const notifications = /*[[${notifications}]]*/ [];
             notifications.forEach(msg => showInfoToast(msg, 'Notification'));
@@ -342,11 +343,12 @@
             }
             
             // Weekly Line Chart
+            const weekLabels = /*[[${weekLabels != null ? weekLabels : new java.util.ArrayList()}]]*/ ['Week 1','Week 2','Week 3','Week 4'];
             const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
             new Chart(weeklyCtx, {
                 type: 'line',
                 data: {
-                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    labels: weekLabels,
                     datasets: [
                         {
                             label: 'Income',
@@ -444,6 +446,7 @@
                     }
                 }
             });
+        }); // end DOMContentLoaded
         </script>
     </th:block>
 </body>
