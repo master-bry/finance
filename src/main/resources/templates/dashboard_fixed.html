@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <h3><i class="fas fa-filter"></i> Filter by Period</h3>
+            <form method="get" class="filter-form">
+                <div class="filter-controls">
+                    <select name="month" class="form-select">
+                        <option value="1" th:selected="${selectedMonth == 1}">January</option>
+                        <option value="2" th:selected="${selectedMonth == 2}">February</option>
+                        <option value="3" th:selected="${selectedMonth == 3}">March</option>
+                        <option value="4" th:selected="${selectedMonth == 4}">April</option>
+                        <option value="5" th:selected="${selectedMonth == 5}">May</option>
+                        <option value="6" th:selected="${selectedMonth == 6}">June</option>
+                        <option value="7" th:selected="${selectedMonth == 7}">July</option>
+                        <option value="8" th:selected="${selectedMonth == 8}">August</option>
+                        <option value="9" th:selected="${selectedMonth == 9}">September</option>
+                        <option value="10" th:selected="${selectedMonth == 10}">October</option>
+                        <option value="11" th:selected="${selectedMonth == 11}">November</option>
+                        <option value="12" th:selected="${selectedMonth == 12}">December</option>
+                    </select>
+                    <select name="year" class="form-select">
+                        <option value="2024" th:selected="${selectedYear == 2024}">2024</option>
+                        <option value="2025" th:selected="${selectedYear == 2025}">2025</option>
+                        <option value="2026" th:selected="${selectedYear == 2026}">2026</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary">Apply Filter</button>
+                    <a href="/dashboard" class="btn btn-secondary">Clear</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon income">
+                    <i class="fas fa-arrow-up"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Total Income</h3>
+                    <p th:text="${#numbers.formatDecimal(stats.totalIncome, 1, 0)} + ' TZS'">0 TZS</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon expense">
+                    <i class="fas fa-arrow-down"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Total Expenses</h3>
+                    <p th:text="${#numbers.formatDecimal(stats.totalExpense, 1, 0)} + ' TZS'">0 TZS</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon balance">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Total Balance</h3>
+                    <p th:text="${#numbers.formatDecimal(stats.balance, 1, 0)} + ' TZS'">0 TZS</p>
+                    <small th:if="${stats.previousMonthBalance != 0}" 
+                           th:text="'(Previous: ' + ${#numbers.formatDecimal(stats.previousMonthBalance, 1, 0)} + ' TZS)'">
+                    </small>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon savings">
+                    <i class="fas fa-piggy-bank"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Savings Rate</h3>
+                    <p th:text="${stats.savingsRate} + '%'">0%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <div class="chart-container">
+                <h4>Expenses by Category</h4>
+                <canvas id="expenseChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <h4>Income by Category</h4>
+                <canvas id="incomeChart"></canvas>
+            </div>
+            
+            <div class="chart-container full-width">
+                <h4>Weekly Trend</h4>
+                <canvas id="weeklyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="section-card">
+            <div class="section-header">
+                <h4><i class="fas fa-history"></i> Recent Transactions</h4>
+                <a href="/transactions" class="btn-sm btn-primary">View All →</a>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="t : ${recentTransactions}">
+                            <td th:text="${#temporals.format(t.date, 'dd MMM yyyy')}">Date</td>
+                            <td th:text="${t.description}">Description</td>
+                            <td><span class="category-badge" th:text="${t.category}">Category</span></td>
+                            <td th:class="${t.type == 'INCOME' ? 'positive' : 'negative'}" 
+                                th:text="${(t.type == 'INCOME' ? '+' : '-') + #numbers.formatDecimal(t.amount, 1, 0) + ' TZS'}">Amount</td>
+                        </tr>
+                        <tr th:if="${recentTransactions == null || recentTransactions.empty}">
+                            <td colspan="4">
+                                <div class="empty-state">
+                                    <i class="fas fa-receipt"></i>
+                                    <p>No transactions yet. <a href="/transactions/add" style="color: var(--primary-dark);">Add your first transaction!</a></p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <th:block layout:fragment="scripts">
+        <script th:inline="javascript">
+            // Display notifications as toasts
+            const notifications = /*[[${notifications}]]*/ [];
+            notifications.forEach(msg => showInfoToast(msg, 'Notification'));
+
+            // Expense Chart Data with null checks
+            const expenseCategories = /*[[${expenseCategories != null ? expenseCategories : new java.util.ArrayList()}]]*/ [];
+            const expenseAmounts = /*[[${expenseAmounts != null ? expenseAmounts : new java.util.ArrayList()}]]*/ [];
+            
+            // Income Chart Data with null checks
+            const incomeCategories = /*[[${incomeCategories != null ? incomeCategories : new java.util.ArrayList()}]]*/ [];
+            const incomeAmounts = /*[[${incomeAmounts != null ? incomeAmounts : new java.util.ArrayList()}]]*/ [];
+            
+            // Weekly Data with null checks
+            const weeklyIncome = /*[[${weeklyIncome != null ? weeklyIncome : new java.util.ArrayList()}]]*/ [0, 0, 0, 0];
+            const weeklyExpense = /*[[${weeklyExpense != null ? weeklyExpense : new java.util.ArrayList()}]]*/ [0, 0, 0, 0];
+            
+            // Summary Data with null checks
+            const totalIncome = /*[[${stats != null && stats.totalIncome != null ? stats.totalIncome : 0}]]*/ 0;
+            const totalExpense = /*[[${stats != null && stats.totalExpense != null ? stats.totalExpense : 0}]]*/ 0;
+            const balance = /*[[${stats != null && stats.balance != null ? stats.balance : 0}]]*/ 0;
+            
+            // Expense Pie Chart
+            if (expenseCategories.length > 0 && expenseAmounts.length > 0) {
+                const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+                new Chart(expenseCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: expenseCategories,
+                        datasets: [{
+                            data: expenseAmounts,
+                            backgroundColor: ['#EF4444', '#F59E0B', '#F7C85C', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#6B7280'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        let value = context.raw || 0;
+                                        let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        let percentage = ((value / total) * 100).toFixed(1);
+                                        return label + ': ' + value.toLocaleString() + ' TZS (' + percentage + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Income Doughnut Chart
+            if (incomeCategories.length > 0 && incomeAmounts.length > 0) {
+                const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+                new Chart(incomeCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: incomeCategories,
+                        datasets: [{
+                            data: incomeAmounts,
+                            backgroundColor: ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0', '#059669', '#047857'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        let value = context.raw || 0;
+                                        let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        let percentage = ((value / total) * 100).toFixed(1);
+                                        return label + ': ' + value.toLocaleString() + ' TZS (' + percentage + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Weekly Line Chart
+            const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+            new Chart(weeklyCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [{
+                        label: 'Income',
+                        data: weeklyIncome,
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Expenses',
+                        data: weeklyExpense,
+                        borderColor: '#EF4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw.toLocaleString() + ' TZS';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString() + ' TZS';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        </script>
+    </th:block>
+</body>
+</html>

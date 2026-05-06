@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Budget</title>
+</head>
+<body>
+    <div class="budget-container">
+        <!-- Budget Overview -->
+        <div class="section-card">
+            <div class="section-header">
+                <h4><i class="fas fa-wallet"></i> Budget Overview - <span th:text="${currentMonth}">May 2024</span></h4>
+                <div class="header-actions">
+                    <a href="/budget/edit" class="btn btn-primary">Edit Budget</a>
+                    <a href="/budget/history" class="btn btn-secondary">History</a>
+                </div>
+            </div>
+            
+            <div class="budget-summary">
+                <div class="summary-row">
+                    <div class="summary-item">
+                        <label>Total Income</label>
+                        <span class="amount income" th:text="${#numbers.formatDecimal(budget.totalIncome, 1, 0)} + ' TZS'">0 TZS</span>
+                    </div>
+                    <div class="summary-item">
+                        <label>Total Expenses</label>
+                        <span class="amount expense" th:text="${#numbers.formatDecimal(budget.totalExpense, 1, 0)} + ' TZS'">0 TZS</span>
+                    </div>
+                    <div class="summary-item">
+                        <label>Savings Target</label>
+                        <span class="amount savings" th:text="${#numbers.formatDecimal(budget.savingsTarget, 1, 0)} + ' TZS'">0 TZS</span>
+                    </div>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-item">
+                        <label>Actual Savings</label>
+                        <span class="amount" th:class="${budget.actualSavings >= 0 ? 'positive' : 'negative'}" 
+                               th:text="${#numbers.formatDecimal(budget.actualSavings, 1, 0)} + ' TZS'">0 TZS</span>
+                    </div>
+                    <div class="summary-item">
+                        <label>Budget Status</label>
+                        <span class="status-badge" th:class="${budget.status}" th:text="${budget.status}">On Track</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Breakdown -->
+        <div class="section-card">
+            <div class="section-header">
+                <h4><i class="fas fa-list"></i> Category Breakdown</h4>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Planned</th>
+                            <th>Actual</th>
+                            <th>Variance</th>
+                            <th>Status</th>
+                            <th>Progress</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="cat, stat : ${budget.categoryBudgets}">
+                            <td th:text="${cat.key}">Category</td>
+                            <td th:text="${#numbers.formatDecimal(cat.value.planned, 1, 0)} + ' TZS'">0 TZS</td>
+                            <td th:text="${#numbers.formatDecimal(cat.value.actual, 1, 0)} + ' TZS'">0 TZS</td>
+                            <td th:class="${cat.value.variance > 0 ? 'positive' : 'negative'}" 
+                                th:text="${cat.value.variance > 0 ? '+' : ''} + ${#numbers.formatDecimal(cat.value.variance, 1, 0)} + ' TZS'">0 TZS</td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:class="${cat.value.actual > cat.value.planned ? 'over-budget' : 'on-budget'}"
+                                      th:text="${cat.value.actual > cat.value.planned ? 'Over Budget' : 'On Budget'}">On Budget</span>
+                            </td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" 
+                                         th:style="'width: ' + ${cat.value.planned > 0 ? (cat.value.actual / cat.value.planned * 100) : 0} + '%;'" 
+                                         th:class="${cat.value.actual > cat.value.planned ? 'over-budget' : ''}"></div>
+                                </div>
+                                <small th:text="${cat.value.planned > 0 ? #numbers.formatDecimal(cat.value.actual / cat.value.planned * 100, 1, 0) + '%' : 'N/A'}">0%</small>
+                            </td>
+                        </tr>
+                        <tr th:if="${budget.categoryBudgets == null || budget.categoryBudgets.empty}">
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <i class="fas fa-chart-pie"></i>
+                                    <p>No categories set. <a href="/budget/edit" style="color: var(--primary-dark);">Create your budget</a></p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Budget Recommendations - Fixed with proper containsKey -->
+        <div class="section-card" th:if="${recommendations != null && recommendations.containsKey('recommendations')}">
+            <div class="section-header">
+                <h4><i class="fas fa-lightbulb"></i> Smart Recommendations</h4>
+                <small style="color: var(--gray-500);">Based on your last <span th:text="${recommendations.monthsAnalyzed}">3</span> months</small>
+            </div>
+            <div style="padding: 1rem;">
+                <div th:each="rec : ${recommendations.recommendations}" 
+                     style="padding: 0.75rem; margin-bottom: 0.5rem; background: var(--gray-50); border-left: 4px solid var(--primary-dark); border-radius: 4px;">
+                    <span th:text="${rec}" style="font-size: 0.9rem;"></span>
+                </div>
+                
+                <div th:if="${recommendations.avgIncome > 0}" style="margin-top: 1rem; padding: 1rem; background: var(--gray-100); border-radius: 8px;">
+                    <h6 style="margin-bottom: 0.5rem; color: var(--primary-dark);">📊 Your Spending Pattern</h6>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; font-size: 0.85rem;">
+                        <div>
+                            <strong>Avg Income:</strong><br>
+                            <span th:text="${#numbers.formatDecimal(recommendations.avgIncome, 1, 0)} + ' TZS'"></span>
+                        </div>
+                        <div>
+                            <strong>Avg Expenses:</strong><br>
+                            <span th:text="${#numbers.formatDecimal(recommendations.avgExpense, 1, 0)} + ' TZS'"></span>
+                        </div>
+                        <div>
+                            <strong>Avg Savings:</strong><br>
+                            <span th:text="${#numbers.formatDecimal(recommendations.avgSavings, 1, 0)} + ' TZS'"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Empty State -->
+        <div class="section-card" th:if="${budget == null || budget.categoryBudgets.isEmpty()}">
+            <div class="empty-state">
+                <i class="fas fa-wallet"></i>
+                <p>No budget set for this month.</p>
+                <p><a href="/budget/edit" style="color: var(--primary-dark); font-weight: 600;">Create your budget</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
