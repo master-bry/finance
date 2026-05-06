@@ -21,6 +21,27 @@
     <th:block layout:fragment="styles"></th:block>
 </head>
 <body>
+    <!-- Modern Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-container">
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+            </div>
+            <div class="loading-text">
+                <div class="loading-title">Processing your request</div>
+                <div class="loading-subtitle">Please wait, we're working on it...</div>
+            </div>
+            <div class="loading-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile Menu Button -->
     <button class="mobile-menu-btn" onclick="toggleSidebar()">
         <i class="fas fa-bars"></i>
@@ -243,7 +264,497 @@
     
     <!-- Performance optimization script -->
     <script>
-        // Optimize page loading performance
+        // Optimize page loading// Modern loading system
+        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                const titleEl = overlay.querySelector('.loading-title');
+                const subtitleEl = overlay.querySelector('.loading-subtitle');
+                const progressFill = overlay.querySelector('.progress-fill');
+                
+                if (titleEl) titleEl.textContent = title;
+                if (subtitleEl) subtitleEl.textContent = subtitle;
+                
+                overlay.classList.add('active');
+                
+                // Animate progress bar
+                if (progressFill) {
+                    progressFill.style.width = '0%';
+                    setTimeout(() => {
+                        progressFill.style.width = '70%';
+                    }, 500);
+                    setTimeout(() => {
+                        progressFill.style.width = '90%';
+                    }, 1500);
+                }
+            }
+        }
+        
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+        }
+        
+        function showSkeletonLoading() {
+            // Add skeleton loading to cards and tables
+            const cards = document.querySelectorAll('.section-card, .stat-card');
+            cards.forEach(card => {
+                card.classList.add('skeleton');
+            });
+        }
+        
+        function hideSkeletonLoading() {
+            // Remove skeleton loading
+            const skeletons = document.querySelectorAll('.skeleton');
+            skeletons.forEach(skeleton => {
+                skeleton.classList.remove('skeleton');
+            });
+        }
+        
+        // Modern loading system
+        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                const titleEl = overlay.querySelector('.loading-title');
+                const subtitleEl = overlay.querySelector('.loading-subtitle');
+                const progressFill = overlay.querySelector('.progress-fill');
+                
+                if (titleEl) titleEl.textContent = title;
+                if (subtitleEl) subtitleEl.textContent = subtitle;
+                
+                overlay.classList.add('active');
+                
+                // Animate progress bar
+                if (progressFill) {
+                    progressFill.style.width = '0%';
+                    setTimeout(() => {
+                        progressFill.style.width = '70%';
+                    }, 500);
+                    setTimeout(() => {
+                        progressFill.style.width = '90%';
+                    }, 1500);
+                }
+            }
+        }
+        
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+        }
+        
+        function showSkeletonLoading() {
+            // Add skeleton loading to cards and tables
+            const cards = document.querySelectorAll('.section-card, .stat-card');
+            cards.forEach(card => {
+                card.classList.add('skeleton');
+            });
+        }
+        
+        function hideSkeletonLoading() {
+            // Remove skeleton loading
+            const skeletons = document.querySelectorAll('.skeleton');
+            skeletons.forEach(skeleton => {
+                skeleton.classList.remove('skeleton');
+            });
+        }
+        
+        // Modern loading system
+        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                const titleEl = overlay.querySelector('.loading-title');
+                const subtitleEl = overlay.querySelector('.loading-subtitle');
+                const progressFill = overlay.querySelector('.progress-fill');
+                
+                if (titleEl) titleEl.textContent = title;
+                if (subtitleEl) subtitleEl.textContent = subtitle;
+                
+                overlay.classList.add('active');
+                
+                // Animate progress bar
+                if (progressFill) {
+                    progressFill.style.width = '0%';
+                    setTimeout(() => {
+                        progressFill.style.width = '70%';
+                    }, 500);
+                    setTimeout(() => {
+                        progressFill.style.width = '90%';
+                    }, 1500);
+                }
+            }
+        }
+        
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+        }
+        
+        function showSkeletonLoading() {
+            // Add skeleton loading to cards and tables
+            const cards = document.querySelectorAll('.section-card, .stat-card');
+            cards.forEach(card => {
+                card.classList.add('skeleton');
+            });
+        }
+        
+        function hideSkeletonLoading() {
+            // Remove skeleton loading
+            const skeletons = document.querySelectorAll('.skeleton');
+            skeletons.forEach(skeleton => {
+                skeleton.classList.remove('skeleton');
+            });
+        }
+        
+        // Modern loading system
+        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                const titleEl = overlay.querySelector('.loading-title');
+                const subtitleEl = overlay.querySelector('.loading-subtitle');
+                const progressFill = overlay.querySelector('.progress-fill');
+                
+                if (titleEl) titleEl.textContent = title;
+                if (subtitleEl) subtitleEl.textContent = subtitle;
+                
+                overlay.classList.add('active');
+                
+                // Animate progress bar
+                if (progressFill) {
+                    progressFill.style.width = '0%';
+                    setTimeout(() => {
+                        progressFill.style.width = '70%';
+                    }, 500);
+                    setTimeout(() => {
+                        progressFill.style.width = '90%';
+                    }, 1500);
+                }
+            }
+        }
+        
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+        }
+        
+        function showSkeletonLoading() {
+            // Add skeleton loading to cards and tables
+            const cards = document.querySelectorAll('.section-card, .stat-card');
+            cards.forEach(card => {
+                card.classList.add('skeleton');
+            });
+        }
+        
+        function hideSkeletonLoading() {
+            // Remove skeleton loading
+            const skeletons = document.querySelectorAll('.skeleton');
+            skeletons.forEach(skeleton => {
+                skeleton.classList.remove('skeleton');
+            });
+        }
+        
+        // Modern loading system
+        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                const titleEl = overlay.querySelector('.loading-title');
+                const subtitleEl = overlay.querySelector('.loading-subtitle');
+                const progressFill = overlay.querySelector('.progress-fill');
+                
+                if (titleEl) titleEl.textContent = title;
+                if (subtitleEl) subtitleEl.textContent = subtitle;
+                
+                overlay.classList.add('active');
+                
+                // Animate progress bar
+                if (progressFill) {
+                    progressFill.style.width = '0%';
+                    setTimeout(() => {
+                        progressFill.style.width = '70%';
+                    }, 500);
+                    setTimeout(() => {
+                        progressFill.style.width = '90%';
+                    }, 1500);
+                }
+            }
+        }
+        
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+        }
+        
+        function showSkeletonLoading() {
+            // Add skeleton loading to cards and tables
+            const cards = document.querySelectorAll('.section-card, .stat-card');
+            cards.forEach(card => {
+                card.classList.add('skeleton');
+            });
+        }
+        
+        function hideSkeletonLoading() {
+            // Remove skeleton loading
+            const skeletons = document.querySelectorAll('.skeleton');
+            skeletons.forEach(skeleton => {
+                skeleton.classList.remove('skeleton');
+            });
+        }
+        
+        // Modern loading system
+        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                const titleEl = overlay.querySelector('.loading-title');
+                const subtitleEl = overlay.querySelector('.loading-subtitle');
+                const progressFill = overlay.querySelector('.progress-fill');
+                
+                if (titleEl) titleEl.textContent = title;
+                if (subtitleEl) subtitleEl.textContent = subtitle;
+                
+                overlay.classList.add('active');
+                
+                // Animate progress bar
+                if (progressFill) {
+                    progressFill.style.width = '0%';
+                    setTimeout(() => {
+                        progressFill.style.width = '70%';
+                    }, 500);
+                    setTimeout(() => {
+                        progressFill.style.width = '90%';
+                    }, 1500);
+                }
+            }
+        }
+        
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+        }
+        
+        function showSkeletonLoading() {
+            // Add skeleton loading to cards and tables
+            const cards = document.querySelectorAll('.section-card, .stat-card');
+            cards.forEach(card => {
+                card.classList.add('skeleton');
+            });
+        }
+        
+        function hideSkeletonLoading() {
+            // Remove skeleton loading
+            const skeletons = document.querySelectorAll('.skeleton');
+            skeletons.forEach(skeleton => {
+                skeleton.classList.remove('skeleton');
+            });
+        }
+        
+        // Modern loading system
+        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                const titleEl = overlay.querySelector('.loading-title');
+                const subtitleEl = overlay.querySelector('.loading-subtitle');
+                const progressFill = overlay.querySelector('.progress-fill');
+                
+                if (titleEl) titleEl.textContent = title;
+                if (subtitleEl) subtitleEl.textContent = subtitle;
+                
+                overlay.classList.add('active');
+                
+                // Animate progress bar
+                if (progressFill) {
+                    progressFill.style.width = '0%';
+                    setTimeout(() => {
+                        progressFill.style.width = '70%';
+                    }, 500);
+                    setTimeout(() => {
+                        progressFill.style.width = '90%';
+                    }, 1500);
+                }
+            }
+        }
+        
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+        }
+        
+        function showSkeletonLoading() {
+            // Add skeleton loading to cards and tables
+            const cards = document.querySelectorAll('.section-card, .stat-card');
+            cards.forEach(card => {
+                card.classList.add('skeleton');
+            });
+        }
+        
+        function hideSkeletonLoading() {
+            // Remove skeleton loading
+            const skeletons = document.querySelectorAll('.skeleton');
+            skeletons.forEach(skeleton => {
+                skeleton.classList.remove('skeleton');
+            });
+        }
+        
+        // Modern loading system
+        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                const titleEl = overlay.querySelector('.loading-title');
+                const subtitleEl = overlay.querySelector('.loading-subtitle');
+                const progressFill = overlay.querySelector('.progress-fill');
+                
+                if (titleEl) titleEl.textContent = title;
+                if (subtitleEl) subtitleEl.textContent = subtitle;
+                
+                overlay.classList.add('active');
+                
+                // Animate progress bar
+                if (progressFill) {
+                    progressFill.style.width = '0%';
+                    setTimeout(() => {
+                        progressFill.style.width = '70%';
+                    }, 500);
+                    setTimeout(() => {
+                        progressFill.style.width = '90%';
+                    }, 1500);
+                }
+            }
+        }
+        
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+        }
+        
+        function showSkeletonLoading() {
+            // Add skeleton loading to cards and tables
+            const cards = document.querySelectorAll('.section-card, .stat-card');
+            cards.forEach(card => {
+                card.classList.add('skeleton');
+            });
+        }
+        
+        function hideSkeletonLoading() {
+            // Remove skeleton loading
+            const skeletons = document.querySelectorAll('.skeleton');
+            skeletons.forEach(skeleton => {
+                skeleton.classList.remove('skeleton');
+            });
+        }
+        
+        // Modern loading system
+        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                const titleEl = overlay.querySelector('.loading-title');
+                const subtitleEl = overlay.querySelector('.loading-subtitle');
+                const progressFill = overlay.querySelector('.progress-fill');
+                
+                if (titleEl) titleEl.textContent = title;
+                if (subtitleEl) subtitleEl.textContent = subtitle;
+                
+                overlay.classList.add('active');
+                
+                // Animate progress bar
+                if (progressFill) {
+                    progressFill.style.width = '0%';
+                    setTimeout(() => {
+                        progressFill.style.width = '70%';
+                    }, 500);
+                    setTimeout(() => {
+                        progressFill.style.width = '90%';
+                    }, 1500);
+                }
+            }
+        }
+        
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+        }
+        
+        function showSkeletonLoading() {
+            // Add skeleton loading to cards and tables
+            const cards = document.querySelectorAll('.section-card, .stat-card');
+            cards.forEach(card => {
+                card.classList.add('skeleton');
+            });
+        }
+        
+        function hideSkeletonLoading() {
+            // Remove skeleton loading
+            const skeletons = document.querySelectorAll('.skeleton');
+            skeletons.forEach(skeleton => {
+                skeleton.classList.remove('skeleton');
+            });
+        }
+        
+        // Modern loading system
+        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                const titleEl = overlay.querySelector('.loading-title');
+                const subtitleEl = overlay.querySelector('.loading-subtitle');
+                const progressFill = overlay.querySelector('.progress-fill');
+                
+                if (titleEl) titleEl.textContent = title;
+                if (subtitleEl) subtitleEl.textContent = subtitle;
+                
+                overlay.classList.add('active');
+                
+                // Animate progress bar
+                if (progressFill) {
+                    progressFill.style.width = '0%';
+                    setTimeout(() => {
+                        progressFill.style.width = '70%';
+                    }, 500);
+                    setTimeout(() => {
+                        progressFill.style.width = '90%';
+                    }, 1500);
+                }
+            }
+        }
+        
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+        }
+        
+        function showSkeletonLoading() {
+            // Add skeleton loading to cards and tables
+            const cards = document.querySelectorAll('.section-card, .stat-card');
+            cards.forEach(card => {
+                card.classList.add('skeleton');
+            });
+        }
+        
+        function hideSkeletonLoading() {
+            // Remove skeleton loading
+            const skeletons = document.querySelectorAll('.skeleton');
+            skeletons.forEach(skeleton => {
+                skeleton.classList.remove('skeleton');
+            });
+        }
+        
+        // Performance optimization script
         document.addEventListener('DOMContentLoaded', function() {
             // Preload critical resources
             const criticalLinks = document.querySelectorAll('link[rel="preload"]');
