@@ -257,21 +257,21 @@
             notifications.forEach(msg => showInfoToast(msg, 'Notification'));
 
             // Expense Chart Data
-            const expenseCategories = /*[[${expenseCategories}]]*/ [];
-            const expenseAmounts = /*[[${expenseAmounts}]]*/ [];
+            const expenseCategories = /*[[${expenseCategories != null ? expenseCategories : new java.util.ArrayList()}]]*/ [];
+            const expenseAmounts = /*[[${expenseAmounts != null ? expenseAmounts : new java.util.ArrayList()}]]*/ [];
             
             // Income Chart Data
-            const incomeCategories = /*[[${incomeCategories}]]*/ [];
-            const incomeAmounts = /*[[${incomeAmounts}]]*/ [];
+            const incomeCategories = /*[[${incomeCategories != null ? incomeCategories : new java.util.ArrayList()}]]*/ [];
+            const incomeAmounts = /*[[${incomeAmounts != null ? incomeAmounts : new java.util.ArrayList()}]]*/ [];
             
             // Weekly Data
-            const weeklyIncome = /*[[${weeklyIncome}]]*/ [0, 0, 0, 0];
-            const weeklyExpense = /*[[${weeklyExpense}]]*/ [0, 0, 0, 0];
+            const weeklyIncome = /*[[${weeklyIncome != null ? weeklyIncome : new java.util.ArrayList()}]]*/ [0, 0, 0, 0];
+            const weeklyExpense = /*[[${weeklyExpense != null ? weeklyExpense : new java.util.ArrayList()}]]*/ [0, 0, 0, 0];
             
             // Summary Data
-            const totalIncome = /*[[${stats.totalIncome}]]*/ 0;
-            const totalExpense = /*[[${stats.totalExpense}]]*/ 0;
-            const balance = /*[[${stats.balance}]]*/ 0;
+            const totalIncome = /*[[${stats != null && stats.totalIncome != null ? stats.totalIncome : 0}]]*/ 0;
+            const totalExpense = /*[[${stats != null && stats.totalExpense != null ? stats.totalExpense : 0}]]*/ 0;
+            const balance = /*[[${stats != null && stats.balance != null ? stats.balance : 0}]]*/ 0;
             
             // Expense Pie Chart
             if (expenseCategories.length > 0 && expenseAmounts.length > 0) {
