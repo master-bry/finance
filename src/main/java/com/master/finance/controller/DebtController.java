@@ -41,15 +41,15 @@ public class DebtController {
     @Autowired
     private DailyEntryService dailyEntryService;
 
-    // ─── HELPER METHOD TO GET USER ID ─────────────────────────────────────────
-    
+    // ─── HELPER ───────────────────────────────────────────────────────────────
+
     private String getUserId(Authentication authentication) {
         return userService.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Authenticated user not found"))
                 .getId();
     }
 
-    // ─── LIST WITH PAGINATION AND FILTERS ─────────────────────────────────────
+    // ─── LIST WITH PAGINATION, FILTERS AND GROUPED VIEW ──────────────────────
 
     @GetMapping
     public String listDebts(Authentication authentication,
@@ -59,39 +59,41 @@ public class DebtController {
                             @RequestParam(required = false) String type,
                             @RequestParam(required = false) String status,
                             @RequestParam(defaultValue = "false") boolean grouped) {
+
         String userId = getUserId(authentication);
 
-        if (grouped) {
-            // Show grouped view
-            List<DebtGroupDTO> groupedDebts = debtService.getGroupedDebtsByPerson(userId, type);
-            model.addAttribute("groupedDebts", groupedDebts);
-            model.addAttribute("groupedView", true);
-        } else {
-            // Show paginated view
-            Pageable pageable = PageRequest.of(page, size, Sort.by("dateGiven").descending());
-            Page<Debt> debtPage = debtService.getUserDebtsFiltered(userId, type, status, pageable);
-            model.addAttribute("debts", debtPage.getContent());
-            model.addAttribute("currentPage", page);
-            model.addAttribute("totalPages", debtPage.getTotalPages());
-            model.addAttribute("totalItems", debtPage.getTotalElements());
-            model.addAttribute("pageSize", size);
-            model.addAttribute("groupedView", false);
-        }
-
-        // Summary statistics
+        // ── Common summary stats ──
         model.addAttribute("totalOwedToMe", debtService.getTotalOwedToMe(userId));
         model.addAttribute("totalIOwe", debtService.getTotalIOwe(userId));
         model.addAttribute("netPosition", debtService.getNetPosition(userId));
-
-        // Keep filter values in the model for form persistence
         model.addAttribute("filterType", type);
         model.addAttribute("filterStatus", status);
-        model.addAttribute("showGrouped", grouped);
+        model.addAttribute("pageSize", size);
+        model.addAttribute("groupedView", grouped);
 
-        // Layout attributes
+        // Layout nav (must be string "debts" for active nav highlight)
         model.addAttribute("currentPage", "debts");
         model.addAttribute("pageSubtitle", "Manage your debts and lending");
         model.addAttribute("title", "Debts");
+
+        if (grouped) {
+            // ── Grouped view: no pagination ──
+            List<DebtGroupDTO> groupedDebts = debtService.getGroupedDebtsByPerson(userId, type);
+            model.addAttribute("groupedDebts", groupedDebts);
+            model.addAttribute("totalItems", groupedDebts.stream()
+                    .mapToInt(DebtGroupDTO::getDebtCount).sum());
+            // Dummy pagination values so template th:if checks don't error
+            model.addAttribute("paginationPage", 0);
+            model.addAttribute("totalPages", 1);
+        } else {
+            // ── List view: paginated ──
+            Pageable pageable = PageRequest.of(page, size, Sort.by("dateGiven").descending());
+            Page<Debt> debtPage = debtService.getUserDebtsFiltered(userId, type, status, pageable);
+            model.addAttribute("debts", debtPage.getContent());
+            model.addAttribute("paginationPage", page);
+            model.addAttribute("totalPages", debtPage.getTotalPages());
+            model.addAttribute("totalItems", debtPage.getTotalElements());
+        }
 
         return "debts/index";
     }
@@ -105,6 +107,7 @@ public class DebtController {
         }
         model.addAttribute("currentPage", "debts");
         model.addAttribute("pageSubtitle", "Add a new debt record");
+        model.addAttribute("title", "Add Debt");
         return "debts/add";
     }
 
@@ -112,7 +115,6 @@ public class DebtController {
     public String addDebt(@ModelAttribute Debt debt,
                           Authentication authentication,
                           RedirectAttributes redirectAttributes) {
-        // Validation
         if (debt.getPersonName() == null || debt.getPersonName().isBlank()) {
             redirectAttributes.addFlashAttribute("error", "Person name is required.");
             redirectAttributes.addFlashAttribute("debt", debt);
@@ -159,6 +161,7 @@ public class DebtController {
         model.addAttribute("debt", debtOpt.get());
         model.addAttribute("currentPage", "debts");
         model.addAttribute("pageSubtitle", "Edit debt record");
+        model.addAttribute("title", "Edit Debt");
         return "debts/edit";
     }
 
@@ -190,36 +193,6 @@ public class DebtController {
         redirectAttributes.addFlashAttribute("success", "Debt updated successfully!");
         return "redirect:/debts";
     }
-  //recept
-    @GetMapping("/view-receipt/{debtId}/{paymentIndex}")
-public String viewReceipt(@PathVariable String debtId,
-                          @PathVariable int paymentIndex,
-                          Authentication authentication,
-                          Model model,
-                          RedirectAttributes redirectAttributes) {
-    String userId = getUserId(authentication);
-    Optional<Debt> debtOpt = debtService.getDebt(debtId);
-    
-    if (debtOpt.isEmpty() || !userId.equals(debtOpt.get().getUserId())) {
-        redirectAttributes.addFlashAttribute("error", "Debt not found.");
-        return "redirect:/debts";
-    }
-    
-    Debt debt = debtOpt.get();
-    
-    if (paymentIndex >= 0 && paymentIndex < debt.getPaymentHistory().size()) {
-        model.addAttribute("debt", debt);
-        model.addAttribute("latestPayment", debt.getPaymentHistory().get(paymentIndex));
-        model.addAttribute("currentDate", debt.getPaymentHistory().get(paymentIndex).getPaymentDate()
-                .format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm")));
-        model.addAttribute("receiptNo", "RCP-" + debt.getId().substring(0, 8) + "-" + (paymentIndex + 1));
-        model.addAttribute("currentPage", "debts");
-        return "debts/receipt";
-    }
-    
-    redirectAttributes.addFlashAttribute("error", "Payment not found.");
-    return "redirect:/debts";
-}
 
     // ─── DELETE ──────────────────────────────────────────────────────────────
 
@@ -262,6 +235,7 @@ public String viewReceipt(@PathVariable String debtId,
         model.addAttribute("debt", debtOpt.get());
         model.addAttribute("currentPage", "debts");
         model.addAttribute("pageSubtitle", "Record a payment");
+        model.addAttribute("title", "Make Payment");
         return "debts/payment";
     }
 
@@ -280,16 +254,16 @@ public String viewReceipt(@PathVariable String debtId,
         }
 
         Debt debt = debtOpt.get();
-        boolean isFullyPaid = (debt.getRemainingAmount() - amount) <= 0;
 
         try {
-            // 1. Record the payment in DebtService
+            // 1. Record the payment
             debtService.makePayment(id, amount, notes);
 
-            // 2. Create a corresponding Transaction
+            // 2. Create corresponding Transaction
             Transaction tx = new Transaction();
             tx.setUserId(debt.getUserId());
-            tx.setDescription("Debt Payment: " + debt.getPersonName() + (notes.isEmpty() ? "" : " - " + notes));
+            tx.setDescription("Debt Payment: " + debt.getPersonName()
+                    + (notes.isEmpty() ? "" : " - " + notes));
             tx.setAmount(amount);
             tx.setType("I_OWE".equals(debt.getType()) ? "EXPENSE" : "INCOME");
             tx.setCategory("Debt");
@@ -297,28 +271,27 @@ public String viewReceipt(@PathVariable String debtId,
             tx.setDeleted(false);
             transactionService.saveTransaction(tx);
 
-            // 3. Update today's DailyEntry and recalculate balances
+            // 3. Recalculate daily balances
             dailyEntryService.getOrCreateTodayEntry(debt.getUserId());
             dailyEntryService.recalculateBalancesFromDate(debt.getUserId(), LocalDateTime.now());
 
-            // 4. Generate receipt after payment
-            Map<String, Object> receiptData = generateReceiptData(debt, amount, notes, isFullyPaid);
-            
-            redirectAttributes.addFlashAttribute("showReceipt", true);
-            redirectAttributes.addFlashAttribute("receiptData", receiptData);
-            redirectAttributes.addFlashAttribute("success", "Payment recorded successfully!");
-            
-            // Redirect to receipt page instead of debts list
+            // 4. Redirect to receipt page
             return "redirect:/debts/receipt/" + id;
-            
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/debts/make-payment/" + id;
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Payment failed: " + e.getMessage());
             return "redirect:/debts";
         }
     }
-    
-    // ─── RECEIPT GENERATION ──────────────────────────────────────────────────
-    
+
+    // ─── RECEIPT ─────────────────────────────────────────────────────────────
+
+    /**
+     * Shows the latest payment receipt for a debt.
+     */
     @GetMapping("/receipt/{debtId}")
     public String showReceipt(@PathVariable String debtId,
                               Authentication authentication,
@@ -326,40 +299,68 @@ public String viewReceipt(@PathVariable String debtId,
                               RedirectAttributes redirectAttributes) {
         String userId = getUserId(authentication);
         Optional<Debt> debtOpt = debtService.getDebt(debtId);
-        
+
         if (debtOpt.isEmpty() || !userId.equals(debtOpt.get().getUserId())) {
             redirectAttributes.addFlashAttribute("error", "Debt not found.");
             return "redirect:/debts";
         }
-        
+
         Debt debt = debtOpt.get();
-        
-        // Get the latest payment
         Debt.PaymentRecord latestPayment = null;
+        int paymentIndex = 0;
+
         if (debt.getPaymentHistory() != null && !debt.getPaymentHistory().isEmpty()) {
-            latestPayment = debt.getPaymentHistory().get(debt.getPaymentHistory().size() - 1);
+            paymentIndex = debt.getPaymentHistory().size() - 1;
+            latestPayment = debt.getPaymentHistory().get(paymentIndex);
         }
-        
+
         model.addAttribute("debt", debt);
         model.addAttribute("latestPayment", latestPayment);
-        model.addAttribute("currentDate", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm")));
-        model.addAttribute("receiptNo", "RCP-" + System.currentTimeMillis());
+        model.addAttribute("currentDate", LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm")));
+        model.addAttribute("receiptNo",
+                "RCP-" + debt.getId().substring(0, 8).toUpperCase() + "-" + (paymentIndex + 1));
         model.addAttribute("currentPage", "debts");
-        
+        model.addAttribute("title", "Payment Receipt");
+
         return "debts/receipt";
     }
-    
-    private Map<String, Object> generateReceiptData(Debt debt, Double amount, String notes, boolean isFullyPaid) {
-        Map<String, Object> receiptData = new HashMap<>();
-        receiptData.put("personName", debt.getPersonName());
-        receiptData.put("amountPaid", amount);
-        receiptData.put("remainingBalance", debt.getRemainingAmount() - amount);
-        receiptData.put("fullyPaid", isFullyPaid);
-        receiptData.put("type", debt.getType());
-        receiptData.put("notes", notes);
-        receiptData.put("date", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm")));
-        receiptData.put("receiptNo", "RCP-" + System.currentTimeMillis());
-        receiptData.put("phoneNumber", debt.getPhoneNumber());
-        return receiptData;
+
+    /**
+     * Shows a specific historical payment receipt by index.
+     */
+    @GetMapping("/view-receipt/{debtId}/{paymentIndex}")
+    public String viewReceiptByIndex(@PathVariable String debtId,
+                                     @PathVariable int paymentIndex,
+                                     Authentication authentication,
+                                     Model model,
+                                     RedirectAttributes redirectAttributes) {
+        String userId = getUserId(authentication);
+        Optional<Debt> debtOpt = debtService.getDebt(debtId);
+
+        if (debtOpt.isEmpty() || !userId.equals(debtOpt.get().getUserId())) {
+            redirectAttributes.addFlashAttribute("error", "Debt not found.");
+            return "redirect:/debts";
+        }
+
+        Debt debt = debtOpt.get();
+
+        if (paymentIndex < 0 || paymentIndex >= debt.getPaymentHistory().size()) {
+            redirectAttributes.addFlashAttribute("error", "Payment record not found.");
+            return "redirect:/debts";
+        }
+
+        Debt.PaymentRecord payment = debt.getPaymentHistory().get(paymentIndex);
+
+        model.addAttribute("debt", debt);
+        model.addAttribute("latestPayment", payment);
+        model.addAttribute("currentDate", payment.getPaymentDate()
+                .format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm")));
+        model.addAttribute("receiptNo",
+                "RCP-" + debt.getId().substring(0, 8).toUpperCase() + "-" + (paymentIndex + 1));
+        model.addAttribute("currentPage", "debts");
+        model.addAttribute("title", "Payment Receipt");
+
+        return "debts/receipt";
     }
 }
