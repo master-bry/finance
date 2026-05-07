@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Payment Receipt</title>
+    
+    <th:block layout:fragment="styles">
+        <style>
+            @media print {
+                .no-print, .sidebar, .navbar, .toolbar, .view-toggle, .summary-grid, .print-actions {
+                    display: none !important;
+                }
+                .receipt-container {
+                    margin: 0;
+                    padding: 0;
+                    box-shadow: none;
+                }
+                .receipt-card {
+                    box-shadow: none;
+                    border: 1px solid #ddd;
+                }
+            }
+            
+            .receipt-container {
+                max-width: 500px;
+                margin: 0 auto;
+            }
+            .receipt-card {
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+                overflow: hidden;
+            }
+            .receipt-header {
+                background: linear-gradient(135deg, #1e3a5f 0%, #0f2b44 100%);
+                color: white;
+                padding: 1.5rem;
+                text-align: center;
+            }
+            .receipt-header i {
+                font-size: 3rem;
+                margin-bottom: 0.5rem;
+            }
+            .receipt-body {
+                padding: 1.5rem;
+            }
+            .receipt-row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 1rem;
+                padding: 0.5rem 0;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            .receipt-label {
+                font-weight: 600;
+                color: #6b7280;
+            }
+            .receipt-value {
+                color: #1f2937;
+                font-weight: 500;
+            }
+            .amount-large {
+                font-size: 1.5rem;
+                font-weight: bold;
+                color: #1e3a5f;
+            }
+            .status-badge {
+                display: inline-block;
+                padding: 0.25rem 0.75rem;
+                border-radius: 20px;
+                font-size: 0.875rem;
+                font-weight: 600;
+            }
+            .status-settled {
+                background: #d1fae5;
+                color: #065f46;
+            }
+            .status-partial {
+                background: #fed7aa;
+                color: #92400e;
+            }
+            .success-message {
+                background: #f0fdf4;
+                border-left: 4px solid #22c55e;
+                padding: 1rem;
+                margin-top: 1rem;
+                border-radius: 8px;
+            }
+            .print-actions {
+                display: flex;
+                gap: 1rem;
+                justify-content: center;
+                margin-top: 1.5rem;
+            }
+            .btn-print, .btn-download {
+                padding: 0.75rem 1.5rem;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 1rem;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            .btn-print {
+                background: #1e3a5f;
+                color: white;
+            }
+            .btn-download {
+                background: #22c55e;
+                color: white;
+            }
+            .btn-print:hover, .btn-download:hover {
+                opacity: 0.9;
+            }
+            .footer-note {
+                text-align: center;
+                margin-top: 1.5rem;
+                padding-top: 1rem;
+                border-top: 1px dashed #e5e7eb;
+                font-size: 0.75rem;
+                color: #9ca3af;
+            }
+            .qr-placeholder {
+                text-align: center;
+                margin-top: 1rem;
+                font-size: 0.7rem;
+                color: #9ca3af;
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="receipt-container">
+            <div class="receipt-card">
+                <div class="receipt-header">
+                    <i class="fas fa-receipt"></i>
+                    <h2>PAYMENT RECEIPT</h2>
+                    <p th:text="${receiptNo}"></p>
+                </div>
+                
+                <div class="receipt-body">
+                    <div class="receipt-row">
+                        <span class="receipt-label">Receipt No:</span>
+                        <span class="receipt-value" th:text="${receiptNo}"></span>
+                    </div>
+                    
+                    <div class="receipt-row">
+                        <span class="receipt-label">Date:</span>
+                        <span class="receipt-value" th:text="${currentDate}"></span>
+                    </div>
+                    
+                    <div class="receipt-row">
+                        <span class="receipt-label">Transaction ID:</span>
+                        <span class="receipt-value" th:text="'TXN-' + ${#strings.substring(debt.id, 0, 8)}"></span>
+                    </div>
+                    
+                    <div class="receipt-row">
+                        <span class="receipt-label">Customer Name:</span>
+                        <span class="receipt-value" th:text="${debt.personName}"></span>
+                    </div>
+                    
+                    <div class="receipt-row">
+                        <span class="receipt-label">Phone Number:</span>
+                        <span class="receipt-value" th:text="${debt.phoneNumber != null ? debt.phoneNumber : 'N/A'}"></span>
+                    </div>
+                    
+                    <div class="receipt-row">
+                        <span class="receipt-label">Payment Type:</span>
+                        <span class="receipt-value" th:text="${debt.type == 'OWED_TO_ME' ? 'Payment Received' : 'Payment Made'}"></span>
+                    </div>
+                    
+                    <div class="receipt-row">
+                        <span class="receipt-label">Amount Paid:</span>
+                        <span class="receipt-value amount-large" th:text="'TZS ' + ${#numbers.formatDecimal(latestPayment != null ? latestPayment.amountPaid : 0, 1, 0)}"></span>
+                    </div>
+                    
+                    <div class="receipt-row">
+                        <span class="receipt-label">Original Amount:</span>
+                        <span class="receipt-value" th:text="'TZS ' + ${#numbers.formatDecimal(debt.amount, 1, 0)}"></span>
+                    </div>
+                    
+                    <div class="receipt-row">
+                        <span class="receipt-label">Remaining Balance:</span>
+                        <span class="receipt-value" th:text="'TZS ' + ${#numbers.formatDecimal(debt.remainingAmount, 1, 0)}"></span>
+                    </div>
+                    
+                    <div class="receipt-row">
+                        <span class="receipt-label">Status:</span>
+                        <span class="receipt-value">
+                            <span th:if="${debt.status == 'SETTLED'}" class="status-badge status-settled">
+                                <i class="fas fa-check-circle"></i> FULLY SETTLED
+                            </span>
+                            <span th:if="${debt.status == 'PARTIAL'}" class="status-badge status-partial">
+                                <i class="fas fa-chart-line"></i> PARTIAL PAYMENT
+                            </span>
+                            <span th:if="${debt.status == 'PENDING'}" class="status-badge status-partial">
+                                <i class="fas fa-clock"></i> PENDING
+                            </span>
+                        </span>
+                    </div>
+                    
+                    <div th:if="${latestPayment != null && latestPayment.notes != null && !latestPayment.notes.isEmpty()}" class="receipt-row">
+                        <span class="receipt-label">Notes:</span>
+                        <span class="receipt-value" th:text="${latestPayment.notes}"></span>
+                    </div>
+                    
+                    <div th:if="${debt.status == 'SETTLED'}" class="success-message">
+                        <i class="fas fa-check-circle" style="color: #22c55e; font-size: 1.2rem;"></i>
+                        <strong style="margin-left: 0.5rem;">Congratulations! 🎉</strong>
+                        <p style="margin-top: 0.5rem; margin-bottom: 0;">This debt has been fully settled. Thank you for your payment!</p>
+                    </div>
+                    
+                    <div th:unless="${debt.status == 'SETTLED'}" class="success-message" style="background: #fffbeb; border-left-color: #f59e0b;">
+                        <i class="fas fa-info-circle" style="color: #f59e0b; font-size: 1.2rem;"></i>
+                        <strong style="margin-left: 0.5rem;">Payment Recorded ✓</strong>
+                        <p style="margin-top: 0.5rem; margin-bottom: 0;">Remaining balance: <strong th:text="'TZS ' + ${#numbers.formatDecimal(debt.remainingAmount, 1, 0)}"></strong></p>
+                    </div>
+                    
+                    <div class="qr-placeholder">
+                        <i class="fas fa-qrcode" style="font-size: 2rem; color: #9ca3af;"></i>
+                        <p>Scan for verification</p>
+                    </div>
+                    
+                    <div class="footer-note">
+                        <p><i class="fas fa-envelope"></i> This is a computer generated receipt</p>
+                        <p>Thank you for your business!</p>
+                        <p style="font-size: 0.7rem;">Valid without signature</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="print-actions no-print">
+            <button onclick="window.print()" class="btn-print">
+                <i class="fas fa-print"></i> Print Receipt
+            </button>
+            <button onclick="downloadAsPDF()" class="btn-download">
+                <i class="fas fa-download"></i> Download PDF
+            </button>
+            <a href="/debts" class="btn-secondary" style="padding: 0.75rem 1.5rem; text-decoration: none;">
+                <i class="fas fa-arrow-left"></i> Back to Debts
+            </a>
+        </div>
+    </div>
+    
+    <th:block layout:fragment="scripts">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+        <script>
+            function downloadAsPDF() {
+                const element = document.querySelector('.receipt-container');
+                const opt = {
+                    margin: [0.5, 0.5, 0.5, 0.5],
+                    filename: 'receipt_${receiptNo}.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, letterRendering: true },
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                };
+                html2pdf().set(opt).from(element).save();
+            }
+        </script>
+    </th:block>
+</body>
+</html>

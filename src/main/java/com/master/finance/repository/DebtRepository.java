@@ -26,12 +26,11 @@ public interface DebtRepository extends MongoRepository<Debt, String> {
     List<Debt> findActiveDebtsByUserIdAndTypeAndDeletedFalse(String userId, String type);
 
     // ========== PAGINATED QUERIES ==========
-    // All debts for a user (paginated)
     Page<Debt> findByUserIdAndDeletedFalse(String userId, Pageable pageable);
-
-    // Filter by type (paginated)
     Page<Debt> findByUserIdAndTypeAndDeletedFalse(String userId, String type, Pageable pageable);
-
-    // Filter by status (paginated)
     Page<Debt> findByUserIdAndStatusAndDeletedFalse(String userId, String status, Pageable pageable);
+    
+    // ========== GROUP BY PERSON NAME ==========
+    @Query("{ 'userId': ?0, 'deleted': false }")
+    List<Debt> findAllDebtsGroupedByPerson(String userId);
 }

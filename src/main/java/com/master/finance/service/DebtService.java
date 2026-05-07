@@ -2,15 +2,16 @@ package com.master.finance.service;
 
 import com.master.finance.model.Debt;
 import com.master.finance.repository.DebtRepository;
+import com.master.finance.dto.DebtGroupDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DebtService {
@@ -50,10 +51,6 @@ public class DebtService {
         return debtRepository.findByUserIdAndStatusAndDeletedFalse(userId, status, pageable);
     }
 
-    /**
-     * Combined filter: if type is provided, filter by type; else if status provided, filter by status;
-     * otherwise return all.
-     */
     public Page<Debt> getUserDebtsFiltered(String userId, String type, String status, Pageable pageable) {
         if (type != null && !type.isEmpty()) {
             return getUserDebtsByType(userId, type, pageable);
@@ -62,6 +59,58 @@ public class DebtService {
         } else {
             return getUserDebtsPaged(userId, pageable);
         }
+    }
+
+    // ─── GROUPED DEBTS BY PERSON NAME ─────────────────────────────────────────
+    
+    public List<DebtGroupDTO> getGroupedDebtsByPerson(String userId, String typeFilter) {
+        List<Debt> debts = getUserDebts(userId);
+        
+        // Apply type filter if specified
+        if (typeFilter != null && !typeFilter.isEmpty()) {
+            debts = debts.stream()
+                    .filter(d -> d.getType().equals(typeFilter))
+                    .collect(Collectors.toList());
+        }
+        
+        // Group by person name
+        Map<String, List<Debt>> groupedByPerson = debts.stream()
+                .collect(Collectors.groupingBy(Debt::getPersonName));
+        
+        // Convert to DTOs
+        return groupedByPerson.entrySet().stream()
+                .map(entry -> {
+                    String personName = entry.getKey();
+                    List<Debt> personDebts = entry.getValue();
+                    
+                    BigDecimal totalAmount = personDebts.stream()
+                            .map(d -> BigDecimal.valueOf(d.getAmount()))
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    
+                    BigDecimal totalRemaining = personDebts.stream()
+                            .map(d -> BigDecimal.valueOf(d.getRemainingAmount()))
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    
+                    String phoneNumber = personDebts.stream()
+                            .findFirst()
+                            .map(Debt::getPhoneNumber)
+                            .orElse(null);
+                    
+                    String overallStatus = determineOverallStatus(totalRemaining);
+                    String type = personDebts.stream().findFirst().map(Debt::getType).orElse("UNKNOWN");
+                    
+                    return new DebtGroupDTO(personName, phoneNumber, totalAmount, 
+                                           totalRemaining, overallStatus, personDebts, type);
+                })
+                .sorted((a, b) -> b.getTotalRemaining().compareTo(a.getTotalRemaining()))
+                .collect(Collectors.toList());
+    }
+    
+    private String determineOverallStatus(BigDecimal totalRemaining) {
+        if (totalRemaining.compareTo(BigDecimal.ZERO) == 0) {
+            return "SETTLED";
+        }
+        return "ACTIVE";
     }
 
     // ─── CREATE ───────────────────────────────────────────────────────────────

@@ -51,6 +51,162 @@
                 border-radius: 6px;
                 border: 1px solid var(--gray-300);
             }
+            
+            /* Grouped view specific styles */
+            .group-card {
+                background: var(--white);
+                border-radius: 12px;
+                margin-bottom: 1.5rem;
+                overflow: hidden;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+            .group-header {
+                background: var(--gray-50);
+                padding: 1rem 1.25rem;
+                border-bottom: 2px solid var(--gray-200);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+            .group-header h3 {
+                margin: 0;
+                color: var(--primary-dark);
+                font-size: 1.1rem;
+            }
+            .group-header h3 i {
+                margin-right: 0.5rem;
+            }
+            .debt-count {
+                font-size: 0.8rem;
+                color: var(--gray-500);
+                margin-top: 0.25rem;
+            }
+            .group-totals {
+                text-align: right;
+            }
+            .group-totals p {
+                margin: 0.25rem 0;
+                font-size: 0.9rem;
+            }
+            .badge-success {
+                display: inline-block;
+                padding: 0.2rem 0.6rem;
+                background: #d1fae5;
+                color: #065f46;
+                border-radius: 20px;
+                font-size: 0.7rem;
+                font-weight: 600;
+            }
+            .badge-warning {
+                display: inline-block;
+                padding: 0.2rem 0.6rem;
+                background: #fed7aa;
+                color: #92400e;
+                border-radius: 20px;
+                font-size: 0.7rem;
+                font-weight: 600;
+            }
+            .group-debts {
+                padding: 1rem;
+                overflow-x: auto;
+            }
+            .group-debts table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .group-debts th {
+                text-align: left;
+                padding: 0.5rem;
+                background: var(--gray-50);
+                font-weight: 600;
+                color: var(--gray-600);
+                font-size: 0.8rem;
+            }
+            .group-debts td {
+                padding: 0.5rem;
+                border-bottom: 1px solid var(--gray-200);
+                font-size: 0.85rem;
+            }
+            .btn-xs {
+                padding: 0.2rem 0.5rem;
+                font-size: 0.7rem;
+                border-radius: 4px;
+                text-decoration: none;
+                display: inline-block;
+                margin: 0 0.2rem;
+            }
+            .btn-payment {
+                background: #22c55e;
+                color: white;
+            }
+            .btn-payment:hover {
+                background: #16a34a;
+            }
+            .btn-edit-group {
+                background: var(--primary);
+                color: white;
+            }
+            .btn-edit-group:hover {
+                background: var(--primary-dark);
+            }
+            .btn-delete-group {
+                background: #ef4444;
+                color: white;
+                border: none;
+                cursor: pointer;
+            }
+            .btn-delete-group:hover {
+                background: #dc2626;
+            }
+            .view-toggle {
+                display: flex;
+                gap: 0.5rem;
+                margin-bottom: 1rem;
+                align-items: center;
+            }
+            .view-toggle .btn-toggle {
+                padding: 0.5rem 1rem;
+                text-decoration: none;
+                border-radius: 8px;
+                background: var(--gray-100);
+                color: var(--gray-700);
+            }
+            .view-toggle .btn-toggle.active {
+                background: var(--primary-dark);
+                color: white;
+            }
+            .view-toggle .btn-toggle:hover:not(.active) {
+                background: var(--gray-200);
+            }
+            
+            /* Receipt notification */
+            .receipt-notification {
+                background: #f0fdf4;
+                border: 1px solid #22c55e;
+                border-radius: 8px;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+            .receipt-notification .btn-receipt {
+                background: #1e3a5f;
+                color: white;
+                padding: 0.5rem 1rem;
+                text-decoration: none;
+                border-radius: 6px;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            .receipt-notification .btn-receipt:hover {
+                background: #0f2b44;
+            }
         </style>
     </th:block>
 </head>
@@ -77,10 +233,38 @@
             </div>
         </div>
 
+        <!-- Receipt Notification (shows after payment) -->
+        <div th:if="${showReceipt}" class="receipt-notification">
+            <div>
+                <i class="fas fa-check-circle" style="color: #22c55e;"></i>
+                <span th:text="${success}">Payment recorded successfully!</span>
+            </div>
+            <div>
+                <a th:if="${lastPaymentDebtId != null}" 
+                   th:href="@{/debts/receipt/{id}(id=${lastPaymentDebtId})}" 
+                   class="btn-receipt">
+                    <i class="fas fa-receipt"></i> View Receipt
+                </a>
+            </div>
+        </div>
+
+        <!-- View Toggle -->
+        <div class="view-toggle">
+            <a th:href="@{/debts(grouped=false, type=${filterType}, status=${filterStatus}, page=0, size=${pageSize})}" 
+               th:classappend="${!groupedView} ? 'btn-toggle active' : 'btn-toggle'">
+                <i class="fas fa-list"></i> List View
+            </a>
+            <a th:href="@{/debts(grouped=true, type=${filterType}, status=${filterStatus}, page=0, size=${pageSize})}" 
+               th:classappend="${groupedView} ? 'btn-toggle active' : 'btn-toggle'">
+                <i class="fas fa-users"></i> Group by Person
+            </a>
+        </div>
+
         <!-- Toolbar with Filters and Add Button -->
         <div class="toolbar">
             <a href="/debts/add" class="btn-add"><i class="fas fa-plus"></i> Add New Debt</a>
             <form method="get" action="/debts" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                <input type="hidden" name="grouped" th:value="${groupedView}"/>
                 <select name="type" style="padding:0.5rem; border-radius:8px; border:1px solid #D1D5DB;">
                     <option value="">All Types</option>
                     <option value="OWED_TO_ME" th:selected="${filterType == 'OWED_TO_ME'}">Owed to Me</option>
@@ -93,7 +277,7 @@
                     <option value="SETTLED" th:selected="${filterStatus == 'SETTLED'}">Settled</option>
                 </select>
                 <button type="submit" class="btn-filter" style="padding:0.5rem 1rem;">Filter</button>
-                <a href="/debts" class="btn-secondary" style="padding:0.5rem 1rem;">Reset</a>
+                <a href="/debts?grouped=false" class="btn-secondary" style="padding:0.5rem 1rem;">Reset</a>
                 <div class="page-size-selector">
                     <label>Show:</label>
                     <select name="size" onchange="this.form.submit()">
@@ -107,8 +291,8 @@
             </form>
         </div>
 
-        <!-- Table Card -->
-        <div class="table-card">
+        <!-- Table Card - List View -->
+        <div class="table-card" th:if="${!groupedView}">
             <div th:if="${debts == null or debts.empty}" class="empty-state">
                 <i class="fas fa-hand-holding-usd"></i>
                 <p>No debt records found.</p>
@@ -175,21 +359,107 @@
             
             <!-- Pagination -->
             <div th:if="${totalPages > 1}" class="pagination">
-                <a th:href="@{/debts(page=0, size=${pageSize}, type=${filterType}, status=${filterStatus})}"
+                <a th:href="@{/debts(page=0, size=${pageSize}, type=${filterType}, status=${filterStatus}, grouped=false)}"
                    th:classappend="${currentPage == 0} ? 'disabled'">« First</a>
-                <a th:href="@{/debts(page=${currentPage - 1}, size=${pageSize}, type=${filterType}, status=${filterStatus})}"
+                <a th:href="@{/debts(page=${currentPage - 1}, size=${pageSize}, type=${filterType}, status=${filterStatus}, grouped=false)}"
                    th:classappend="${currentPage == 0} ? 'disabled'">‹ Prev</a>
                 
                 <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
-                    <a th:href="@{/debts(page=${i}, size=${pageSize}, type=${filterType}, status=${filterStatus})}"
+                    <a th:href="@{/debts(page=${i}, size=${pageSize}, type=${filterType}, status=${filterStatus}, grouped=false)}"
                        th:text="${i + 1}"
                        th:classappend="${i == currentPage} ? 'active'"></a>
                 </th:block>
                 
-                <a th:href="@{/debts(page=${currentPage + 1}, size=${pageSize}, type=${filterType}, status=${filterStatus})}"
+                <a th:href="@{/debts(page=${currentPage + 1}, size=${pageSize}, type=${filterType}, status=${filterStatus}, grouped=false)}"
                    th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">Next ›</a>
-                <a th:href="@{/debts(page=${totalPages - 1}, size=${pageSize}, type=${filterType}, status=${filterStatus})}"
+                <a th:href="@{/debts(page=${totalPages - 1}, size=${pageSize}, type=${filterType}, status=${filterStatus}, grouped=false)}"
                    th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">Last »</a>
+            </div>
+        </div>
+
+        <!-- Grouped View -->
+        <div th:if="${groupedView}">
+            <div th:if="${groupedDebts == null or groupedDebts.empty}" class="empty-state">
+                <i class="fas fa-hand-holding-usd"></i>
+                <p>No debt records found.</p>
+                <p><a href="/debts/add" style="color: var(--primary-dark);">Add your first record</a></p>
+            </div>
+
+            <div th:each="group : ${groupedDebts}" class="group-card">
+                <div class="group-header">
+                    <div>
+                        <h3>
+                            <i class="fas fa-user-circle"></i> 
+                            <span th:text="${group.personName}"></span>
+                        </h3>
+                        <p th:if="${group.phoneNumber}" class="debt-count">
+                            <i class="fas fa-phone"></i> <span th:text="${group.phoneNumber}"></span>
+                        </p>
+                        <p class="debt-count">
+                            <i class="fas fa-file-invoice"></i> <span th:text="${group.debtCount}"></span> debt record(s)
+                        </p>
+                    </div>
+                    <div class="group-totals">
+                        <p><strong>Total Amount:</strong> <span th:text="${#numbers.formatDecimal(group.totalAmount, 1, 0)} + ' TZS'"></span></p>
+                        <p><strong>Total Remaining:</strong> <strong style="color: var(--primary-dark);" th:text="${#numbers.formatDecimal(group.totalRemaining, 1, 0)} + ' TZS'"></strong></p>
+                        <p>
+                            <span th:if="${group.overallStatus == 'SETTLED'}" class="badge-success">
+                                <i class="fas fa-check-circle"></i> Fully Settled
+                            </span>
+                            <span th:unless="${group.overallStatus == 'SETTLED'}" class="badge-warning">
+                                <i class="fas fa-exclamation-triangle"></i> Active
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                <div class="group-debts">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Original Amount</th>
+                                <th>Remaining</th>
+                                <th>Status</th>
+                                <th>Due Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="debt : ${group.debts}">
+                                <td th:text="${debt.description} ?: 'No description'">-</td>
+                                <td th:text="${#numbers.formatDecimal(debt.amount, 1, 0)} + ' TZS'">0 TZS</td>
+                                <td>
+                                    <strong th:text="${#numbers.formatDecimal(debt.remainingAmount, 1, 0)} + ' TZS'"></strong>
+                                </td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${debt.status == 'SETTLED' ? 'badge-settled' : (debt.status == 'PARTIAL' ? 'badge-partial' : 'badge-pending')}"
+                                          th:text="${debt.status}"></span>
+                                </td>
+                                <td>
+                                    <span th:if="${debt.dueDate != null}"
+                                          th:text="${#temporals.format(debt.dueDate, 'dd MMM yyyy')}"></span>
+                                    <span th:if="${debt.dueDate == null}" style="color:#D1D5DB;">—</span>
+                                </td>
+                                <td>
+                                    <a th:if="${debt.status != 'SETTLED'}"
+                                       th:href="@{/debts/make-payment/{id}(id=${debt.id})}"
+                                       class="btn-xs btn-payment" title="Record payment">
+                                        <i class="fas fa-money-bill-wave"></i> Pay
+                                    </a>
+                                    <a th:href="@{/debts/edit/{id}(id=${debt.id})}"
+                                       class="btn-xs btn-edit-group" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button class="btn-xs btn-delete-group" title="Delete"
+                                            onclick="confirmDelete('${debt.id}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
