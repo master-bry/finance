@@ -117,6 +117,88 @@
             .bill-remaining.show {
                 display: block;
             }
+            
+            /* Warning Cards */
+            .warning-card {
+                background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+                border: 2px solid #f59e0b;
+                border-radius: 12px;
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+                box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+                animation: warningPulse 2s ease-in-out infinite;
+            }
+            
+            .cash-deny-warning {
+                background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+                border-color: #ef4444;
+            }
+            
+            .low-balance-warning {
+                background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+                border-color: #f59e0b;
+            }
+            
+            .warning-card .warning-icon {
+                font-size: 2.5rem;
+                margin-bottom: 1rem;
+                text-align: center;
+            }
+            
+            .warning-card h3,
+            .warning-card h4 {
+                color: #92400e;
+                margin-bottom: 0.5rem;
+                font-weight: 600;
+            }
+            
+            .warning-card p {
+                color: #78350f;
+                margin-bottom: 1rem;
+                line-height: 1.5;
+            }
+            
+            .warning-actions {
+                text-align: center;
+            }
+            
+            .warning-actions .btn {
+                padding: 0.75rem 1.5rem;
+                font-weight: 500;
+                border-radius: 8px;
+                transition: all 0.3s ease;
+            }
+            
+            .warning-actions .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+            }
+            
+            @keyframes warningPulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.02); }
+            }
+            
+            /* Disable cash expense form when no balance */
+            .cash-expense-disabled {
+                opacity: 0.5;
+                pointer-events: none;
+                position: relative;
+            }
+            
+            .cash-expense-disabled::after {
+                content: "🚫 Hakuna Salio";
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(239, 68, 68, 0.95);
+                color: white;
+                padding: 1rem 2rem;
+                border-radius: 8px;
+                font-weight: 600;
+                z-index: 10;
+            }
         </style>
     </th:block>
 </head>
@@ -130,6 +212,31 @@
             <span th:text="${#numbers.formatDecimal(currentBalance, 1, 0)}"></span> TZS
         </div>
         <div th:text="${#temporals.format(#temporals.createNow(), 'EEEE, MMMM d, yyyy')}"></div>
+    </div>
+
+    <!-- Cash Deny Warning -->
+    <div th:if="${currentBalance == null or currentBalance <= 0}" class="warning-card cash-deny-warning">
+        <div class="warning-icon">⚠️</div>
+        <div class="warning-content">
+            <h3>Hakuna Salio la Kutoshea!</h3>
+            <p>Umebaki na salio la <strong th:text="${#numbers.formatDecimal(currentBalance, 1, 0)} + ' TZS'">0 TZS</strong>. 
+               Tafadhali weke mapato kwanza kabla ya kuweza kutumia cash.</p>
+            <div class="warning-actions">
+                <button onclick="scrollToIncomeForm()" class="btn btn-success">
+                    <i class="fas fa-plus-circle"></i> Weke Mapato (Top-up)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Balance Warning -->
+    <div th:if="${currentBalance != null and currentBalance > 0 and currentBalance < 5000}" class="warning-card low-balance-warning">
+        <div class="warning-icon">💡</div>
+        <div class="warning-content">
+            <h4>Salio Lako ni Chini</h4>
+            <p>Unazo salio la <strong th:text="${#numbers.formatDecimal(currentBalance, 1, 0)} + ' TZS'"></strong> tu. 
+               Tafadhali weke mapato mapema.</p>
+        </div>
     </div>
 
     <!-- Today's Stats -->
@@ -151,7 +258,7 @@
     </div>
 
     <!-- ===== ADD EXPENSE FORM ===== -->
-    <div class="section-card">
+    <div class="section-card" th:class="${currentBalance == null or currentBalance <= 0} ? 'cash-expense-disabled' : ''">
         <div class="form-title"><i class="fas fa-shopping-cart"></i> Add Expense</div>
         <form action="/excel/add-expense" method="post" id="expenseForm">
             <div class="row">
@@ -425,6 +532,18 @@
         showDeleteModal('Delete this prepaid credit?', function() {
             window.location.href = element.href;
         });
+    }
+
+    function scrollToIncomeForm() {
+        const incomeForm = document.getElementById('incomeForm');
+        if (incomeForm) {
+            incomeForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Focus on description input
+            const descInput = incomeForm.querySelector('input[name="description"]');
+            if (descInput) {
+                descInput.focus();
+            }
+        }
     }
 
     document.addEventListener('DOMContentLoaded', function () {

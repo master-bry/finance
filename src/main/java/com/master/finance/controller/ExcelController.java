@@ -81,6 +81,20 @@ public class ExcelController {
                 return "redirect:/excel/daily-entry";
             }
 
+            // Guard: Check balance for cash expenses (cash deny till top-up)
+            if ("CASH".equals(paymentMethod)) {
+                Double currentBalance = dailyEntryService.getCurrentBalance(userId);
+                if (currentBalance == null || currentBalance <= 0) {
+                    redirectAttributes.addFlashAttribute("error", "Hakuna salio la kutoshea! Tafadhali weke mapato kwanza kabla ya kutumia cash.");
+                    return "redirect:/excel/daily-entry";
+                }
+                // Also check if expense amount exceeds available balance
+                if (currentBalance < amount) {
+                    redirectAttributes.addFlashAttribute("error", "Salio lako si la kutosha! Unazo " + currentBalance + " TZS tu, lakini unajaribu kutumia " + amount + " TZS. Tafadhali weke mapato kwanza.");
+                    return "redirect:/excel/daily-entry";
+                }
+            }
+
             DailyEntry entry = dailyEntryService.getOrCreateTodayEntry(userId);
 
             DailyEntry.ExpenseItem expense = new DailyEntry.ExpenseItem();
