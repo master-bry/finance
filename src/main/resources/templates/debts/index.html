@@ -339,9 +339,9 @@
 <th:block layout:fragment="scripts">
     <script>
         function confirmDelete(id) {
-            if (confirm('Are you sure you want to delete this debt record?')) {
+            showDeleteModal('Are you sure you want to delete this debt record?', function() {
                 window.location.href = '/debts/delete/' + id;
-            }
+            });
         }
     </script>
 </th:block>

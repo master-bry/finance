@@ -39,7 +39,7 @@
                             <td>
                                 <a th:href="'/excel/delete/' + ${entry.id}" 
                                    class="btn-xs btn-delete" 
-                                   onclick="return confirm('Delete this entry? This will also delete associated transactions.')">
+                                   onclick="confirmDeleteEntry(this, event)">
                                     <i class="fas fa-trash"></i> Delete
                                 </a>
                             </td>
@@ -57,5 +57,16 @@
             </div>
         </div>
     </div>
+
+<th:block layout:fragment="scripts">
+<script>
+    function confirmDeleteEntry(element, event) {
+        event.preventDefault();
+        showDeleteModal('Delete this entry? This will also delete associated transactions.', function() {
+            window.location.href = element.href;
+        });
+    }
+</script>
+</th:block>
 </body>
 </html>

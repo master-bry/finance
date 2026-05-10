@@ -281,7 +281,7 @@
             <div>
                 <span class="expense" th:text="'- ' + ${#numbers.formatDecimal(exp.amount, 1, 0)} + ' TZS'"></span>
                 <a th:href="'/excel/delete-expense/' + ${stat.index}" class="delete-btn"
-                   onclick="return confirm('Delete this cash expense?')">
+                   onclick="confirmDeleteExpense(this, event)">
                     <i class="fas fa-trash"></i>
                 </a>
             </div>
@@ -303,7 +303,7 @@
             <div>
                 <span class="expense" th:text="'- ' + ${#numbers.formatDecimal(exp.amount, 1, 0)} + ' TZS'"></span>
                 <a th:href="'/excel/delete-prepaid-expense/' + ${stat.index}" class="delete-btn"
-                   onclick="return confirm('Delete this prepaid expense?')">
+                   onclick="confirmDeletePrepaidExpense(this, event)">
                     <i class="fas fa-trash"></i>
                 </a>
             </div>
@@ -324,7 +324,7 @@
             <div>
                 <span class="income" th:text="'+ ' + ${#numbers.formatDecimal(inc.amount, 1, 0)} + ' TZS'"></span>
                 <a th:href="'/excel/delete-income/' + ${stat.index}" class="delete-btn"
-                   onclick="return confirm('Delete this income?')">
+                   onclick="confirmDeleteIncome(this, event)">
                     <i class="fas fa-trash"></i>
                 </a>
             </div>
@@ -361,7 +361,7 @@
                    class="btn-xs btn-edit">Edit</a>
                 <a th:href="@{/bills/delete/{id}(id=${bill.id}, redirectTo='/excel/daily-entry')}"
                    class="btn-xs btn-delete"
-                   onclick="return confirm('Delete this prepaid credit?')">Delete</a>
+                   onclick="confirmDeleteBill(this, event)">Delete</a>
             </div>
         </div>
     </div>
@@ -397,6 +397,34 @@
             displayDiv.innerHTML = '';
         }
         // DO NOT prefill amount input
+    }
+
+    function confirmDeleteExpense(element, event) {
+        event.preventDefault();
+        showDeleteModal('Delete this cash expense?', function() {
+            window.location.href = element.href;
+        });
+    }
+
+    function confirmDeletePrepaidExpense(element, event) {
+        event.preventDefault();
+        showDeleteModal('Delete this prepaid expense?', function() {
+            window.location.href = element.href;
+        });
+    }
+
+    function confirmDeleteIncome(element, event) {
+        event.preventDefault();
+        showDeleteModal('Delete this income?', function() {
+            window.location.href = element.href;
+        });
+    }
+
+    function confirmDeleteBill(element, event) {
+        event.preventDefault();
+        showDeleteModal('Delete this prepaid credit?', function() {
+            window.location.href = element.href;
+        });
     }
 
     document.addEventListener('DOMContentLoaded', function () {

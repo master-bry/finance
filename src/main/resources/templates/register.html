@@ -188,6 +188,7 @@
         <div th:if="${error}" class="alert-error" th:text="${error}"></div>
         
         <form id="registerForm" action="/register" method="post" th:object="${user}" novalidate>
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <div class="row">
                 <div class="form-group">
                     <label for="username">Username *</label>
