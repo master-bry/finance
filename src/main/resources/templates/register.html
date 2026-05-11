@@ -15,10 +15,6 @@
             --danger: #EF4444;
             --success: #10B981;
             --warning: #F59E0B;
-            --gray-100: #F3F4F6;
-            --gray-200: #E5E7EB;
-            --gray-600: #4B5563;
-            --gray-700: #374151;
         }
         
         * {
@@ -42,20 +38,33 @@
             border-radius: 20px;
             padding: 40px;
             width: 100%;
-            max-width: 500px;
+            max-width: 550px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             animation: fadeIn 0.5s ease-out;
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        
+        .logo {
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 20px;
         }
         
         h1 {
             color: var(--primary-dark);
             text-align: center;
             margin-bottom: 10px;
+            font-size: 1.8rem;
         }
         
         .subtitle {
@@ -90,6 +99,10 @@
             box-shadow: 0 0 0 3px rgba(247, 200, 92, 0.1);
         }
         
+        input.is-invalid {
+            border-color: var(--danger);
+        }
+        
         .btn {
             width: 100%;
             padding: 12px;
@@ -108,6 +121,11 @@
             transform: translateY(-2px);
         }
         
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
         .login-link {
             text-align: center;
             margin-top: 20px;
@@ -119,6 +137,10 @@
             font-weight: 600;
         }
         
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        
         .alert-error {
             background: #FEE2E2;
             color: #991B1B;
@@ -128,24 +150,20 @@
             border-left: 4px solid var(--danger);
         }
         
-        .logo {
-            text-align: center;
-            font-size: 3em;
-            margin-bottom: 20px;
-        }
-        
         .row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
         }
-
+        
         .password-wrapper {
             position: relative;
         }
+        
         .password-wrapper input {
             padding-right: 40px;
         }
+        
         .toggle-password {
             position: absolute;
             right: 12px;
@@ -153,10 +171,17 @@
             transform: translateY(-50%);
             cursor: pointer;
             color: #6B7280;
+            font-size: 18px;
         }
+        
+        .toggle-password:hover {
+            color: var(--primary-dark);
+        }
+        
         .strength-meter {
             margin-top: 8px;
         }
+        
         .strength-bar {
             height: 6px;
             background: #E5E7EB;
@@ -164,22 +189,39 @@
             overflow: hidden;
             margin-bottom: 4px;
         }
+        
         .strength-fill {
             height: 100%;
             width: 0%;
             transition: width 0.3s, background 0.3s;
         }
+        
         .strength-text {
             font-size: 0.8rem;
             color: #6B7280;
         }
+        
         .error-message {
             color: var(--danger);
             font-size: 0.85rem;
-            margin-top: 0.25rem;
+            margin-top: 5px;
         }
-        .is-invalid {
-            border-color: var(--danger) !important;
+        
+        .input-hint {
+            font-size: 0.75rem;
+            color: #9CA3AF;
+            margin-top: 4px;
+        }
+        
+        @media (max-width: 640px) {
+            .register-container {
+                padding: 25px;
+            }
+            
+            .row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
         }
     </style>
 </head>
@@ -192,30 +234,31 @@
         <div th:if="${error}" class="alert-error" th:text="${error}"></div>
         
         <form id="registerForm" action="/register" method="post" th:object="${user}" novalidate>
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <div class="row">
                 <div class="form-group">
                     <label for="username">Username *</label>
-                    <input type="text" id="username" name="username" th:field="*{username}" placeholder="Choose a username">
-                    <div class="error-message" data-error-for="username"></div>
+                    <input type="text" id="username" name="username" th:field="*{username}" placeholder="Choose a username" required>
+                    <div class="error-message" id="usernameError"></div>
+                    <div class="input-hint">At least 3 characters</div>
                 </div>
                 <div class="form-group">
                     <label for="fullName">Full Name</label>
                     <input type="text" id="fullName" name="fullName" th:field="*{fullName}" placeholder="Your full name">
+                    <div class="error-message" id="fullNameError"></div>
                 </div>
             </div>
             
             <div class="form-group">
                 <label for="email">Email *</label>
-                <input type="email" id="email" name="email" th:field="*{email}" placeholder="your@email.com">
-                <div class="error-message" data-error-for="email"></div>
+                <input type="email" id="email" name="email" th:field="*{email}" placeholder="your@email.com" required>
+                <div class="error-message" id="emailError"></div>
             </div>
             
             <div class="row">
                 <div class="form-group">
                     <label for="password">Password *</label>
                     <div class="password-wrapper">
-                        <input type="password" id="password" name="password" th:field="*{password}" placeholder="Create a strong password">
+                        <input type="password" id="password" name="password" th:field="*{password}" placeholder="Create a strong password" required>
                         <i class="toggle-password fas fa-eye" onclick="togglePassword('password')"></i>
                     </div>
                     <div class="strength-meter">
@@ -224,15 +267,16 @@
                         </div>
                         <span class="strength-text" id="strengthText">Enter a password</span>
                     </div>
-                    <div class="error-message" data-error-for="password"></div>
+                    <div class="error-message" id="passwordError"></div>
                 </div>
                 <div class="form-group">
                     <label for="phoneNumber">Phone Number</label>
                     <input type="tel" id="phoneNumber" name="phoneNumber" th:field="*{phoneNumber}" placeholder="Optional">
+                    <div class="error-message" id="phoneError"></div>
                 </div>
             </div>
             
-            <button type="submit" class="btn">Create Account</button>
+            <button type="submit" class="btn" id="submitBtn">Create Account</button>
         </form>
         
         <div class="login-link">
@@ -241,7 +285,7 @@
     </div>
 
     <script>
-        // Password toggle
+        // Password visibility toggle
         function togglePassword(fieldId) {
             const field = document.getElementById(fieldId);
             const icon = field.nextElementSibling;
@@ -261,16 +305,18 @@
         const strengthFill = document.getElementById('strengthFill');
         const strengthText = document.getElementById('strengthText');
 
-        passwordInput.addEventListener('input', function() {
-            const password = this.value;
-            const strength = checkPasswordStrength(password);
-            updateStrengthMeter(strength);
-        });
+        if (passwordInput) {
+            passwordInput.addEventListener('input', function() {
+                const password = this.value;
+                const strength = checkPasswordStrength(password);
+                updateStrengthMeter(strength);
+            });
+        }
 
         function checkPasswordStrength(password) {
             let score = 0;
-            if (password.length >= 8) score++;
-            if (password.length >= 12) score++;
+            if (password.length >= 6) score++;
+            if (password.length >= 10) score++;
             if (/[a-z]/.test(password)) score++;
             if (/[A-Z]/.test(password)) score++;
             if (/[0-9]/.test(password)) score++;
@@ -288,52 +334,85 @@
             strengthText.textContent = labels[score];
         }
 
-        // Client-side validation
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
+        // Form validation
+        const form = document.getElementById('registerForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function(e) {
             let isValid = true;
             
+            // Clear previous errors
             document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
-            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            document.querySelectorAll('input').forEach(el => el.classList.remove('is-invalid'));
             
+            // Validate username
             const username = document.getElementById('username');
-            const email = document.getElementById('email');
-            const password = document.getElementById('password');
-            
             if (!username.value.trim()) {
-                showFieldError(username, 'Username is required');
+                showError('usernameError', 'Username is required');
+                username.classList.add('is-invalid');
                 isValid = false;
             } else if (username.value.trim().length < 3) {
-                showFieldError(username, 'Username must be at least 3 characters');
+                showError('usernameError', 'Username must be at least 3 characters');
+                username.classList.add('is-invalid');
                 isValid = false;
             }
             
+            // Validate email
+            const email = document.getElementById('email');
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!email.value.trim()) {
-                showFieldError(email, 'Email is required');
+                showError('emailError', 'Email is required');
+                email.classList.add('is-invalid');
                 isValid = false;
             } else if (!emailRegex.test(email.value)) {
-                showFieldError(email, 'Please enter a valid email address');
+                showError('emailError', 'Please enter a valid email address');
+                email.classList.add('is-invalid');
                 isValid = false;
             }
             
+            // Validate password
+            const password = document.getElementById('password');
             if (!password.value) {
-                showFieldError(password, 'Password is required');
+                showError('passwordError', 'Password is required');
+                password.classList.add('is-invalid');
                 isValid = false;
             } else if (password.value.length < 6) {
-                showFieldError(password, 'Password must be at least 6 characters');
+                showError('passwordError', 'Password must be at least 6 characters');
+                password.classList.add('is-invalid');
                 isValid = false;
             }
             
             if (!isValid) {
                 e.preventDefault();
+            } else {
+                // Disable button to prevent double submission
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Creating Account...';
             }
         });
 
-        function showFieldError(field, message) {
-            field.classList.add('is-invalid');
-            const errorDiv = field.closest('.form-group').querySelector('.error-message');
-            if (errorDiv) errorDiv.textContent = message;
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            if (errorElement) {
+                errorElement.textContent = message;
+            }
         }
+
+        // Real-time validation
+        document.getElementById('username')?.addEventListener('input', function() {
+            if (this.value.trim().length >= 3) {
+                document.getElementById('usernameError').textContent = '';
+                this.classList.remove('is-invalid');
+            }
+        });
+
+        document.getElementById('email')?.addEventListener('input', function() {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (emailRegex.test(this.value)) {
+                document.getElementById('emailError').textContent = '';
+                this.classList.remove('is-invalid');
+            }
+        });
     </script>
 </body>
 </html>
