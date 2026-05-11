@@ -116,9 +116,16 @@
             </div>
         </div>
 
-        <!-- Alert Messages -->
-        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+        <!-- Status Messages -->
+        <div th:if="${success}" class="status-message status-success">
+            <div class="status-text" th:text="${success}"></div>
+            <button type="button" class="status-dismiss" onclick="dismissStatusMessage(this)">OK</button>
+        </div>
+        
+        <div th:if="${error}" class="status-message status-error">
+            <div class="status-text" th:text="${error}"></div>
+            <button type="button" class="status-dismiss" onclick="dismissStatusMessage(this)">OK</button>
+        </div>
 
         <!-- Flash Messages for Toast Notifications -->
         <script th:inline="javascript">
@@ -133,6 +140,16 @@
                     showErrorToast(error);
                 }
             });
+
+            function dismissStatusMessage(button) {
+                const statusMessage = button.closest('.status-message');
+                if (statusMessage) {
+                    statusMessage.classList.add('dismissing');
+                    setTimeout(() => {
+                        statusMessage.classList.add('hidden');
+                    }, 300);
+                }
+            }
         </script>
 
         <!-- Page Content -->

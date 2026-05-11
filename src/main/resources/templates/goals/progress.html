@@ -4,21 +4,121 @@
       layout:decorate="~{layout}">
 <head>
     <title>Update Progress</title>
+    <style>
+        .goal-status-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid var(--primary-dark);
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .status-title {
+            flex: 1;
+        }
+
+        .status-title h3 {
+            margin: 0;
+            color: var(--primary-dark);
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .progress-percentage {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-top: 0.25rem;
+        }
+
+        .progress-container {
+            margin-bottom: 1.25rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--gray-200);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-dark), var(--secondary));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .status-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .detail-item {
+            text-align: center;
+            padding: 0.75rem;
+            background: var(--gray-50);
+            border-radius: 8px;
+        }
+
+        .detail-label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-value {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+    </style>
 </head>
 <body>
     <div layout:fragment="content">
         <div class="form-container">
             <h2 style="color: var(--primary-dark); margin-bottom: 1.5rem;">📈 Update Goal Progress</h2>
             
-            <div class="info-box">
-                <p><strong>🎯 Goal:</strong> <span th:text="${goal.name}"></span></p>
-                <p><strong>🎯 Target:</strong> <span th:text="${#numbers.formatDecimal(goal.targetAmount, 1, 0)}"></span> TZS</p>
-                <p><strong>📊 Current:</strong> <span th:text="${#numbers.formatDecimal(goal.currentAmount, 1, 0)}"></span> TZS</p>
-                <p><strong>📈 Remaining:</strong> <span th:text="${#numbers.formatDecimal(goal.remainingAmount, 1, 0)}"></span> TZS</p>
-                <div class="progress-bar" style="margin-top: 0.5rem;">
-                    <div class="progress-fill" th:style="'width: ' + ${goal.progressPercentage} + '%;'"></div>
+            <div class="goal-status-card">
+                <div class="status-header">
+                    <div class="status-title">
+                        <h3 th:text="${goal.name}">Goal Name</h3>
+                        <div class="progress-percentage" th:text="${#numbers.formatDecimal(goal.progressPercentage, 1, 1)} + '%'">0%</div>
+                    </div>
                 </div>
-                <p style="margin-top: 0.5rem;">Progress: <span th:text="${#numbers.formatDecimal(goal.progressPercentage, 1, 1)}"></span>%</p>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" th:style="'width: ' + ${goal.progressPercentage} + '%;'"></div>
+                    </div>
+                </div>
+                <div class="status-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Target</span>
+                        <span class="detail-value" th:text="${#numbers.formatDecimal(goal.targetAmount, 1, 0)} + ' TZS'">0 TZS</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Current</span>
+                        <span class="detail-value" th:text="${#numbers.formatDecimal(goal.currentAmount, 1, 0)} + ' TZS'">0 TZS</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Remaining</span>
+                        <span class="detail-value" th:text="${#numbers.formatDecimal(goal.remainingAmount, 1, 0)} + ' TZS'">0 TZS</span>
+                    </div>
+                </div>
             </div>
             
             <form th:action="@{/goals/progress/{id}(id=${goal.id})}" method="post">

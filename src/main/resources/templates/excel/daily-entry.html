@@ -118,86 +118,121 @@
                 display: block;
             }
             
-            /* Warning Cards */
-            .warning-card {
-                background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
-                border: 2px solid #f59e0b;
-                border-radius: 12px;
-                padding: 1.5rem;
+            /* Balance Status Indicators */
+            .balance-status-section {
                 margin-bottom: 1.5rem;
-                box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
-                animation: warningPulse 2s ease-in-out infinite;
             }
             
-            .cash-deny-warning {
-                background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-                border-color: #ef4444;
+            .balance-status {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                padding: 1rem 1.25rem;
+                border-radius: 10px;
+                border-left: 4px solid;
+                background: var(--white);
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                transition: all 0.2s ease;
             }
             
-            .low-balance-warning {
-                background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-                border-color: #f59e0b;
+            .balance-status:hover {
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
             }
             
-            .warning-card .warning-icon {
-                font-size: 2.5rem;
-                margin-bottom: 1rem;
-                text-align: center;
+            .balance-negative {
+                border-left-color: var(--danger);
+                background: linear-gradient(to right, rgba(239, 68, 68, 0.05), transparent);
             }
             
-            .warning-card h3,
-            .warning-card h4 {
-                color: #92400e;
-                margin-bottom: 0.5rem;
+            .balance-low {
+                border-left-color: var(--warning);
+                background: linear-gradient(to right, rgba(245, 158, 11, 0.05), transparent);
+            }
+            
+                        
+                        
+            .status-content {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+            }
+            
+            .status-title {
                 font-weight: 600;
+                color: var(--gray-800);
+                margin-bottom: 0.25rem;
             }
             
-            .warning-card p {
-                color: #78350f;
-                margin-bottom: 1rem;
-                line-height: 1.5;
+            .status-message {
+                font-size: 0.875rem;
+                color: var(--gray-600);
             }
             
-            .warning-actions {
-                text-align: center;
+            .status-action {
+                flex-shrink: 0;
             }
             
-            .warning-actions .btn {
-                padding: 0.75rem 1.5rem;
+            .btn-primary {
+                background: var(--primary-dark);
+                color: var(--white);
+                border: none;
+                padding: 0.5rem 1rem;
+                border-radius: 6px;
+                font-size: 0.875rem;
                 font-weight: 500;
-                border-radius: 8px;
-                transition: all 0.3s ease;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
             }
             
-            .warning-actions .btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+            .btn-primary:hover {
+                background: #1a4d2a;
+                transform: translateY(-1px);
+                box-shadow: 0 2px 4px rgba(47, 107, 63, 0.2);
             }
             
-            @keyframes warningPulse {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.02); }
-            }
-            
-            /* Disable cash expense form when no balance */
+            /* Form disable state */
             .cash-expense-disabled {
-                opacity: 0.5;
+                opacity: 0.6;
                 pointer-events: none;
                 position: relative;
             }
             
             .cash-expense-disabled::after {
-                content: "🚫 Hakuna Salio";
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(255, 255, 255, 0.8);
+                border-radius: 15px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.875rem;
+                color: var(--gray-600);
+                font-weight: 500;
+            }
+            
+            .cash-expense-disabled::before {
+                content: "⚠️ Insufficient Balance";
                 position: absolute;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                background: rgba(239, 68, 68, 0.95);
-                color: white;
-                padding: 1rem 2rem;
-                border-radius: 8px;
-                font-weight: 600;
+                background: var(--white);
+                padding: 0.5rem 1rem;
+                border-radius: 6px;
+                border: 1px solid var(--gray-200);
+                font-size: 0.875rem;
+                color: var(--gray-700);
                 z-index: 10;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             }
         </style>
     </th:block>
@@ -214,28 +249,29 @@
         <div th:text="${#temporals.format(#temporals.createNow(), 'EEEE, MMMM d, yyyy')}"></div>
     </div>
 
-    <!-- Cash Deny Warning -->
-    <div th:if="${currentBalance == null or currentBalance <= 0}" class="warning-card cash-deny-warning">
-        <div class="warning-icon">⚠️</div>
-        <div class="warning-content">
-            <h3>Hakuna Salio la Kutoshea!</h3>
-            <p>Umebaki na salio la <strong th:text="${#numbers.formatDecimal(currentBalance, 1, 0)} + ' TZS'">0 TZS</strong>. 
-               Tafadhali weke mapato kwanza kabla ya kuweza kutumia cash.</p>
-            <div class="warning-actions">
-                <button onclick="scrollToIncomeForm()" class="btn btn-success">
-                    <i class="fas fa-plus-circle"></i> Weke Mapato (Top-up)
-                </button>
+    <!-- Balance Status Indicator -->
+    <div class="balance-status-section">
+        <div th:if="${currentBalance == null or currentBalance <= 0}" class="balance-status balance-negative">
+            <div class="status-content">
+                <div class="status-title">Insufficient Balance</div>
+                <div class="status-message">
+                    Current balance: <span th:text="${#numbers.formatDecimal(currentBalance, 1, 0)} + ' TZS'">0 TZS</span>
+                </div>
+                <div class="status-action">
+                    <button type="button" onclick="scrollToIncomeForm()" class="btn-primary">
+                        Add Income
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-
-    <!-- Low Balance Warning -->
-    <div th:if="${currentBalance != null and currentBalance > 0 and currentBalance < 5000}" class="warning-card low-balance-warning">
-        <div class="warning-icon">💡</div>
-        <div class="warning-content">
-            <h4>Salio Lako ni Chini</h4>
-            <p>Unazo salio la <strong th:text="${#numbers.formatDecimal(currentBalance, 1, 0)} + ' TZS'"></strong> tu. 
-               Tafadhali weke mapato mapema.</p>
+        
+        <div th:if="${currentBalance != null and currentBalance > 0 and currentBalance < 5000}" class="balance-status balance-low">
+            <div class="status-content">
+                <div class="status-title">Low Balance</div>
+                <div class="status-message">
+                    Consider adding more income to maintain buffer
+                </div>
+            </div>
         </div>
     </div>
 

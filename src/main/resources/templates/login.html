@@ -144,22 +144,54 @@
             font-weight: 600;
         }
 
-        .alert {
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+        .status-message {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.25rem;
+            border-left: 3px solid;
+            background: var(--white);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
-        .alert-error {
-            background: #FEE2E2;
+        .status-error {
+            border-left-color: var(--danger);
+            background: linear-gradient(to right, rgba(239, 68, 68, 0.05), transparent);
             color: #991B1B;
-            border-left: 4px solid var(--danger);
         }
 
-        .alert-success {
-            background: #D1FAE5;
+        .status-success {
+            border-left-color: var(--success);
+            background: linear-gradient(to right, rgba(16, 185, 129, 0.05), transparent);
             color: #065F46;
-            border-left: 4px solid var(--success);
+        }
+
+        .status-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+
+        .status-error .status-icon {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .status-success .status-icon {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .status-text {
+            font-size: 0.875rem;
+            font-weight: 500;
+            flex: 1;
         }
 
         .logo {
@@ -189,7 +221,10 @@
         <h1>Finance Tracker</h1>
         <p class="subtitle">Manage your finances with ease</p>
 
-        <div th:if="${error}" class="alert alert-error" role="alert" th:text="${error}"></div>
+        <div th:if="${error}" class="status-message status-error">
+            <div class="status-text" th:text="${error}"></div>
+            <button type="button" class="status-dismiss" onclick="dismissStatusMessage(this)">OK</button>
+        </div>
 
         <form action="/login" method="post">
             <div class="form-group">
@@ -217,10 +252,22 @@
             const icon = field.nextElementSibling;
             if (field.type === 'password') {
                 field.type = 'text';
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
             } else {
                 field.type = 'password';
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function dismissStatusMessage(button) {
+            const statusMessage = button.closest('.status-message');
+            if (statusMessage) {
+                statusMessage.classList.add('dismissing');
+                setTimeout(() => {
+                    statusMessage.classList.add('hidden');
+                }, 300);
             }
         }
     </script>

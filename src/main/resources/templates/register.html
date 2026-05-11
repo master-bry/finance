@@ -115,13 +115,40 @@
             font-weight: 600;
         }
         
-        .alert-error {
-            background: #FEE2E2;
+        .status-message {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.25rem;
+            border-left: 3px solid;
+            background: var(--white);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-error {
+            border-left-color: var(--danger);
+            background: linear-gradient(to right, rgba(239, 68, 68, 0.05), transparent);
             color: #991B1B;
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border-left: 4px solid var(--danger);
+        }
+
+        .status-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            flex-shrink: 0;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .status-text {
+            font-size: 0.875rem;
+            font-weight: 500;
+            flex: 1;
         }
         
         .logo {
@@ -185,7 +212,10 @@
         <h1>Create Account</h1>
         <p class="subtitle">Start tracking your finances today</p>
         
-        <div th:if="${error}" class="alert-error" th:text="${error}"></div>
+        <div th:if="${error}" class="status-message status-error">
+            <div class="status-text" th:text="${error}"></div>
+            <button type="button" class="status-dismiss" onclick="dismissStatusMessage(this)">OK</button>
+        </div>
         
         <form id="registerForm" action="/register" method="post" th:object="${user}" novalidate>
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
@@ -329,6 +359,16 @@
             field.classList.add('is-invalid');
             const errorDiv = field.closest('.form-group').querySelector('.error-message');
             if (errorDiv) errorDiv.textContent = message;
+        }
+
+        function dismissStatusMessage(button) {
+            const statusMessage = button.closest('.status-message');
+            if (statusMessage) {
+                statusMessage.classList.add('dismissing');
+                setTimeout(() => {
+                    statusMessage.classList.add('hidden');
+                }, 300);
+            }
         }
     </script>
 </body>

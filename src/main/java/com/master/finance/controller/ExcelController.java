@@ -77,7 +77,7 @@ public class ExcelController {
 
             // Guard: if BILL selected but no bill chosen, reject early
             if ("BILL".equals(paymentMethod) && (billId == null || billId.isBlank())) {
-                redirectAttributes.addFlashAttribute("error", "Tafadhali chagua prepaid credit kabla ya kuendelea.");
+                redirectAttributes.addFlashAttribute("error", "Please select prepaid credit before continuing.");
                 return "redirect:/excel/daily-entry";
             }
 
@@ -85,12 +85,12 @@ public class ExcelController {
             if ("CASH".equals(paymentMethod)) {
                 Double currentBalance = dailyEntryService.getCurrentBalance(userId);
                 if (currentBalance == null || currentBalance <= 0) {
-                    redirectAttributes.addFlashAttribute("error", "Hakuna salio la kutoshea! Tafadhali weke mapato kwanza kabla ya kutumia cash.");
+                    redirectAttributes.addFlashAttribute("error", "Insufficient balance! Please add income first before using cash.");
                     return "redirect:/excel/daily-entry";
                 }
                 // Also check if expense amount exceeds available balance
                 if (currentBalance < amount) {
-                    redirectAttributes.addFlashAttribute("error", "Salio lako si la kutosha! Unazo " + currentBalance + " TZS tu, lakini unajaribu kutumia " + amount + " TZS. Tafadhali weke mapato kwanza.");
+                    redirectAttributes.addFlashAttribute("error", "Insufficient balance! You only have " + currentBalance + " TZS, but you're trying to use " + amount + " TZS. Please add income first.");
                     return "redirect:/excel/daily-entry";
                 }
             }
@@ -109,8 +109,8 @@ public class ExcelController {
                 expense.setBillId(billId);
                 entry.getPrepaidExpenses().add(expense);
                 redirectAttributes.addFlashAttribute("success",
-                    "Umetumia " + amount + " TZS kutoka prepaid '" + bill.getName() +
-                    "'. Imebaki: " + bill.getAmount() + " TZS");
+                    "Used " + amount + " TZS from prepaid '" + bill.getName() +
+                    "'. Remaining: " + bill.getAmount() + " TZS");
             } else {
                 // Cash expense – create transaction
                 Transaction transaction = new Transaction();
@@ -123,7 +123,7 @@ public class ExcelController {
                 transaction.setDeleted(false);
                 transactionService.saveTransaction(transaction);
                 entry.getExpenses().add(expense);
-                redirectAttributes.addFlashAttribute("success", "Matumizi ya cash yameongezwa: " + amount + " TZS");
+                redirectAttributes.addFlashAttribute("success", "Cash expense added: " + amount + " TZS");
             }
 
             entry.calculateTotals();
@@ -131,7 +131,7 @@ public class ExcelController {
             dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
 
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Hitilafu: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error: " + e.getMessage());
         }
         return "redirect:/excel/daily-entry";
     }
@@ -165,9 +165,9 @@ public class ExcelController {
             dailyEntryService.saveDailyEntry(entry, userId);
             dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
 
-            redirectAttributes.addFlashAttribute("success", "Mapato yameongezwa: " + amount + " TZS");
+            redirectAttributes.addFlashAttribute("success", "Income added: " + amount + " TZS");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Hitilafu kuongeza mapato: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error adding income: " + e.getMessage());
         }
         return "redirect:/excel/daily-entry";
     }
@@ -197,10 +197,10 @@ public class ExcelController {
                 entry.calculateTotals();
                 dailyEntryService.saveDailyEntry(entry, userId);
                 dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
-                redirectAttributes.addFlashAttribute("success", "Matumizi ya cash yameondolewa");
+                redirectAttributes.addFlashAttribute("success", "Cash expense removed");
             }
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Hitilafu kuondoa matumizi: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error removing expense: " + e.getMessage());
         }
         return "redirect:/excel/daily-entry";
     }
@@ -215,10 +215,10 @@ public class ExcelController {
                 entry.getPrepaidExpenses().remove(index);
                 entry.calculateTotals();
                 dailyEntryService.saveDailyEntry(entry, userId);
-                redirectAttributes.addFlashAttribute("success", "Matumizi ya prepaid yameondolewa");
+                redirectAttributes.addFlashAttribute("success", "Prepaid expense removed");
             }
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Hitilafu kuondoa prepaid expense: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error removing prepaid expense: " + e.getMessage());
         }
         return "redirect:/excel/daily-entry";
     }
@@ -246,10 +246,10 @@ public class ExcelController {
                 entry.calculateTotals();
                 dailyEntryService.saveDailyEntry(entry, userId);
                 dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
-                redirectAttributes.addFlashAttribute("success", "Mapato yameondolewa");
+                redirectAttributes.addFlashAttribute("success", "Income removed");
             }
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Hitilafu kuondoa mapato: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error removing income: " + e.getMessage());
         }
         return "redirect:/excel/daily-entry";
     }
@@ -263,9 +263,9 @@ public class ExcelController {
             String userId = getUserId(authentication);
             dailyEntryService.processExcelFile(file, userId, openingBalance);
             dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
-            redirectAttributes.addFlashAttribute("success", "Excel file imeshughulikiwa!");
+            redirectAttributes.addFlashAttribute("success", "Excel file processed successfully!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Hitilafu kusindika Excel: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error processing Excel: " + e.getMessage());
         }
         return "redirect:/excel/daily-entry";
     }
@@ -304,12 +304,12 @@ public class ExcelController {
                 }
                 dailyEntryService.deleteEntry(id);
                 dailyEntryService.recalculateBalancesFromDate(userId, entry.getDate());
-                redirectAttributes.addFlashAttribute("success", "Entry na transactions zimeondolewa");
+                redirectAttributes.addFlashAttribute("success", "Entry and transactions removed");
             } else {
-                redirectAttributes.addFlashAttribute("error", "Entry haikupatikana au ruhusa imekataliwa");
+                redirectAttributes.addFlashAttribute("error", "Entry not found or permission denied");
             }
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Hitilafu kufuta entry: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error deleting entry: " + e.getMessage());
         }
         return "redirect:/excel/history";
     }
