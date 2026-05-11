@@ -119,56 +119,13 @@
             font-weight: 600;
         }
         
-        .status-message {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.875rem 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.25rem;
-            border-left: 3px solid;
-            background: var(--white);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .status-error {
-            border-left-color: var(--danger);
-            background: linear-gradient(to right, rgba(239, 68, 68, 0.05), transparent);
+        .alert-error {
+            background: #FEE2E2;
             color: #991B1B;
-        }
-
-        
-        .status-text {
-            font-size: 0.875rem;
-            font-weight: 500;
-            flex: 1;
-        }
-
-        .status-dismiss {
-            flex-shrink: 0;
-            background: var(--gray-100);
-            border: 1px solid var(--gray-200);
-            color: var(--gray-600);
-            padding: 0.375rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-dismiss:hover {
-            background: var(--gray-200);
-            color: var(--gray-700);
-            transform: translateY(-1px);
-        }
-
-        .status-error .status-dismiss:hover {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-            border-color: var(--danger);
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--danger);
         }
         
         .logo {
@@ -232,10 +189,7 @@
         <h1>Create Account</h1>
         <p class="subtitle">Start tracking your finances today</p>
         
-        <div th:if="${error}" class="status-message status-error">
-            <div class="status-text" th:text="${error}"></div>
-            <button type="button" class="status-dismiss" onclick="dismissStatusMessage(this)">OK</button>
-        </div>
+        <div th:if="${error}" class="alert-error" th:text="${error}"></div>
         
         <form id="registerForm" action="/register" method="post" th:object="${user}" novalidate>
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
@@ -379,16 +333,6 @@
             field.classList.add('is-invalid');
             const errorDiv = field.closest('.form-group').querySelector('.error-message');
             if (errorDiv) errorDiv.textContent = message;
-        }
-
-        function dismissStatusMessage(button) {
-            const statusMessage = button.closest('.status-message');
-            if (statusMessage) {
-                statusMessage.classList.add('dismissing');
-                setTimeout(() => {
-                    statusMessage.classList.add('hidden');
-                }, 300);
-            }
         }
     </script>
 </body>
