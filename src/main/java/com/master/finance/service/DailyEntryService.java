@@ -76,7 +76,7 @@ public class DailyEntryService {
     /**
      * Get the balance at the start of a specific day (sum of all transactions before that day).
      */
-    private Double getBalanceBeforeDate(String userId, LocalDateTime date) {
+    public Double getBalanceBeforeDate(String userId, LocalDateTime date) {
         LocalDateTime startOfDay = date.withHour(0).withMinute(0).withSecond(0).withNano(0);
         List<Transaction> transactionsBefore = transactionRepository
                 .findByUserIdAndDateBeforeAndDeletedFalse(userId, startOfDay);
