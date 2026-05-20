@@ -21,6 +21,7 @@ print_success() {
     echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
 
+
 print_warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1"
 }
