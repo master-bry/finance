@@ -190,7 +190,7 @@ Contributions are welcome! Feel free to open issues or submit pull requests for 
 
 - GitHub: [@master-bry](https://github.com/master-bry)
 - Email: bryngowi2@gmail.com
--Phone: +255659864096
+- Phone: +255659864096
 
 ---
 
