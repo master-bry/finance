@@ -110,7 +110,7 @@ A comprehensive personal finance management web application built with Spring Bo
 4. **Run the application**
 
    ```bash
-   mvn spring-boot:run
+   mvn spring-boot:run or you can use ./start.sh
    ```
 
 5. **Access the application**
