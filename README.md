@@ -37,6 +37,7 @@ A comprehensive personal finance management web application built with Spring Bo
 - Add transactions (deposit, withdrawal, interest, dividend)
 - Visual progress bar for each investment
 
+
 ### 🎯 Goals
 - Set financial goals with target amounts and dates
 - Track progress with percentage completion
