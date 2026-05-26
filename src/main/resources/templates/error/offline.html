@@ -4,74 +4,135 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Offline – Finance Tracker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        .offline-page {
+        :root {
+            --navy-900: #0F1A2E; --navy-800: #1B2A4A;
+            --warning: #f59e0b; --white: #FFFFFF; --gray-500: #64748B;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1e293b 50%, #0F172A 100%);
             min-height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, var(--primary-dark) 0%, #0F1D3A 100%);
+            align-items: center;
             padding: 1.5rem;
+            position: relative;
         }
-        .offline-card {
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(245, 158, 11, 0.05) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(239, 68, 68, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        .error-card {
             background: var(--white);
             border-radius: 20px;
-            padding: 2.5rem 2rem;
-            max-width: 420px;
+            padding: 3rem 2.5rem;
+            max-width: 440px;
             width: 100%;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            animation: fadeIn 0.5s ease-out;
+            position: relative;
+            overflow: hidden;
         }
-        .offline-icon {
-            width: 90px;
-            height: 90px;
-            background: var(--warning);
+        .error-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--navy-800), var(--warning), #f97316);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .error-icon {
+            width: 88px; height: 88px;
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             margin: 0 auto 1.5rem;
+            position: relative;
         }
-        .offline-icon i {
-            font-size: 2.8rem;
-            color: white;
+        .error-icon i { font-size: 2.4rem; color: var(--warning); }
+        .error-icon .signal-bars {
+            position: absolute;
+            bottom: 10px; right: 8px;
+            font-size: 0.65rem;
+            color: var(--warning);
+            opacity: 0.6;
         }
-        .offline-card h2 {
-            color: var(--primary-dark);
-            margin-bottom: 0.75rem;
+        .error-card h2 {
+            color: #0f172a;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
         }
-        .offline-card p {
+        .error-card p {
             color: var(--gray-500);
+            font-size: 0.95rem;
+            line-height: 1.6;
             margin-bottom: 2rem;
         }
-        .btn-refresh {
-            background: var(--primary-dark);
-            color: white;
-            padding: 0.75rem 2rem;
+        .btn-group { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+        .btn-primary {
+            padding: 0.75rem 1.5rem;
             border-radius: 10px;
-            border: none;
             font-weight: 600;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
             cursor: pointer;
-            font-size: 1rem;
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white;
+            box-shadow: 0 4px 12px rgba(30, 41, 59, 0.25);
         }
-        .btn-refresh:hover {
-            background: var(--secondary);
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 41, 59, 0.35);
+        }
+        .retry-hint {
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+        .retry-hint i { margin-right: 4px; }
+        @media (max-width: 480px) {
+            .error-card { padding: 2rem 1.5rem; }
+            .btn-group { flex-direction: column; }
+            .btn-primary { justify-content: center; }
         }
     </style>
 </head>
 <body>
-    <div class="offline-page">
-        <div class="offline-card">
-            <div class="offline-icon">
-                <i class="fas fa-wifi-slash"></i>
-            </div>
-            <h2>You're Offline</h2>
-            <p>Please check your internet connection and try again.</p>
-            <button class="btn-refresh" onclick="location.reload()">
-                <i class="fas fa-sync-alt"></i> Try Again
+    <div class="error-card">
+        <div class="error-icon">
+            <i class="fas fa-wifi-slash"></i>
+            <span class="signal-bars"><i class="fas fa-signal"></i></span>
+        </div>
+        <h2>You're Offline</h2>
+        <p>Your internet connection appears to be down. Please check your connection and try again.</p>
+        <div class="btn-group">
+            <button class="btn-primary" onclick="location.reload()">
+                <i class="fas fa-sync-alt"></i> Retry Connection
             </button>
+        </div>
+        <div class="retry-hint">
+            <i class="fas fa-lightbulb"></i> Your data is safe — we'll sync automatically when you're back online.
         </div>
     </div>
 </body>

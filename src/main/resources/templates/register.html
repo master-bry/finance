@@ -7,47 +7,58 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Register - Finance Tracker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         :root {
-            --primary-dark: #1B2A4A;
-            --secondary: #2C5282;
-            --accent: #319795;
+            --primary-dark: #1e293b;
+            --secondary: #334155;
+            --accent: #0d9488;
             --background: #0F172A;
             --white: #FFFFFF;
             --danger: #EF4444;
             --success: #10B981;
             --warning: #F59E0B;
         }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0F172A 0%, #1B2A4A 50%, #0F172A 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1e293b 50%, #0F172A 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            position: relative;
         }
-        
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(13, 148, 136, 0.06) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(14, 165, 233, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .register-container {
             background: var(--white);
-            border-radius: 20px;
+            border-radius: 16px;
             padding: 40px;
             width: 100%;
-            max-width: 550px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            max-width: 520px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3), 0 8px 20px rgba(0,0,0,0.2);
             animation: fadeIn 0.5s ease-out;
             position: relative;
             overflow: hidden;
         }
-
         .register-container::before {
             content: '';
             position: absolute;
@@ -55,220 +66,154 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, var(--primary-dark), var(--accent), var(--secondary));
+            background: linear-gradient(90deg, var(--primary-dark), var(--accent), #0284c7);
         }
-        
-        @keyframes fadeIn {
-            from { 
-                opacity: 0; 
-                transform: translateY(20px); 
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0); 
-            }
-        }
-        
-        .logo {
-            text-align: center;
-            font-size: 3em;
-            margin-bottom: 20px;
-        }
-        
+        .logo { text-align: center; font-size: 2.5em; margin-bottom: 16px; }
         h1 {
-            color: var(--primary-dark);
+            color: #0f172a;
             text-align: center;
-            margin-bottom: 10px;
-            font-size: 1.8rem;
+            margin-bottom: 6px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
         }
-        
         .subtitle {
             text-align: center;
-            color: #6B7280;
-            margin-bottom: 30px;
+            color: #64748b;
+            margin-bottom: 28px;
+            font-size: 0.9rem;
         }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
+        .form-group { margin-bottom: 18px; }
         label {
             display: block;
-            margin-bottom: 8px;
-            color: #374151;
+            margin-bottom: 6px;
+            color: #334155;
             font-weight: 500;
+            font-size: 0.875rem;
         }
-        
         input {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #E5E7EB;
+            padding: 11px 14px;
+            border: 1.5px solid #e2e8f0;
             border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.25s ease;
+            background: #f8fafc;
         }
-        
         input:focus {
             outline: none;
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(247, 200, 92, 0.1);
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+            background: white;
         }
-        
-        input.is-invalid {
-            border-color: var(--danger);
-        }
-        
+        input.is-invalid { border-color: var(--danger); background: #fef2f2; }
         .btn {
             width: 100%;
             padding: 12px;
-            background: var(--primary-dark);
+            background: linear-gradient(135deg, #1e293b, #334155);
             color: white;
             border: none;
             border-radius: 10px;
-            font-size: 16px;
+            font-size: 0.95rem;
             font-weight: 600;
+            font-family: inherit;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            box-shadow: 0 4px 12px rgba(30, 41, 59, 0.25);
+            margin-top: 4px;
         }
-        
         .btn:hover {
-            background: var(--secondary);
+            background: linear-gradient(135deg, #334155, #475569);
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 41, 59, 0.35);
         }
-        
-        .btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none;
-        }
-
+        .btn:active { transform: translateY(0); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
         .btn .spinner {
             display: none;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border: 2px solid rgba(255,255,255,0.3);
             border-top-color: white;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-
         .btn.loading .spinner { display: inline-block; }
         .btn.loading .btn-text { opacity: 0.7; }
-
         @keyframes spin { to { transform: rotate(360deg); } }
-        
         .login-link {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 24px;
+            font-size: 0.9rem;
+            color: #64748b;
         }
-        
         .login-link a {
-            color: var(--primary-dark);
+            color: var(--accent);
             text-decoration: none;
             font-weight: 600;
+            transition: color 0.2s;
         }
-        
-        .login-link a:hover {
-            text-decoration: underline;
-        }
-        
+        .login-link a:hover { color: #0f766e; text-decoration: underline; }
         .alert-error {
-            background: #FEE2E2;
-            color: #991B1B;
-            padding: 12px;
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 12px 14px;
             border-radius: 10px;
             margin-bottom: 20px;
-            border-left: 4px solid var(--danger);
+            border-left: 3px solid var(--danger);
+            font-size: 0.875rem;
         }
-        
-        .row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
-        .password-wrapper {
-            position: relative;
-        }
-        
-        .password-wrapper input {
-            padding-right: 40px;
-        }
-        
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .password-wrapper { position: relative; }
+        .password-wrapper input { padding-right: 40px; }
         .toggle-password {
             position: absolute;
-            right: 12px;
+            right: 14px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
-            color: #6B7280;
-            font-size: 18px;
+            color: #94a3b8;
+            font-size: 1rem;
+            transition: color 0.2s;
         }
-        
-        .toggle-password:hover {
-            color: var(--primary-dark);
-        }
-        
-        .strength-meter {
-            margin-top: 8px;
-        }
-        
+        .toggle-password:hover { color: var(--primary-dark); }
+        .strength-meter { margin-top: 8px; }
         .strength-bar {
-            height: 6px;
-            background: #E5E7EB;
+            height: 5px;
+            background: #e2e8f0;
             border-radius: 3px;
             overflow: hidden;
             margin-bottom: 4px;
         }
-        
         .strength-fill {
             height: 100%;
             width: 0%;
+            border-radius: 3px;
             transition: width 0.3s, background 0.3s;
         }
-        
-        .strength-text {
-            font-size: 0.8rem;
-            color: #6B7280;
-        }
-        
-        .error-message {
-            color: var(--danger);
-            font-size: 0.85rem;
-            margin-top: 5px;
-        }
-        
-        .input-hint {
-            font-size: 0.75rem;
-            color: #9CA3AF;
-            margin-top: 4px;
-        }
-        
+        .strength-text { font-size: 0.8rem; color: #64748b; }
+        .error-message { color: var(--danger); font-size: 0.8rem; margin-top: 4px; }
+        .input-hint { font-size: 0.75rem; color: #94a3b8; margin-top: 3px; }
         @media (max-width: 640px) {
-            .register-container {
-                padding: 25px;
-            }
-            
-            .row {
-                grid-template-columns: 1fr;
-                gap: 0;
-            }
+            .register-container { padding: 28px 24px; }
+            .row { grid-template-columns: 1fr; gap: 0; }
         }
     </style>
 </head>
 <body>
     <div class="register-container">
-        <div class="logo">💰</div>
+        <div class="logo">&#x1F4B0;</div>
         <h1>Create Account</h1>
         <p class="subtitle">Start tracking your finances today</p>
-        
+
         <div th:if="${error}" class="alert-error" th:text="${error}"></div>
-        
+
         <form id="registerForm" action="/register" method="post" th:object="${user}" novalidate autocomplete="off">
             <div class="row">
                 <div class="form-group">
@@ -283,13 +228,13 @@
                     <div class="error-message" id="fullNameError"></div>
                 </div>
             </div>
-            
+
             <div class="form-group">
-                    <label for="email">Email *</label>
-                    <input type="email" id="email" name="email" th:field="*{email}" placeholder="your@email.com" required autocomplete="off" readonly onfocus="this.removeAttribute('readonly')">
-                    <div class="error-message" id="emailError"></div>
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" th:field="*{email}" placeholder="your@email.com" required autocomplete="off" readonly onfocus="this.removeAttribute('readonly')">
+                <div class="error-message" id="emailError"></div>
             </div>
-            
+
             <div class="row">
                 <div class="form-group">
                     <label for="password">Password *</label>
@@ -311,13 +256,13 @@
                     <div class="error-message" id="phoneError"></div>
                 </div>
             </div>
-            
+
             <button type="submit" class="btn" id="submitBtn">
                 <span class="spinner"></span>
-                <span class="btn-text">Create Account</span>
+                <span class="btn-text"><i class="fas fa-user-plus"></i> Create Account</span>
             </button>
         </form>
-        
+
         <div class="login-link">
             Already have an account? <a href="/login">Login here</a>
         </div>
@@ -330,7 +275,6 @@
             document.getElementById('password').value = '';
         });
 
-        // Password visibility toggle
         function togglePassword(fieldId) {
             const field = document.getElementById(fieldId);
             const icon = field.nextElementSibling;
@@ -345,7 +289,6 @@
             }
         }
 
-        // Password strength meter
         const passwordInput = document.getElementById('password');
         const strengthFill = document.getElementById('strengthFill');
         const strengthText = document.getElementById('strengthText');
@@ -371,26 +314,21 @@
 
         function updateStrengthMeter(score) {
             const percentages = [0, 20, 40, 60, 80, 100];
-            const colors = ['#EF4444', '#F59E0B', '#319795', '#10B981', '#10B981', '#10B981'];
+            const colors = ['#EF4444', '#F59E0B', '#0d9488', '#10B981', '#10B981', '#10B981'];
             const labels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
-            
             strengthFill.style.width = percentages[score] + '%';
             strengthFill.style.background = colors[score];
             strengthText.textContent = labels[score];
         }
 
-        // Form validation
         const form = document.getElementById('registerForm');
         const submitBtn = document.getElementById('submitBtn');
 
         form.addEventListener('submit', function(e) {
             let isValid = true;
-            
-            // Clear previous errors
             document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
             document.querySelectorAll('input').forEach(el => el.classList.remove('is-invalid'));
-            
-            // Validate username
+
             const username = document.getElementById('username');
             if (!username.value.trim()) {
                 showError('usernameError', 'Username is required');
@@ -401,8 +339,7 @@
                 username.classList.add('is-invalid');
                 isValid = false;
             }
-            
-            // Validate email
+
             const email = document.getElementById('email');
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!email.value.trim()) {
@@ -414,8 +351,7 @@
                 email.classList.add('is-invalid');
                 isValid = false;
             }
-            
-            // Validate password
+
             const password = document.getElementById('password');
             if (!password.value) {
                 showError('passwordError', 'Password is required');
@@ -426,7 +362,7 @@
                 password.classList.add('is-invalid');
                 isValid = false;
             }
-            
+
             if (!isValid) {
                 e.preventDefault();
             } else {
@@ -437,12 +373,9 @@
 
         function showError(elementId, message) {
             const errorElement = document.getElementById(elementId);
-            if (errorElement) {
-                errorElement.textContent = message;
-            }
+            if (errorElement) errorElement.textContent = message;
         }
 
-        // Real-time validation
         document.getElementById('username')?.addEventListener('input', function() {
             if (this.value.trim().length >= 3) {
                 document.getElementById('usernameError').textContent = '';

@@ -4,87 +4,140 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Maintenance – Finance Tracker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        .maintenance-page {
+        :root {
+            --navy-900: #0F1A2E; --navy-800: #1B2A4A; --teal-500: #0d9488;
+            --white: #FFFFFF; --gray-500: #64748B; --gray-200: #e2e8f0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1e293b 50%, #0F172A 100%);
             min-height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
-            background: var(--background);
+            align-items: center;
             padding: 1.5rem;
+            position: relative;
         }
-        .maintenance-card {
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(13, 148, 136, 0.05) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        .error-card {
             background: var(--white);
             border-radius: 20px;
-            padding: 3rem 2rem;
-            max-width: 500px;
+            padding: 3rem 2.5rem;
+            max-width: 480px;
             width: 100%;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            animation: fadeIn 0.5s ease-out;
+            position: relative;
+            overflow: hidden;
         }
-        .maintenance-icon {
-            width: 90px;
-            height: 90px;
-            background: var(--accent);
+        .error-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--navy-800), var(--teal-500), #3b82f6);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scaleX(1); opacity: 1; }
+            50% { transform: scaleX(0.8); opacity: 0.6; }
+        }
+        @keyframes spin-slow {
+            to { transform: rotate(360deg); }
+        }
+        .error-icon {
+            width: 88px; height: 88px;
+            background: linear-gradient(135deg, #e6fffa, #ccfbf1);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             margin: 0 auto 1.5rem;
+            position: relative;
         }
-        .maintenance-icon i {
-            font-size: 2.8rem;
-            color: var(--primary-dark);
+        .error-icon i { font-size: 2.4rem; color: var(--teal-500); }
+        .error-icon .gear {
+            position: absolute;
+            bottom: 6px; right: 4px;
+            font-size: 0.9rem;
+            color: var(--teal-500);
+            animation: spin-slow 3s linear infinite;
         }
-        .maintenance-card h2 {
-            color: var(--primary-dark);
-            margin-bottom: 1rem;
+        .error-card h2 {
+            color: #0f172a;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
         }
-        .maintenance-card p {
+        .error-card p {
             color: var(--gray-500);
-            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
         }
-        .progress-bar {
-            background: var(--gray-200);
-            border-radius: 10px;
-            height: 8px;
+        .progress-track {
             width: 70%;
+            height: 6px;
+            background: var(--gray-200);
+            border-radius: 3px;
             margin: 1.5rem auto;
             overflow: hidden;
         }
         .progress-fill {
-            background: var(--primary-dark);
             height: 100%;
             width: 65%;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            background: linear-gradient(90deg, var(--teal-500), #3b82f6);
+            border-radius: 3px;
+            animation: pulse 2s ease-in-out infinite;
+            transform-origin: left;
         }
         .contact {
-            color: var(--gray-500);
-            font-size: 0.9rem;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+        .contact a {
+            color: var(--teal-500);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .contact a:hover { text-decoration: underline; }
+        @media (max-width: 480px) {
+            .error-card { padding: 2rem 1.5rem; }
+            .progress-track { width: 90%; }
         }
     </style>
 </head>
 <body>
-    <div class="maintenance-page">
-        <div class="maintenance-card">
-            <div class="maintenance-icon">
-                <i class="fas fa-tools"></i>
-            </div>
-            <h2>Under Maintenance</h2>
-            <p>We're currently performing scheduled maintenance to improve your experience.</p>
-            <p>We'll be back shortly. Thank you for your patience!</p>
-            <div class="progress-bar">
-                <div class="progress-fill"></div>
-            </div>
-            <div class="contact">
-                <i class="fas fa-envelope"></i> support@financetracker.com
-            </div>
+    <div class="error-card">
+        <div class="error-icon">
+            <i class="fas fa-tools"></i>
+            <span class="gear"><i class="fas fa-cog"></i></span>
+        </div>
+        <h2>Under Maintenance</h2>
+        <p>We're currently performing scheduled maintenance to improve your experience.</p>
+        <p>We'll be back shortly. Thank you for your patience!</p>
+        <div class="progress-track">
+            <div class="progress-fill"></div>
+        </div>
+        <div class="contact">
+            <i class="fas fa-envelope"></i> Need help? <a href="mailto:support@financetracker.com">Contact support</a>
         </div>
     </div>
 </body>

@@ -6,77 +6,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title layout:title-pattern="$CONTENT_TITLE - Finance Tracker">Finance Tracker</title>
-    
-    <!-- Font Awesome (optimized loading) -->
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
-    
-    <!-- Chart.js (deferred loading) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"></noscript>
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Main Layout CSS -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
-    
-    <!-- Page-specific CSS placeholder -->
     <th:block layout:fragment="styles"></th:block>
 </head>
 <body>
-    <!-- Modern Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay">
         <div class="loading-container">
-            <div class="loading-spinner">
-                <div class="spinner-ring"></div>
-                <div class="spinner-ring"></div>
-                <div class="spinner-ring"></div>
-                <div class="spinner-ring"></div>
-            </div>
+            <div class="loading-spinner"></div>
             <div class="loading-text">
                 <div class="loading-title">Processing your request</div>
                 <div class="loading-subtitle">Please wait, we're working on it...</div>
             </div>
             <div class="loading-progress">
-                <div class="progress-bar">
-                    <div class="progress-fill"></div>
-                </div>
+                <div class="progress-bar"></div>
             </div>
         </div>
     </div>
 
-    <!-- Mobile Menu Button -->
     <button class="mobile-menu-btn" onclick="toggleSidebar()">
         <i class="fas fa-bars"></i>
     </button>
 
-    <!-- Sidebar Navigation Drawer -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h2>💰 Finance<span>Tracker</span></h2>
-            <p>Manage Your Finances</p>
+            <div class="logo-icon">&#x1F4B0;</div>
+            <h2>Finance<span>Tracker</span></h2>
+            <p>Professional Edition</p>
         </div>
+        <div class="nav-section-label">Main</div>
         <ul class="nav-menu">
             <li class="nav-item">
                 <a href="/dashboard" class="nav-link" th:classappend="${currentPage == 'dashboard' ? 'active' : ''}">
-                    <i class="fas fa-chart-line"></i> Dashboard
+                    <i class="fas fa-th-large"></i> Dashboard
                 </a>
             </li>
             <li class="nav-item">
                 <a href="/transactions" class="nav-link" th:classappend="${currentPage == 'transactions' ? 'active' : ''}">
-                    <i class="fas fa-exchange-alt"></i> Transactions
+                    <i class="fas fa-arrows-left-right"></i> Transactions
                 </a>
             </li>
             <li class="nav-item">
-                <a href="/debts" class="nav-link" th:classappend="${currentPage == 'debts' ? 'active' : ''}">
-                    <i class="fas fa-hand-holding-usd"></i> Debts
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/investments" class="nav-link" th:classappend="${currentPage == 'investments' ? 'active' : ''}">
-                    <i class="fas fa-chart-line"></i> Investments
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/goals" class="nav-link" th:classappend="${currentPage == 'goals' ? 'active' : ''}">
-                    <i class="fas fa-bullseye"></i> Goals
+                <a href="/accounts" class="nav-link" th:classappend="${currentPage == 'accounts' ? 'active' : ''}">
+                    <i class="fas fa-building-columns"></i> Accounts
                 </a>
             </li>
             <li class="nav-item">
@@ -84,27 +61,45 @@
                     <i class="fas fa-wallet"></i> Budget
                 </a>
             </li>
+        </ul>
+        <div class="nav-section-label">Planning</div>
+        <ul class="nav-menu">
             <li class="nav-item">
-                <a href="/excel/daily-entry" class="nav-link" th:classappend="${currentPage == 'daily' ? 'active' : ''}">
-                    <i class="fas fa-calendar-day"></i> Daily Entry
+                <a href="/goals" class="nav-link" th:classappend="${currentPage == 'goals' ? 'active' : ''}">
+                    <i class="fas fa-bullseye"></i> Goals
                 </a>
             </li>
-            <!-- NEW: Bills link -->
+            <li class="nav-item">
+                <a href="/recurring" class="nav-link" th:classappend="${currentPage == 'recurring' ? 'active' : ''}">
+                    <i class="fas fa-rotate"></i> Recurring
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/investments" class="nav-link" th:classappend="${currentPage == 'investments' ? 'active' : ''}">
+                    <i class="fas fa-trend-up"></i> Investments
+                </a>
+            </li>
+        </ul>
+        <div class="nav-section-label">Management</div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/debts" class="nav-link" th:classappend="${currentPage == 'debts' ? 'active' : ''}">
+                    <i class="fas fa-hand-holding-dollar"></i> Debts
+                </a>
+            </li>
             <li class="nav-item">
                 <a href="/bills" class="nav-link" th:classappend="${currentPage == 'bills' ? 'active' : ''}">
                     <i class="fas fa-file-invoice"></i> Bills
                 </a>
             </li>
             <li class="nav-item">
-                <a href="/accounts" class="nav-link" th:classappend="${currentPage == 'accounts' ? 'active' : ''}">
-                    <i class="fas fa-university"></i> Accounts
+                <a href="/excel/daily-entry" class="nav-link" th:classappend="${currentPage == 'daily' ? 'active' : ''}">
+                    <i class="fas fa-calendar-day"></i> Daily Entry
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="/recurring" class="nav-link" th:classappend="${currentPage == 'recurring' ? 'active' : ''}">
-                    <i class="fas fa-sync-alt"></i> Recurring
-                </a>
-            </li>
+        </ul>
+        <div class="nav-section-label">Analytics</div>
+        <ul class="nav-menu">
             <li class="nav-item">
                 <a href="/reports" class="nav-link" th:classappend="${currentPage == 'reports' ? 'active' : ''}">
                     <i class="fas fa-chart-bar"></i> Reports
@@ -113,14 +108,12 @@
         </ul>
         <div class="sidebar-footer">
             <a href="/profile" class="nav-link" th:classappend="${currentPage == 'profile' ? 'active' : ''}">
-                <i class="fas fa-user-cog"></i> Profile & Settings
+                <i class="fas fa-user-gear"></i> Profile & Settings
             </a>
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- Top Bar -->
         <div class="top-bar">
             <div class="welcome-text">
                 <h3><span id="greeting">Welcome</span>, <span sec:authentication="name"></span>!</h3>
@@ -134,255 +127,143 @@
                 else g.textContent = 'Good evening';
             </script>
             <div class="user-info">
-                <a href="/profile" class="header-icon-btn" title="Profile Settings">
-                    <i class="fas fa-user-cog"></i>
+                <a href="/profile" class="user-avatar" title="Profile Settings">
+                    <span th:text="${#authentication != null and #authentication.name != null ? #strings.substring(#authentication.name, 0, 1).toUpperCase() : 'U'}">U</span>
                 </a>
-                <a href="#" onclick="confirmLogout()" class="header-icon-btn header-logout"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+                <a href="/profile" class="header-icon-btn" title="Profile Settings">
+                    <i class="fas fa-user-gear"></i>
+                </a>
+                <a href="#" onclick="confirmLogout()" class="header-icon-btn header-logout">
+                    <i class="fas fa-right-from-bracket"></i> <span>Logout</span>
+                </a>
             </div>
         </div>
 
-        <!-- Status Messages -->
         <div th:if="${success}" class="status-message status-success">
             <div class="status-text" th:text="${success}"></div>
-            <button type="button" class="status-dismiss" onclick="dismissStatusMessage(this)">OK</button>
+            <button type="button" class="status-dismiss" onclick="dismissStatusMessage(this)">Dismiss</button>
         </div>
-        
         <div th:if="${error}" class="status-message status-error">
             <div class="status-text" th:text="${error}"></div>
-            <button type="button" class="status-dismiss" onclick="dismissStatusMessage(this)">OK</button>
+            <button type="button" class="status-dismiss" onclick="dismissStatusMessage(this)">Dismiss</button>
         </div>
 
-        <!-- Flash Messages for Toast Notifications -->
         <script th:inline="javascript">
             document.addEventListener('DOMContentLoaded', function() {
                 const success = /*[[${success}]]*/ null;
                 const error = /*[[${error}]]*/ null;
-
-                if (success) {
-                    showSuccessToast(success);
-                }
-                if (error) {
-                    showErrorToast(error);
-                }
+                if (success) showSuccessToast(success);
+                if (error) showErrorToast(error);
             });
-
             function dismissStatusMessage(button) {
-                const statusMessage = button.closest('.status-message');
-                if (statusMessage) {
-                    statusMessage.classList.add('dismissing');
-                    setTimeout(() => {
-                        statusMessage.classList.add('hidden');
-                    }, 300);
-                }
+                const el = button.closest('.status-message');
+                if (el) { el.classList.add('dismissing'); setTimeout(() => el.classList.add('hidden'), 300); }
             }
         </script>
 
-        <!-- Page Content -->
         <div layout:fragment="content">
-            <!-- Page-specific content goes here -->
         </div>
 
-        <!-- Footer -->
         <div class="footer">
             <div class="footer-content">
-                <span>&copy; <span th:text="${#temporals.year(#temporals.createNow())}"></span> FinanceTracker. All rights reserved.</span>
+                <span>&copy; <span th:text="${#temporals.year(#temporals.createNow())}"></span> FinanceTracker</span>
                 <span class="footer-separator">|</span>
                 <span>Built with <i class="fas fa-heart" style="color: var(--danger);"></i> for financial freedom</span>
             </div>
         </div>
     </div>
-    <!-- Delete Confirmation Modal -->
-<div id="deleteModal" class="modal-overlay" style="display: none;">
-    <div class="modal-container">
-        <div class="modal-header">
-            <h3 id="deleteModalTitle"><i class="fas fa-exclamation-triangle"></i> Are you sure?</h3>
-            <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-            <p id="deleteModalMessage">Are you sure you want to remove this item?</p>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeDeleteModal()">
-                <i class="fas fa-times"></i> Cancel
-            </button>
-            <button class="btn btn-danger" id="deleteConfirmBtn">
-                <i class="fas fa-trash"></i> Yes, Delete It!
-            </button>
+
+    <div id="deleteModal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-icon-wrap">
+                <i class="fas fa-circle-exclamation"></i>
+            </div>
+            <div class="modal-body">
+                <h3>Confirm Action</h3>
+                <p id="deleteModalMessage">Are you sure you want to remove this item?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()"><i class="fas fa-times"></i> Cancel</button>
+                <button class="btn btn-danger" id="deleteConfirmBtn"><i class="fas fa-trash"></i> Yes, Delete It!</button>
+            </div>
         </div>
     </div>
-</div>
 
-    <!-- Common JavaScript -->
     <script th:inline="javascript">
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-        }
-        
-        // Close sidebar when clicking outside on mobile
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+
         document.addEventListener('click', function(event) {
             const sidebar = document.getElementById('sidebar');
             const menuBtn = document.querySelector('.mobile-menu-btn');
-            
             if (window.innerWidth <= 768) {
                 if (!sidebar.contains(event.target) && !menuBtn.contains(event.target) && sidebar.classList.contains('active')) {
                     sidebar.classList.remove('active');
                 }
             }
         });
+
         let deleteCallback = null;
-
-    function showDeleteModal(message, onConfirm, confirmText = 'Yes, Delete It!') {
-        document.getElementById('deleteModalMessage').textContent = message || 'Are you sure you want to remove this item?';
-        document.getElementById('deleteConfirmBtn').textContent = confirmText;
-        deleteCallback = onConfirm;
-        document.getElementById('deleteModal').style.display = 'flex';
-    }
-    
-    function closeDeleteModal() {
-        document.getElementById('deleteModal').style.display = 'none';
-        deleteCallback = null;
-    }
-    
-    document.getElementById('deleteConfirmBtn').addEventListener('click', function() {
-        if (deleteCallback) {
-            deleteCallback();
+        function showDeleteModal(message, onConfirm, confirmText) {
+            document.getElementById('deleteModalMessage').textContent = message || 'Are you sure you want to remove this item?';
+            document.getElementById('deleteConfirmBtn').textContent = confirmText || 'Yes, Delete It!';
+            deleteCallback = onConfirm;
+            document.getElementById('deleteModal').style.display = 'flex';
         }
-        closeDeleteModal();
-    });
-    
-    // Close when clicking outside the modal
-    document.getElementById('deleteModal').addEventListener('click', function(e) {
-        if (e.target === this) {
+        function closeDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; deleteCallback = null; }
+        document.getElementById('deleteConfirmBtn').addEventListener('click', function() {
+            if (deleteCallback) { deleteCallback(); }
             closeDeleteModal();
+        });
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDeleteModal();
+        });
+
+        window.addEventListener('offline', function() { window.location.href = '/error/offline'; });
+
+        function showToast(message, type, title) {
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-' + type;
+            let icon = '';
+            if (type === 'success') icon = '<i class="fas fa-check-circle"></i>';
+            else if (type === 'error') icon = '<i class="fas fa-circle-exclamation"></i>';
+            else if (type === 'warning') icon = '<i class="fas fa-triangle-exclamation"></i>';
+            else icon = '<i class="fas fa-circle-info"></i>';
+            toast.innerHTML = '<div class="toast-icon">' + icon + '</div><div class="toast-content">' +
+                (title ? '<div class="toast-title">' + title + '</div>' : '') +
+                '<div class="toast-message">' + message + '</div></div>' +
+                '<button class="toast-close" onclick="this.parentElement.remove()">&times;</button>';
+            document.body.appendChild(toast);
+            setTimeout(function() { toast.classList.add('show'); }, 10);
+            setTimeout(function() { toast.classList.remove('show'); setTimeout(function() { toast.remove(); }, 300); }, 4000);
         }
-    });
+        function showSuccessToast(message, title) { showToast(message, 'success', title || 'Success'); }
+        function showErrorToast(message, title) { showToast(message, 'error', title || 'Error'); }
+        function showWarningToast(message, title) { showToast(message, 'warning', title || 'Warning'); }
+        function showInfoToast(message, title) { showToast(message, 'info', title || 'Info'); }
 
-    // Offline Detection
-    window.addEventListener('offline', function() {
-    window.location.href = '/error/offline';
-     });
+        function confirmLogout() {
+            showDeleteModal('Are you sure you want to logout?', function() { window.location.href = '/logout'; }, 'Yes, Logout');
+        }
 
-    // Toast Notification System
-    function showToast(message, type = 'info', title = '') {
-        const toast = document.createElement('div');
-        toast.className = 'toast toast-' + type;
-
-        let icon = '';
-        if (type === 'success') icon = '<i class="fas fa-check-circle"></i>';
-        else if (type === 'error') icon = '<i class="fas fa-exclamation-circle"></i>';
-        else if (type === 'warning') icon = '<i class="fas fa-exclamation-triangle"></i>';
-        else icon = '<i class="fas fa-info-circle"></i>';
-
-        toast.innerHTML = `
-            <div class="toast-icon">${icon}</div>
-            <div class="toast-content">
-                ${title ? `<div class="toast-title">${title}</div>` : ''}
-                <div class="toast-message">${message}</div>
-            </div>
-            <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
-        `;
-
-        document.body.appendChild(toast);
-
-        setTimeout(() => {
-            toast.classList.add('show');
-        }, 10);
-
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
-        }, 4000);
-    }
-
-    function showInfoToast(message, title = 'Info') {
-        showToast(message, 'info', title);
-    }
-
-    function showSuccessToast(message, title = 'Success') {
-        showToast(message, 'success', title);
-    }
-
-    function showErrorToast(message, title = 'Error') {
-        showToast(message, 'error', title);
-    }
-
-    function showWarningToast(message, title = 'Warning') {
-        showToast(message, 'warning', title);
-    }
-
-    function confirmLogout() {
-        showDeleteModal('Are you sure you want to logout?', function() {
-            window.location.href = '/logout';
-        }, 'Yes, Logout');
-    }
-    </script>
-    
-    <!-- Performance optimization script -->
-    <script>
-        // Page loading system (single definition)
-        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
-            const overlay = document.getElementById('loadingOverlay');
+        function showLoadingOverlay(title, subtitle) {
+            var overlay = document.getElementById('loadingOverlay');
             if (overlay) {
-                const titleEl = overlay.querySelector('.loading-title');
-                const subtitleEl = overlay.querySelector('.loading-subtitle');
-                const progressFill = overlay.querySelector('.progress-fill');
-                
-                if (titleEl) titleEl.textContent = title;
-                if (subtitleEl) subtitleEl.textContent = subtitle;
-                
+                var titleEl = overlay.querySelector('.loading-title');
+                var subtitleEl = overlay.querySelector('.loading-subtitle');
+                var progressBar = overlay.querySelector('.loading-progress .progress-bar');
+                if (titleEl) titleEl.textContent = title || 'Processing your request';
+                if (subtitleEl) subtitleEl.textContent = subtitle || "Please wait, we're working on it...";
                 overlay.classList.add('active');
-                
-                if (progressFill) {
-                    progressFill.style.width = '0%';
-                    setTimeout(() => { progressFill.style.width = '70%'; }, 500);
-                    setTimeout(() => { progressFill.style.width = '90%'; }, 1500);
+                if (progressBar) {
+                    progressBar.style.width = '0%';
+                    setTimeout(function() { progressBar.style.width = '70%'; }, 500);
+                    setTimeout(function() { progressBar.style.width = '90%'; }, 1500);
                 }
             }
         }
-        
-        function hideLoadingOverlay() {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) overlay.classList.remove('active');
-        }
-        
-        function showSkeletonLoading() {
-            document.querySelectorAll('.section-card, .stat-card').forEach(card => card.classList.add('skeleton'));
-        }
-        
-        function hideSkeletonLoading() {
-            document.querySelectorAll('.skeleton').forEach(skeleton => skeleton.classList.remove('skeleton'));
-        }
-        
-        // Performance optimization script
-        document.addEventListener('DOMContentLoaded', function() {
-            // Preload critical resources
-            const criticalLinks = document.querySelectorAll('link[rel="preload"]');
-            criticalLinks.forEach(link => {
-                if (link.rel === 'preload' && link.as === 'style') {
-                    link.onload = function() {
-                        link.rel = 'stylesheet';
-                    };
-                }
-            });
-            
-            // Lazy load images if any
-            const images = document.querySelectorAll('img[data-src]');
-            const imageObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        img.src = img.dataset.src;
-                        img.removeAttribute('data-src');
-                        observer.unobserve(img);
-                    }
-                });
-            });
-            
-            images.forEach(img => imageObserver.observe(img));
-        });
+        function hideLoadingOverlay() { var o = document.getElementById('loadingOverlay'); if (o) o.classList.remove('active'); }
     </script>
-    
-    <!-- Page-specific JavaScript placeholder -->
+
     <th:block layout:fragment="scripts"></th:block>
 </body>
 </html>

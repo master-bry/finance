@@ -5,79 +5,65 @@
       layout:decorate="~{layout}">
 <head>
     <title>Dashboard</title>
-    
     <style layout:fragment="styles">
-        .period-filter {
+        .filter-bar {
             background: white;
-            padding: 1rem;
-            border-radius: 10px;
+            border-radius: var(--radius-lg, 12px);
+            padding: 1rem 1.25rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06));
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 1rem;
+            border: 1px solid #e2e8f0;
         }
-        
-        .period-filter h3 {
+        .filter-bar h3 {
             margin: 0;
-            color: var(--primary-dark);
-            font-size: 1.1rem;
+            color: #0f172a;
+            font-size: 1rem;
+            font-weight: 600;
         }
-        
+        .filter-bar h3 i { color: var(--teal-500, #0d9488); margin-right: 8px; }
         .filter-controls {
             display: flex;
             gap: 0.5rem;
             align-items: center;
         }
-        
         .filter-controls select {
-            padding: 0.5rem;
-            border: 1px solid var(--gray-300);
-            border-radius: 6px;
-            background: white;
-        }
-        
-        .filter-controls button {
-            background: var(--primary-dark);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
+            padding: 0.45rem 0.75rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            background: #f8fafc;
+            font-family: inherit;
+            font-size: 0.85rem;
+            color: #334155;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: border-color 0.2s;
         }
-        
-        .filter-controls button:hover {
-            background: var(--secondary);
+        .filter-controls select:focus {
+            outline: none;
+            border-color: var(--teal-500, #0d9488);
         }
-        
         .current-period {
-            font-size: 0.9rem;
-            color: var(--gray-600);
-            font-weight: 500;
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 2px;
         }
-        
         @media (max-width: 768px) {
-            .period-filter {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .filter-controls {
-                width: 100%;
-                justify-content: space-between;
-            }
+            .filter-bar { flex-direction: column; align-items: stretch; }
+            .filter-controls { width: 100%; justify-content: stretch; }
+            .filter-controls select { flex: 1; }
         }
     </style>
 </head>
 <body>
     <div layout:fragment="content">
         <!-- Period Filter -->
-        <div class="period-filter">
+        <div class="filter-bar">
             <div>
-                <h3>📊 Financial Overview</h3>
+                <h3><i class="fas fa-chart-simple"></i> Financial Overview</h3>
                 <div class="current-period" th:text="'Showing data for ' + ${selectedMonthName} + ' ' + ${selectedYear}">Showing data for current month</div>
             </div>
             <form method="get" action="/dashboard" class="filter-controls">
@@ -102,97 +88,130 @@
                     <option value="2025" th:selected="${selectedYear == 2025}">2025</option>
                     <option value="2026" th:selected="${selectedYear == 2026}">2026</option>
                 </select>
-                <button type="submit">🔍 Apply Filter</button>
-                <a href="/dashboard" style="background: var(--gray-500); color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none;">↺ Current</a>
+                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-filter"></i> Apply</button>
+                <a href="/dashboard" class="btn btn-secondary btn-sm"><i class="fas fa-rotate"></i> Reset</a>
             </form>
         </div>
-        
+
         <!-- Stats Grid -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-title">💰 Total Income</div>
-                <div class="stat-value positive" th:text="${#numbers.formatDecimal(stats.totalIncome, 1, 0)} + ' TZS'">0 TZS</div>
+                <div class="stat-icon stat-icon-income"><i class="fas fa-arrow-trend-up"></i></div>
+                <div class="stat-info">
+                    <div class="stat-title">Total Income</div>
+                    <div class="stat-value positive" th:text="${#numbers.formatDecimal(stats.totalIncome, 1, 0)} + ' TZS'">0 TZS</div>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-title">💸 Total Expenses</div>
-                <div class="stat-value negative" th:text="${#numbers.formatDecimal(stats.totalExpense, 1, 0)} + ' TZS'">0 TZS</div>
+                <div class="stat-icon stat-icon-expense"><i class="fas fa-arrow-trend-down"></i></div>
+                <div class="stat-info">
+                    <div class="stat-title">Total Expenses</div>
+                    <div class="stat-value negative" th:text="${#numbers.formatDecimal(stats.totalExpense, 1, 0)} + ' TZS'">0 TZS</div>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-title">💵 Balance</div>
-                <div class="stat-value" th:class="${stats.balance >= 0 ? 'positive' : 'negative'}" 
-                     th:text="${#numbers.formatDecimal(stats.balance, 1, 0)} + ' TZS'">0 TZS</div>
+                <div class="stat-icon stat-icon-balance"><i class="fas fa-scale-balanced"></i></div>
+                <div class="stat-info">
+                    <div class="stat-title">Balance</div>
+                    <div class="stat-value" th:class="${stats.balance >= 0 ? 'positive' : 'negative'}"
+                         th:text="${#numbers.formatDecimal(stats.balance, 1, 0)} + ' TZS'">0 TZS</div>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-title">📊 Savings Rate</div>
-                <div class="stat-value positive" th:text="${#numbers.formatDecimal(stats.savingsRate, 1, 1)} + '%'">0%</div>
+                <div class="stat-icon stat-icon-savings"><i class="fas fa-piggy-bank"></i></div>
+                <div class="stat-info">
+                    <div class="stat-title">Savings Rate</div>
+                    <div class="stat-value positive" th:text="${#numbers.formatDecimal(stats.savingsRate, 1, 1)} + '%'">0%</div>
+                </div>
             </div>
         </div>
-        
+
         <!-- Charts Row 1 -->
         <div class="charts-row">
             <div class="chart-card">
-                <h4><i class="fas fa-chart-pie"></i> Expenses by Category</h4>
+                <h4><i class="fas fa-chart-pie" style="color: var(--teal-500, #0d9488);"></i> Expenses by Category</h4>
                 <canvas id="expenseChart"></canvas>
-                <div th:if="${expenseCategories == null || expenseCategories.isEmpty()}" class="empty-state" style="padding: 2rem;">
-                    <i class="fas fa-chart-pie" style="font-size: 2rem;"></i>
+                <div th:if="${expenseCategories == null || expenseCategories.isEmpty()}" class="empty-state">
+                    <i class="fas fa-chart-pie"></i>
                     <p>No expense data available</p>
                 </div>
             </div>
             <div class="chart-card">
-                <h4><i class="fas fa-chart-pie"></i> Income by Category</h4>
+                <h4><i class="fas fa-chart-pie" style="color: var(--success, #10B981);"></i> Income by Category</h4>
                 <canvas id="incomeChart"></canvas>
-                <div th:if="${incomeCategories == null || incomeCategories.isEmpty()}" class="empty-state" style="padding: 2rem;">
-                    <i class="fas fa-chart-pie" style="font-size: 2rem;"></i>
+                <div th:if="${incomeCategories == null || incomeCategories.isEmpty()}" class="empty-state">
+                    <i class="fas fa-chart-pie"></i>
                     <p>No income data available</p>
                 </div>
             </div>
         </div>
-        
+
         <!-- Charts Row 2 -->
         <div class="charts-row">
             <div class="chart-card">
-                <h4><i class="fas fa-chart-line"></i> Weekly Income vs Expense</h4>
+                <h4><i class="fas fa-chart-line" style="color: var(--teal-500, #0d9488);"></i> Weekly Income vs Expense</h4>
                 <canvas id="weeklyChart"></canvas>
             </div>
             <div class="chart-card">
-                <h4><i class="fas fa-chart-bar"></i> Financial Summary</h4>
+                <h4><i class="fas fa-chart-bar" style="color: var(--primary, #3B82F6);"></i> Financial Summary</h4>
                 <canvas id="summaryChart"></canvas>
             </div>
         </div>
-        
+
         <!-- Additional Stats -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-title">💰 Owed to Me</div>
-                <div class="stat-value positive" th:text="${#numbers.formatDecimal(stats.totalOwedToMe, 1, 0)} + ' TZS'">0 TZS</div>
+                <div class="stat-icon stat-icon-income"><i class="fas fa-hand-holding-dollar"></i></div>
+                <div class="stat-info">
+                    <div class="stat-title">Owed to Me</div>
+                    <div class="stat-value positive" th:text="${#numbers.formatDecimal(stats.totalOwedToMe, 1, 0)} + ' TZS'">0 TZS</div>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-title">💸 I Owe</div>
-                <div class="stat-value negative" th:text="${#numbers.formatDecimal(stats.totalIOwe, 1, 0)} + ' TZS'">0 TZS</div>
+                <div class="stat-icon stat-icon-expense"><i class="fas fa-hand-holding-hand"></i></div>
+                <div class="stat-info">
+                    <div class="stat-title">I Owe</div>
+                    <div class="stat-value negative" th:text="${#numbers.formatDecimal(stats.totalIOwe, 1, 0)} + ' TZS'">0 TZS</div>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-title">⚖️ Net Debt Position</div>
-                <div class="stat-value" th:class="${stats.netDebtPosition >= 0 ? 'positive' : 'negative'}"
-                     th:text="${#numbers.formatDecimal(stats.netDebtPosition, 1, 0)} + ' TZS'">0 TZS</div>
+                <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">
+                    <i class="fas fa-scale-balanced"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-title">Net Debt Position</div>
+                    <div class="stat-value" th:class="${stats.netDebtPosition >= 0 ? 'positive' : 'negative'}"
+                         th:text="${#numbers.formatDecimal(stats.netDebtPosition, 1, 0)} + ' TZS'">0 TZS</div>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-title">📈 Total Invested</div>
-                <div class="stat-value" th:text="${#numbers.formatDecimal(stats.totalInvested, 1, 0)} + ' TZS'">0 TZS</div>
+                <div class="stat-icon" style="background: linear-gradient(135deg, #0891b2, #06b6d4);">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-title">Total Invested</div>
+                    <div class="stat-value" th:text="${#numbers.formatDecimal(stats.totalInvested, 1, 0)} + ' TZS'">0 TZS</div>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-title">📊 Investment P/L</div>
-                <div class="stat-value" th:class="${stats.totalProfitLoss >= 0 ? 'positive' : 'negative'}">
-                    <span th:text="${#numbers.formatDecimal(stats.totalProfitLoss, 1, 0)}"></span> TZS
-                    <small th:text="'(' + ${stats.profitLossPercentage} + '%)'"></small>
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);">
+                    <i class="fas fa-percent"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-title">Investment P/L</div>
+                    <div class="stat-value" th:class="${stats.totalProfitLoss >= 0 ? 'positive' : 'negative'}">
+                        <span th:text="${#numbers.formatDecimal(stats.totalProfitLoss, 1, 0)}"></span> TZS
+                        <small th:text="'(' + ${stats.profitLossPercentage} + '%)'"></small>
+                    </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Recent Transactions -->
         <div class="section-card">
             <div class="section-header">
-                <h4><i class="fas fa-history"></i> Recent Transactions</h4>
-                <a href="/transactions" class="btn btn-primary btn-sm">View All →</a>
+                <h4><i class="fas fa-clock-rotate-left"></i> Recent Transactions</h4>
+                <a href="/transactions" class="btn btn-primary btn-sm">View All <i class="fas fa-arrow-right"></i></a>
             </div>
             <div class="table-wrapper">
                 <table class="data-table">
@@ -209,14 +228,14 @@
                             <td th:text="${#temporals.format(t.date, 'dd MMM yyyy')}">Date</td>
                             <td th:text="${t.description}">Description</td>
                             <td><span class="category-badge" th:text="${t.category}">Category</span></td>
-                            <td th:class="${t.type == 'INCOME' ? 'positive' : 'negative'}" 
+                            <td th:class="${t.type == 'INCOME' ? 'positive' : 'negative'}"
                                 th:text="${(t.type == 'INCOME' ? '+' : '-') + #numbers.formatDecimal(t.amount, 1, 0) + ' TZS'}">Amount</td>
                         </tr>
                         <tr th:if="${recentTransactions == null || recentTransactions.empty}">
                             <td colspan="4">
                                 <div class="empty-state">
                                     <i class="fas fa-receipt"></i>
-                                    <p>No transactions yet. <a href="/transactions/add" style="color: var(--primary-dark);">Add your first transaction!</a></p>
+                                    <p>No transactions yet. <a href="/transactions/add" style="color: var(--teal-500, #0d9488);">Add your first transaction!</a></p>
                                 </div>
                             </td>
                         </tr>
@@ -224,12 +243,12 @@
                 </table>
             </div>
         </div>
-        
+
         <!-- Active Goals -->
         <div class="section-card">
             <div class="section-header">
                 <h4><i class="fas fa-bullseye"></i> Active Goals</h4>
-                <a href="/goals" class="btn btn-primary btn-sm">Manage Goals →</a>
+                <a href="/goals" class="btn btn-primary btn-sm">Manage Goals <i class="fas fa-arrow-right"></i></a>
             </div>
             <div th:each="goal : ${activeGoals}" class="goal-item">
                 <div class="goal-header">
@@ -239,41 +258,33 @@
                 <div class="progress-bar">
                     <div class="progress-fill" th:style="'width: ' + ${goal.progressPercentage} + '%;'"></div>
                 </div>
-                <div th:if="${goal.targetDate != null}" style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--gray-500);">
+                <div th:if="${goal.targetDate != null}" style="margin-top: 0.5rem; font-size: 0.8rem; color: #64748b;">
                     <i class="fas fa-calendar"></i> Target: <span th:text="${#temporals.format(goal.targetDate, 'dd MMM yyyy')}"></span>
                 </div>
             </div>
             <div th:if="${activeGoals == null || activeGoals.empty}" class="empty-state" style="padding: 1.5rem;">
-                <i class="fas fa-flag-checkered" style="font-size: 2rem;"></i>
-                <p>No active goals. <a href="/goals/add" style="color: var(--primary-dark);">Create your first goal!</a></p>
+                <i class="fas fa-flag-checkered"></i>
+                <p>No active goals. <a href="/goals/add" style="color: var(--teal-500, #0d9488);">Create your first goal!</a></p>
             </div>
         </div>
     </div>
-    
+
     <th:block layout:fragment="scripts">
         <script th:inline="javascript">
         document.addEventListener('DOMContentLoaded', function() {
-            // Display notifications as toasts
             const notifications = /*[[${notifications}]]*/ [];
             notifications.forEach(msg => showInfoToast(msg, 'Notification'));
 
-            // Expense Chart Data
             const expenseCategories = /*[[${expenseCategories != null ? expenseCategories : new java.util.ArrayList()}]]*/ [];
             const expenseAmounts = /*[[${expenseAmounts != null ? expenseAmounts : new java.util.ArrayList()}]]*/ [];
-            
-            // Income Chart Data
             const incomeCategories = /*[[${incomeCategories != null ? incomeCategories : new java.util.ArrayList()}]]*/ [];
             const incomeAmounts = /*[[${incomeAmounts != null ? incomeAmounts : new java.util.ArrayList()}]]*/ [];
-            
-            // Weekly Data
             const weeklyIncome = /*[[${weeklyIncome != null ? weeklyIncome : new java.util.ArrayList()}]]*/ [0, 0, 0, 0];
             const weeklyExpense = /*[[${weeklyExpense != null ? weeklyExpense : new java.util.ArrayList()}]]*/ [0, 0, 0, 0];
-            
-            // Summary Data
             const totalIncome = /*[[${stats != null && stats.totalIncome != null ? stats.totalIncome : 0}]]*/ 0;
             const totalExpense = /*[[${stats != null && stats.totalExpense != null ? stats.totalExpense : 0}]]*/ 0;
             const balance = /*[[${stats != null && stats.balance != null ? stats.balance : 0}]]*/ 0;
-            
+
             // Expense Pie Chart
             if (expenseCategories.length > 0 && expenseAmounts.length > 0) {
                 const expenseCtx = document.getElementById('expenseChart').getContext('2d');
@@ -283,7 +294,7 @@
                         labels: expenseCategories,
                         datasets: [{
                             data: expenseAmounts,
-                            backgroundColor: ['#EF4444', '#F59E0B', '#319795', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#6B7280'],
+                            backgroundColor: ['#EF4444', '#F59E0B', '#0d9488', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#6B7280'],
                             borderWidth: 0
                         }]
                     },
@@ -307,7 +318,7 @@
                     }
                 });
             }
-            
+
             // Income Doughnut Chart
             if (incomeCategories.length > 0 && incomeAmounts.length > 0) {
                 const incomeCtx = document.getElementById('incomeChart').getContext('2d');
@@ -341,7 +352,7 @@
                     }
                 });
             }
-            
+
             // Weekly Line Chart
             const weekLabels = /*[[${weekLabels != null ? weekLabels : new java.util.ArrayList()}]]*/ ['Week 1','Week 2','Week 3','Week 4'];
             const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
@@ -405,7 +416,7 @@
                     }
                 }
             });
-            
+
             // Summary Bar Chart
             const summaryCtx = document.getElementById('summaryChart').getContext('2d');
             new Chart(summaryCtx, {
@@ -446,7 +457,7 @@
                     }
                 }
             });
-        }); // end DOMContentLoaded
+        });
         </script>
     </th:block>
 </body>

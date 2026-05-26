@@ -7,42 +7,53 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Login - Finance Tracker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         :root {
-            --primary-dark: #1B2A4A;
-            --secondary: #2C5282;
-            --accent: #319795;
+            --primary-dark: #1e293b;
+            --secondary: #334155;
+            --accent: #0d9488;
             --background: #0F172A;
             --white: #FFFFFF;
             --danger: #EF4444;
             --success: #10B981;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0F172A 0%, #1B2A4A 50%, #0F172A 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1e293b 50%, #0F172A 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            position: relative;
         }
-
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(13, 148, 136, 0.06) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(14, 165, 233, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+        }
         .login-container {
             background: var(--white);
-            border-radius: 20px;
+            border-radius: 16px;
             padding: 40px;
             width: 100%;
-            max-width: 450px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            max-width: 420px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3), 0 8px 20px rgba(0,0,0,0.2);
             animation: fadeIn 0.5s ease-out;
             position: relative;
             overflow: hidden;
         }
-
         .login-container::before {
             content: '';
             position: absolute;
@@ -50,205 +61,193 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, var(--primary-dark), var(--accent), var(--secondary));
+            background: linear-gradient(90deg, var(--primary-dark), var(--accent), #0284c7);
         }
-
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(24px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
-        .logo { text-align: center; font-size: 3em; margin-bottom: 20px; }
-
+        .logo { text-align: center; font-size: 2.5em; margin-bottom: 16px; }
         h1 {
-            color: var(--primary-dark);
+            color: #0f172a;
             text-align: center;
-            margin-bottom: 10px;
-            font-size: 1.8rem;
+            margin-bottom: 6px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
         }
-
         .subtitle {
             text-align: center;
-            color: #6B7280;
-            margin-bottom: 30px;
+            color: #64748b;
+            margin-bottom: 28px;
+            font-size: 0.9rem;
         }
-
         .form-group { margin-bottom: 20px; }
-
         label {
             display: block;
-            margin-bottom: 8px;
-            color: #374151;
+            margin-bottom: 6px;
+            color: #334155;
             font-weight: 500;
+            font-size: 0.875rem;
         }
-
         input {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #E5E7EB;
+            padding: 11px 14px;
+            border: 1.5px solid #e2e8f0;
             border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.25s ease;
+            background: #f8fafc;
         }
-
         input:focus {
             outline: none;
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(247, 200, 92, 0.1);
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+            background: white;
         }
-
         .password-wrapper { position: relative; }
-
         .password-wrapper input { padding-right: 44px; }
-
         .toggle-password {
             position: absolute;
             right: 14px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
-            color: #6B7280;
-            font-size: 18px;
+            color: #94a3b8;
+            font-size: 1rem;
+            transition: color 0.2s;
         }
-
         .toggle-password:hover { color: var(--primary-dark); }
-
         .btn {
             width: 100%;
             padding: 12px;
-            background: var(--primary-dark);
+            background: linear-gradient(135deg, #1e293b, #334155);
             color: white;
             border: none;
             border-radius: 10px;
-            font-size: 16px;
+            font-size: 0.95rem;
             font-weight: 600;
+            font-family: inherit;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            box-shadow: 0 4px 12px rgba(30, 41, 59, 0.25);
         }
-
         .btn:hover {
-            background: var(--secondary);
+            background: linear-gradient(135deg, #334155, #475569);
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 41, 59, 0.35);
         }
-
+        .btn:active { transform: translateY(0); }
         .btn:disabled {
-            opacity: 0.7;
+            opacity: 0.6;
             cursor: not-allowed;
-            transform: none;
+            transform: none !important;
         }
-
         .btn .spinner {
             display: none;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border: 2px solid rgba(255,255,255,0.3);
             border-top-color: white;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-
         .btn.loading .spinner { display: inline-block; }
         .btn.loading .btn-text { opacity: 0.7; }
-
         @keyframes spin { to { transform: rotate(360deg); } }
-
         .register-link {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 24px;
+            font-size: 0.9rem;
+            color: #64748b;
         }
-
         .register-link a {
-            color: var(--primary-dark);
+            color: var(--accent);
             text-decoration: none;
             font-weight: 600;
+            transition: color 0.2s;
         }
-
-        .register-link a:hover { text-decoration: underline; }
-
+        .register-link a:hover { color: #0f766e; text-decoration: underline; }
         .alert {
-            padding: 12px;
+            padding: 12px 14px;
             border-radius: 10px;
             margin-bottom: 20px;
-            font-size: 14px;
+            font-size: 0.875rem;
         }
-
         .alert-error {
-            background: #FEE2E2;
-            color: #991B1B;
-            border-left: 4px solid var(--danger);
+            background: #fef2f2;
+            color: #991b1b;
+            border-left: 3px solid var(--danger);
         }
-
         .alert-success {
-            background: #D1FAE5;
-            color: #065F46;
-            border-left: 4px solid var(--success);
+            background: #f0fdf4;
+            color: #065f46;
+            border-left: 3px solid var(--success);
         }
-
-        .alert-info {
-            background: #DBEAFE;
-            color: #1E40AF;
-            border-left: 4px solid #3B82F6;
-        }
-
         .remember-row {
             display: flex;
             align-items: center;
             gap: 8px;
             margin-bottom: 20px;
         }
-
         .remember-row input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--primary-dark);
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent);
+            background: #f8fafc;
+            cursor: pointer;
         }
-
         .remember-row label {
             margin: 0;
             font-weight: 400;
             cursor: pointer;
+            font-size: 0.875rem;
+            color: #475569;
         }
-
         .toast {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 24px;
+            right: 24px;
             background: white;
-            border-radius: 10px;
-            padding: 1rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
             display: flex;
             align-items: center;
             gap: 12px;
-            min-width: 300px;
+            min-width: 320px;
+            max-width: 420px;
             z-index: 10000;
-            animation: slideIn 0.3s ease;
+            transform: translateX(120%);
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            border-left: 4px solid;
         }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .toast-success { border-left: 4px solid var(--success); }
-        .toast-error { border-left: 4px solid var(--danger); }
-        .toast-icon { font-size: 1.5rem; }
+        .toast.show { transform: translateX(0); opacity: 1; }
+        .toast-success { border-color: var(--success); }
+        .toast-error { border-color: var(--danger); }
+        .toast-icon { font-size: 1.4rem; flex-shrink: 0; }
         .toast-success .toast-icon { color: var(--success); }
         .toast-error .toast-icon { color: var(--danger); }
-        .toast-content { flex: 1; }
-        .toast-title { font-weight: 600; margin-bottom: 4px; }
-        .toast-message { font-size: 0.85rem; color: #6B7280; }
-        .toast-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #9CA3AF; }
+        .toast-content { flex: 1; min-width: 0; }
+        .toast-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 2px; }
+        .toast-message { font-size: 0.85rem; color: #64748b; }
+        .toast-close {
+            background: none; border: none; font-size: 1.3rem; cursor: pointer;
+            color: #94a3b8; padding: 0 0 0 8px; flex-shrink: 0;
+        }
+        .toast-close:hover { color: #475569; }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <div class="logo">💰</div>
+        <div class="logo">&#x1F4B0;</div>
         <h1>Finance Tracker</h1>
         <p class="subtitle">Manage your finances with ease</p>
 
@@ -273,7 +272,7 @@
             </div>
             <button type="submit" class="btn" id="loginBtn">
                 <span class="spinner"></span>
-                <span class="btn-text"><i class="fas fa-sign-in-alt"></i> Login</span>
+                <span class="btn-text"><i class="fas fa-right-to-bracket"></i> Login</span>
             </button>
         </form>
 
@@ -300,7 +299,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             var usernameField = document.getElementById('username');
             var passwordField = document.getElementById('password');
-
             usernameField.value = '';
             passwordField.value = '';
 
@@ -327,10 +325,14 @@
         function showToast(message, type) {
             var toast = document.createElement('div');
             toast.className = 'toast toast-' + type;
-            var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            var icon = type === 'success' ? 'fa-check-circle' : 'fa-circle-exclamation';
             toast.innerHTML = '<div class="toast-icon"><i class="fas ' + icon + '"></i></div><div class="toast-content"><div class="toast-title">' + (type === 'success' ? 'Success' : 'Info') + '</div><div class="toast-message">' + message + '</div></div><button class="toast-close" onclick="this.parentElement.remove()">&times;</button>';
             document.body.appendChild(toast);
-            setTimeout(function() { toast.remove(); }, 5000);
+            setTimeout(function() { toast.classList.add('show'); }, 50);
+            setTimeout(function() {
+                toast.classList.remove('show');
+                setTimeout(function() { toast.remove(); }, 350);
+            }, 4000);
         }
     </script>
 </body>
