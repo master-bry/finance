@@ -101,6 +101,11 @@
                 </a>
             </li>
         </ul>
+        <div class="sidebar-footer">
+            <a href="/profile" class="nav-link" th:classappend="${currentPage == 'profile' ? 'active' : ''}">
+                <i class="fas fa-user-cog"></i> Profile & Settings
+            </a>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -112,6 +117,9 @@
                 <p th:text="${pageSubtitle}">Manage your finances</p>
             </div>
             <div class="user-info">
+                <a href="/profile" class="logout-btn" style="margin-right:0.5rem;" title="Profile Settings">
+                    <i class="fas fa-user-cog"></i>
+                </a>
                 <a href="#" onclick="confirmLogout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>
@@ -285,7 +293,7 @@
     
     <!-- Performance optimization script -->
     <script>
-        // Optimize page loading// Modern loading system
+        // Page loading system (single definition)
         function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
             const overlay = document.getElementById('loadingOverlay');
             if (overlay) {
@@ -298,481 +306,25 @@
                 
                 overlay.classList.add('active');
                 
-                // Animate progress bar
                 if (progressFill) {
                     progressFill.style.width = '0%';
-                    setTimeout(() => {
-                        progressFill.style.width = '70%';
-                    }, 500);
-                    setTimeout(() => {
-                        progressFill.style.width = '90%';
-                    }, 1500);
+                    setTimeout(() => { progressFill.style.width = '70%'; }, 500);
+                    setTimeout(() => { progressFill.style.width = '90%'; }, 1500);
                 }
             }
         }
         
         function hideLoadingOverlay() {
             const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                overlay.classList.remove('active');
-            }
+            if (overlay) overlay.classList.remove('active');
         }
         
         function showSkeletonLoading() {
-            // Add skeleton loading to cards and tables
-            const cards = document.querySelectorAll('.section-card, .stat-card');
-            cards.forEach(card => {
-                card.classList.add('skeleton');
-            });
+            document.querySelectorAll('.section-card, .stat-card').forEach(card => card.classList.add('skeleton'));
         }
         
         function hideSkeletonLoading() {
-            // Remove skeleton loading
-            const skeletons = document.querySelectorAll('.skeleton');
-            skeletons.forEach(skeleton => {
-                skeleton.classList.remove('skeleton');
-            });
-        }
-        
-        // Modern loading system
-        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                const titleEl = overlay.querySelector('.loading-title');
-                const subtitleEl = overlay.querySelector('.loading-subtitle');
-                const progressFill = overlay.querySelector('.progress-fill');
-                
-                if (titleEl) titleEl.textContent = title;
-                if (subtitleEl) subtitleEl.textContent = subtitle;
-                
-                overlay.classList.add('active');
-                
-                // Animate progress bar
-                if (progressFill) {
-                    progressFill.style.width = '0%';
-                    setTimeout(() => {
-                        progressFill.style.width = '70%';
-                    }, 500);
-                    setTimeout(() => {
-                        progressFill.style.width = '90%';
-                    }, 1500);
-                }
-            }
-        }
-        
-        function hideLoadingOverlay() {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                overlay.classList.remove('active');
-            }
-        }
-        
-        function showSkeletonLoading() {
-            // Add skeleton loading to cards and tables
-            const cards = document.querySelectorAll('.section-card, .stat-card');
-            cards.forEach(card => {
-                card.classList.add('skeleton');
-            });
-        }
-        
-        function hideSkeletonLoading() {
-            // Remove skeleton loading
-            const skeletons = document.querySelectorAll('.skeleton');
-            skeletons.forEach(skeleton => {
-                skeleton.classList.remove('skeleton');
-            });
-        }
-        
-        // Modern loading system
-        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                const titleEl = overlay.querySelector('.loading-title');
-                const subtitleEl = overlay.querySelector('.loading-subtitle');
-                const progressFill = overlay.querySelector('.progress-fill');
-                
-                if (titleEl) titleEl.textContent = title;
-                if (subtitleEl) subtitleEl.textContent = subtitle;
-                
-                overlay.classList.add('active');
-                
-                // Animate progress bar
-                if (progressFill) {
-                    progressFill.style.width = '0%';
-                    setTimeout(() => {
-                        progressFill.style.width = '70%';
-                    }, 500);
-                    setTimeout(() => {
-                        progressFill.style.width = '90%';
-                    }, 1500);
-                }
-            }
-        }
-        
-        function hideLoadingOverlay() {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                overlay.classList.remove('active');
-            }
-        }
-        
-        function showSkeletonLoading() {
-            // Add skeleton loading to cards and tables
-            const cards = document.querySelectorAll('.section-card, .stat-card');
-            cards.forEach(card => {
-                card.classList.add('skeleton');
-            });
-        }
-        
-        function hideSkeletonLoading() {
-            // Remove skeleton loading
-            const skeletons = document.querySelectorAll('.skeleton');
-            skeletons.forEach(skeleton => {
-                skeleton.classList.remove('skeleton');
-            });
-        }
-        
-        // Modern loading system
-        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                const titleEl = overlay.querySelector('.loading-title');
-                const subtitleEl = overlay.querySelector('.loading-subtitle');
-                const progressFill = overlay.querySelector('.progress-fill');
-                
-                if (titleEl) titleEl.textContent = title;
-                if (subtitleEl) subtitleEl.textContent = subtitle;
-                
-                overlay.classList.add('active');
-                
-                // Animate progress bar
-                if (progressFill) {
-                    progressFill.style.width = '0%';
-                    setTimeout(() => {
-                        progressFill.style.width = '70%';
-                    }, 500);
-                    setTimeout(() => {
-                        progressFill.style.width = '90%';
-                    }, 1500);
-                }
-            }
-        }
-        
-        function hideLoadingOverlay() {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                overlay.classList.remove('active');
-            }
-        }
-        
-        function showSkeletonLoading() {
-            // Add skeleton loading to cards and tables
-            const cards = document.querySelectorAll('.section-card, .stat-card');
-            cards.forEach(card => {
-                card.classList.add('skeleton');
-            });
-        }
-        
-        function hideSkeletonLoading() {
-            // Remove skeleton loading
-            const skeletons = document.querySelectorAll('.skeleton');
-            skeletons.forEach(skeleton => {
-                skeleton.classList.remove('skeleton');
-            });
-        }
-        
-        // Modern loading system
-        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                const titleEl = overlay.querySelector('.loading-title');
-                const subtitleEl = overlay.querySelector('.loading-subtitle');
-                const progressFill = overlay.querySelector('.progress-fill');
-                
-                if (titleEl) titleEl.textContent = title;
-                if (subtitleEl) subtitleEl.textContent = subtitle;
-                
-                overlay.classList.add('active');
-                
-                // Animate progress bar
-                if (progressFill) {
-                    progressFill.style.width = '0%';
-                    setTimeout(() => {
-                        progressFill.style.width = '70%';
-                    }, 500);
-                    setTimeout(() => {
-                        progressFill.style.width = '90%';
-                    }, 1500);
-                }
-            }
-        }
-        
-        function hideLoadingOverlay() {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                overlay.classList.remove('active');
-            }
-        }
-        
-        function showSkeletonLoading() {
-            // Add skeleton loading to cards and tables
-            const cards = document.querySelectorAll('.section-card, .stat-card');
-            cards.forEach(card => {
-                card.classList.add('skeleton');
-            });
-        }
-        
-        function hideSkeletonLoading() {
-            // Remove skeleton loading
-            const skeletons = document.querySelectorAll('.skeleton');
-            skeletons.forEach(skeleton => {
-                skeleton.classList.remove('skeleton');
-            });
-        }
-        
-        // Modern loading system
-        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                const titleEl = overlay.querySelector('.loading-title');
-                const subtitleEl = overlay.querySelector('.loading-subtitle');
-                const progressFill = overlay.querySelector('.progress-fill');
-                
-                if (titleEl) titleEl.textContent = title;
-                if (subtitleEl) subtitleEl.textContent = subtitle;
-                
-                overlay.classList.add('active');
-                
-                // Animate progress bar
-                if (progressFill) {
-                    progressFill.style.width = '0%';
-                    setTimeout(() => {
-                        progressFill.style.width = '70%';
-                    }, 500);
-                    setTimeout(() => {
-                        progressFill.style.width = '90%';
-                    }, 1500);
-                }
-            }
-        }
-        
-        function hideLoadingOverlay() {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                overlay.classList.remove('active');
-            }
-        }
-        
-        function showSkeletonLoading() {
-            // Add skeleton loading to cards and tables
-            const cards = document.querySelectorAll('.section-card, .stat-card');
-            cards.forEach(card => {
-                card.classList.add('skeleton');
-            });
-        }
-        
-        function hideSkeletonLoading() {
-            // Remove skeleton loading
-            const skeletons = document.querySelectorAll('.skeleton');
-            skeletons.forEach(skeleton => {
-                skeleton.classList.remove('skeleton');
-            });
-        }
-        
-        // Modern loading system
-        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                const titleEl = overlay.querySelector('.loading-title');
-                const subtitleEl = overlay.querySelector('.loading-subtitle');
-                const progressFill = overlay.querySelector('.progress-fill');
-                
-                if (titleEl) titleEl.textContent = title;
-                if (subtitleEl) subtitleEl.textContent = subtitle;
-                
-                overlay.classList.add('active');
-                
-                // Animate progress bar
-                if (progressFill) {
-                    progressFill.style.width = '0%';
-                    setTimeout(() => {
-                        progressFill.style.width = '70%';
-                    }, 500);
-                    setTimeout(() => {
-                        progressFill.style.width = '90%';
-                    }, 1500);
-                }
-            }
-        }
-        
-        function hideLoadingOverlay() {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                overlay.classList.remove('active');
-            }
-        }
-        
-        function showSkeletonLoading() {
-            // Add skeleton loading to cards and tables
-            const cards = document.querySelectorAll('.section-card, .stat-card');
-            cards.forEach(card => {
-                card.classList.add('skeleton');
-            });
-        }
-        
-        function hideSkeletonLoading() {
-            // Remove skeleton loading
-            const skeletons = document.querySelectorAll('.skeleton');
-            skeletons.forEach(skeleton => {
-                skeleton.classList.remove('skeleton');
-            });
-        }
-        
-        // Modern loading system
-        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                const titleEl = overlay.querySelector('.loading-title');
-                const subtitleEl = overlay.querySelector('.loading-subtitle');
-                const progressFill = overlay.querySelector('.progress-fill');
-                
-                if (titleEl) titleEl.textContent = title;
-                if (subtitleEl) subtitleEl.textContent = subtitle;
-                
-                overlay.classList.add('active');
-                
-                // Animate progress bar
-                if (progressFill) {
-                    progressFill.style.width = '0%';
-                    setTimeout(() => {
-                        progressFill.style.width = '70%';
-                    }, 500);
-                    setTimeout(() => {
-                        progressFill.style.width = '90%';
-                    }, 1500);
-                }
-            }
-        }
-        
-        function hideLoadingOverlay() {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                overlay.classList.remove('active');
-            }
-        }
-        
-        function showSkeletonLoading() {
-            // Add skeleton loading to cards and tables
-            const cards = document.querySelectorAll('.section-card, .stat-card');
-            cards.forEach(card => {
-                card.classList.add('skeleton');
-            });
-        }
-        
-        function hideSkeletonLoading() {
-            // Remove skeleton loading
-            const skeletons = document.querySelectorAll('.skeleton');
-            skeletons.forEach(skeleton => {
-                skeleton.classList.remove('skeleton');
-            });
-        }
-        
-        // Modern loading system
-        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                const titleEl = overlay.querySelector('.loading-title');
-                const subtitleEl = overlay.querySelector('.loading-subtitle');
-                const progressFill = overlay.querySelector('.progress-fill');
-                
-                if (titleEl) titleEl.textContent = title;
-                if (subtitleEl) subtitleEl.textContent = subtitle;
-                
-                overlay.classList.add('active');
-                
-                // Animate progress bar
-                if (progressFill) {
-                    progressFill.style.width = '0%';
-                    setTimeout(() => {
-                        progressFill.style.width = '70%';
-                    }, 500);
-                    setTimeout(() => {
-                        progressFill.style.width = '90%';
-                    }, 1500);
-                }
-            }
-        }
-        
-        function hideLoadingOverlay() {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                overlay.classList.remove('active');
-            }
-        }
-        
-        function showSkeletonLoading() {
-            // Add skeleton loading to cards and tables
-            const cards = document.querySelectorAll('.section-card, .stat-card');
-            cards.forEach(card => {
-                card.classList.add('skeleton');
-            });
-        }
-        
-        function hideSkeletonLoading() {
-            // Remove skeleton loading
-            const skeletons = document.querySelectorAll('.skeleton');
-            skeletons.forEach(skeleton => {
-                skeleton.classList.remove('skeleton');
-            });
-        }
-        
-        // Modern loading system
-        function showLoadingOverlay(title = 'Processing your request', subtitle = 'Please wait, we\'re working on it...') {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                const titleEl = overlay.querySelector('.loading-title');
-                const subtitleEl = overlay.querySelector('.loading-subtitle');
-                const progressFill = overlay.querySelector('.progress-fill');
-                
-                if (titleEl) titleEl.textContent = title;
-                if (subtitleEl) subtitleEl.textContent = subtitle;
-                
-                overlay.classList.add('active');
-                
-                // Animate progress bar
-                if (progressFill) {
-                    progressFill.style.width = '0%';
-                    setTimeout(() => {
-                        progressFill.style.width = '70%';
-                    }, 500);
-                    setTimeout(() => {
-                        progressFill.style.width = '90%';
-                    }, 1500);
-                }
-            }
-        }
-        
-        function hideLoadingOverlay() {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                overlay.classList.remove('active');
-            }
-        }
-        
-        function showSkeletonLoading() {
-            // Add skeleton loading to cards and tables
-            const cards = document.querySelectorAll('.section-card, .stat-card');
-            cards.forEach(card => {
-                card.classList.add('skeleton');
-            });
-        }
-        
-        function hideSkeletonLoading() {
-            // Remove skeleton loading
-            const skeletons = document.querySelectorAll('.skeleton');
-            skeletons.forEach(skeleton => {
-                skeleton.classList.remove('skeleton');
-            });
+            document.querySelectorAll('.skeleton').forEach(skeleton => skeleton.classList.remove('skeleton'));
         }
         
         // Performance optimization script

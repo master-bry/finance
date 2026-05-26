@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Profile Settings</title>
+    <th:block layout:fragment="styles">
+        <style>
+            .profile-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5rem;
+            }
+            @media (max-width: 768px) {
+                .profile-grid { grid-template-columns: 1fr; }
+            }
+            .form-group { margin-bottom: 1.25rem; }
+            .form-group label {
+                display: block;
+                font-weight: 600;
+                margin-bottom: 0.4rem;
+                color: var(--gray-700);
+                font-size: 0.9rem;
+            }
+            .form-group input, .form-group select {
+                width: 100%;
+                padding: 0.7rem 1rem;
+                border: 2px solid var(--gray-200);
+                border-radius: 10px;
+                font-size: 0.95rem;
+                transition: border-color 0.2s;
+            }
+            .form-group input:focus, .form-group select:focus {
+                outline: none;
+                border-color: var(--primary-dark);
+            }
+            .form-group .input-hint {
+                font-size: 0.78rem;
+                color: var(--gray-400);
+                margin-top: 0.25rem;
+            }
+            .form-group .field-error {
+                color: var(--danger);
+                font-size: 0.8rem;
+                margin-top: 0.25rem;
+            }
+            .password-section {
+                border-top: 1px solid var(--gray-200);
+                padding-top: 1.5rem;
+                margin-top: 1.5rem;
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="section-card">
+            <div class="section-header">
+                <h4><i class="fas fa-user-cog"></i> Account Settings</h4>
+            </div>
+
+            <form method="post" action="/profile/update" class="profile-grid">
+                <div>
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Username</label>
+                        <input type="text" th:value="${profileUser.username}" disabled
+                               style="background: var(--gray-100); cursor: not-allowed;"
+                               title="Username cannot be changed"/>
+                        <div class="input-hint">Username cannot be changed</div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" th:value="${profileUser.email}" disabled
+                               style="background: var(--gray-100); cursor: not-allowed;"
+                               title="Email cannot be changed"/>
+                        <div class="input-hint">Email cannot be changed</div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-user-tag"></i> Full Name</label>
+                        <input type="text" name="fullName" th:value="${profileUser.fullName}"
+                               placeholder="Enter your full name"/>
+                    </div>
+                </div>
+                <div>
+                    <div class="form-group">
+                        <label><i class="fas fa-phone"></i> Phone Number</label>
+                        <input type="text" name="phoneNumber" th:value="${profileUser.phoneNumber}"
+                               placeholder="+255 123 456 789"/>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-money-bill-wave"></i> Preferred Currency</label>
+                        <select name="currency">
+                            <option th:each="cur : ${currencies}"
+                                    th:value="${cur}"
+                                    th:text="${cur}"
+                                    th:selected="${profileUser.currency == cur}"></option>
+                        </select>
+                        <div class="input-hint">This will be used as default for all reports and displays</div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-alt"></i> Member Since</label>
+                        <input type="text" th:value="${#temporals.format(profileUser.createdAt, 'dd MMM yyyy')}" disabled
+                               style="background: var(--gray-100); cursor: not-allowed;"/>
+                    </div>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <button type="submit" class="btn-filter" style="padding:0.75rem 2rem;">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="section-card">
+            <div class="section-header">
+                <h4><i class="fas fa-lock"></i> Change Password</h4>
+            </div>
+            <form method="post" action="/profile/change-password" style="max-width: 500px;">
+                <div class="form-group">
+                    <label>Current Password</label>
+                    <input type="password" name="currentPassword" required
+                           placeholder="Enter your current password"/>
+                </div>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" name="newPassword" required minlength="6"
+                           placeholder="At least 6 characters"/>
+                </div>
+                <div class="form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" name="confirmPassword" required minlength="6"
+                           placeholder="Re-enter new password"/>
+                </div>
+                <button type="submit" class="btn-filter" style="background: var(--warning); padding:0.75rem 2rem;">
+                    <i class="fas fa-key"></i> Change Password
+                </button>
+            </form>
+        </div>
+
+        <div class="section-card" style="border-left: 4px solid var(--gray-300);">
+            <div class="section-header">
+                <h4><i class="fas fa-info-circle"></i> Account Info</h4>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div>
+                    <small style="color: var(--gray-500);">Account ID</small>
+                    <div style="font-family: monospace; font-size:0.85rem;" th:text="${profileUser.id}"></div>
+                </div>
+                <div>
+                    <small style="color: var(--gray-500);">Role</small>
+                    <div><span class="badge badge-income" th:text="${profileUser.role}"></span></div>
+                </div>
+                <div>
+                    <small style="color: var(--gray-500);">Last Login</small>
+                    <div th:if="${profileUser.lastLogin != null}"
+                         th:text="${#temporals.format(profileUser.lastLogin, 'dd MMM yyyy HH:mm')}"></div>
+                    <div th:unless="${profileUser.lastLogin != null}">First login</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

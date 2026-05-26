@@ -111,6 +111,21 @@ body {
     font-weight: bold;
 }
 
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar .nav-menu {
+    flex: 1;
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+}
+
 /* ============================================
    MAIN CONTENT AREA
    ============================================ */

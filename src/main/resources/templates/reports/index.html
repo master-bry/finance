@@ -162,6 +162,22 @@
                                 th:text="${(tx.type == 'INCOME' ? '+' : '-') + #numbers.formatDecimal(tx.amount, 1, 0)}"></td>
                         </tr>
                     </tbody>
+                    <tfoot style="border-top: 2px solid var(--gray-300); font-weight: 700;">
+                        <tr>
+                            <td colspan="4" style="text-align:right; padding:0.6rem 1rem; color: var(--primary-dark);">TOTAL INCOME:</td>
+                            <td style="text-align:right; padding:0.6rem 1rem; color: var(--success);" th:text="'+' + ${#numbers.formatDecimal(monthlyReport.totalIncome, 1, 0)}"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" style="text-align:right; padding:0.4rem 1rem; color: var(--danger);">TOTAL EXPENSES:</td>
+                            <td style="text-align:right; padding:0.4rem 1rem; color: var(--danger);" th:text="'-' + ${#numbers.formatDecimal(monthlyReport.totalExpense, 1, 0)}"></td>
+                        </tr>
+                        <tr style="border-top: 1px solid var(--gray-200);">
+                            <td colspan="4" style="text-align:right; padding:0.6rem 1rem; font-size:1.05rem; color: var(--gray-800);">NET BALANCE:</td>
+                            <td style="text-align:right; padding:0.6rem 1rem; font-size:1.05rem;"
+                                th:classappend="${monthlyReport.balance >= 0 ? 'positive' : 'negative'}"
+                                th:text="${#numbers.formatDecimal(monthlyReport.balance, 1, 0)}"></td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </div>
@@ -193,6 +209,17 @@
                                 </div>
                                 <small style="color: var(--gray-500); font-size:0.78rem;"
                                        th:text="${#numbers.formatDecimal((entry.value / monthlyReport.totalExpense) * 100, 1, 1)} + '%'"></small>
+                            </td>
+                        </tr>
+                        <tr style="border-top: 2px solid var(--gray-300); font-weight: 700; background: var(--gray-50);">
+                            <td style="padding:0.6rem 1rem; color: var(--primary-dark);">TOTAL EXPENSES</td>
+                            <td class="negative" style="font-weight:700; padding:0.6rem 1rem; font-size:1rem;"
+                                th:text="${#numbers.formatDecimal(monthlyReport.totalExpense, 1, 0)}"></td>
+                            <td class="category-bar-cell" style="padding:0.6rem 1rem;">
+                                <div class="bar-bg">
+                                    <div class="bar-fill" style="width: 100%; background: var(--danger);"></div>
+                                </div>
+                                <small style="font-weight:600; color: var(--danger);">100%</small>
                             </td>
                         </tr>
                     </tbody>

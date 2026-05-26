@@ -28,18 +28,16 @@ public class SecurityConfig {
                 // Public resources and pages
                 .requestMatchers(
                     "/", "/login", "/register",
-                    "/auth/logout",               // custom logout page (if exists)
+                    "/auth/logout",
                     "/error/**",
                     "/css/**", "/js/**", "/static/**",
-                    "/images/**", "/debug/**", "/reset/**", "/fix-password",
-                    "/test-login/**", "/check-user", "/set-password/**",
-                    "/reencode-password", "/generate-hash", "/update-my-password"
+                    "/images/**"
                 ).permitAll()
                 // All authenticated pages
                 .requestMatchers(
                     "/dashboard", "/transactions/**", "/debts/**",
                     "/investments/**", "/goals/**", "/budget/**",
-                    "/excel/**", "/reports/**"
+                    "/excel/**", "/reports/**", "/profile/**"
                 ).authenticated()
                 .anyRequest().authenticated()
             )

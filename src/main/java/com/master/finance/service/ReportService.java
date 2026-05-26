@@ -13,12 +13,12 @@ import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -202,7 +202,7 @@ public class ReportService {
     }
 
     /**
-     * Internal sync method for Excel generation
+     * Internal sync method for Excel generation with professional formatting and totals
      */
     private byte[] generateMonthlyReportExcelSync(String userId, int year, int month) {
         List<Transaction> transactions = getMonthTransactions(userId, year, month);
@@ -212,25 +212,34 @@ public class ReportService {
         Map<String, Object> investmentReport = generateInvestmentReport(userId);
 
         try (Workbook workbook = new XSSFWorkbook()) {
+            CellStyle boldStyle = createBoldStyle(workbook);
+            CellStyle currencyStyle = createCurrencyStyle(workbook);
+            CellStyle headerStyle = createHeaderStyle(workbook);
+            CellStyle titleStyle = createTitleStyle(workbook);
+
             // 1. Summary Sheet
             Sheet summarySheet = workbook.createSheet("Summary");
-            createSummarySheet(summarySheet, summary, year, month);
+            createSummarySheet(summarySheet, summary, year, month, titleStyle, boldStyle, currencyStyle);
 
             // 2. Transactions Sheet
             Sheet transactionsSheet = workbook.createSheet("Transactions");
-            createTransactionsSheet(transactionsSheet, transactions);
+            createTransactionsSheet(transactionsSheet, transactions, boldStyle, currencyStyle, headerStyle);
 
             // 3. Expenses by Category Sheet
             Sheet categorySheet = workbook.createSheet("Expenses by Category");
-            createCategorySheet(categorySheet, expensesByCategory);
+            createCategorySheet(categorySheet, expensesByCategory, boldStyle, currencyStyle, headerStyle);
 
             // 4. Debt Summary Sheet
             Sheet debtSheet = workbook.createSheet("Debt Summary");
-            createDebtSheet(debtSheet, debtReport);
+            createDebtSheet(debtSheet, debtReport, titleStyle, boldStyle, currencyStyle);
 
             // 5. Investment Summary Sheet
             Sheet investmentSheet = workbook.createSheet("Investment Summary");
-            createInvestmentSheet(investmentSheet, investmentReport);
+            createInvestmentSheet(investmentSheet, investmentReport, titleStyle, boldStyle, currencyStyle);
+
+            for (int i = 0; i < 5; i++) {
+                workbook.getSheetAt(i).getRow(0).createCell(3).setCellValue("Generated: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+            }
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             workbook.write(bos);
@@ -240,10 +249,66 @@ public class ReportService {
         }
     }
 
-    private void createSummarySheet(Sheet sheet, Map<String, Object> summary, int year, int month) {
+    private CellStyle createBoldStyle(Workbook workbook) {
+        CellStyle style = workbook.createCellStyle();
+        Font font = workbook.createFont();
+        font.setBold(true);
+        font.setFontHeightInPoints((short) 11);
+        style.setFont(font);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+        return style;
+    }
+
+    private CellStyle createCurrencyStyle(Workbook workbook) {
+        CellStyle style = workbook.createCellStyle();
+        style.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+        return style;
+    }
+
+    private CellStyle createHeaderStyle(Workbook workbook) {
+        CellStyle style = workbook.createCellStyle();
+        Font font = workbook.createFont();
+        font.setBold(true);
+        font.setFontHeightInPoints((short) 11);
+        font.setColor(IndexedColors.WHITE.getIndex());
+        style.setFont(font);
+        style.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+        return style;
+    }
+
+    private CellStyle createTitleStyle(Workbook workbook) {
+        CellStyle style = workbook.createCellStyle();
+        Font font = workbook.createFont();
+        font.setBold(true);
+        font.setFontHeightInPoints((short) 14);
+        font.setColor(IndexedColors.DARK_BLUE.getIndex());
+        style.setFont(font);
+        return style;
+    }
+
+    private void createSummarySheet(Sheet sheet, Map<String, Object> summary, int year, int month,
+                                     CellStyle titleStyle, CellStyle boldStyle, CellStyle currencyStyle) {
         int rowNum = 0;
         Row titleRow = sheet.createRow(rowNum++);
-        titleRow.createCell(0).setCellValue("Monthly Financial Report - " + month + "/" + year);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("Monthly Financial Report - " + month + "/" + year);
+        titleCell.setCellStyle(titleStyle);
+        sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 2));
+
+        Row dateRow = sheet.createRow(rowNum++);
+        dateRow.createCell(0).setCellValue("Generated: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
 
         rowNum++;
         String[] labels = {"Total Income", "Total Expenses", "Net Savings", "Savings Rate", "Transaction Count"};
@@ -251,63 +316,150 @@ public class ReportService {
             summary.get("totalIncome"),
             summary.get("totalExpense"),
             summary.get("balance"),
-            summary.get("savingsRate") + "%",
+            summary.get("savingsRate"),
             summary.get("transactionCount")
         };
 
         for (int i = 0; i < labels.length; i++) {
             Row row = sheet.createRow(rowNum++);
-            row.createCell(0).setCellValue(labels[i]);
-            row.createCell(1).setCellValue(values[i].toString());
+            Cell labelCell = row.createCell(0);
+            labelCell.setCellValue(labels[i]);
+            labelCell.setCellStyle(boldStyle);
+            Cell valueCell = row.createCell(1);
+            if (i < 3) {
+                valueCell.setCellValue((Double) values[i]);
+                valueCell.setCellStyle(currencyStyle);
+            } else if (i == 3) {
+                valueCell.setCellValue(String.format("%.1f%%", values[i]));
+            } else {
+                valueCell.setCellValue(values[i].toString());
+            }
         }
 
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);
+        sheet.autoSizeColumn(2);
     }
 
-    private void createTransactionsSheet(Sheet sheet, List<Transaction> transactions) {
+    private void createTransactionsSheet(Sheet sheet, List<Transaction> transactions,
+                                          CellStyle boldStyle, CellStyle currencyStyle, CellStyle headerStyle) {
         int rowNum = 0;
         Row headerRow = sheet.createRow(rowNum++);
         String[] headers = {"Date", "Description", "Category", "Type", "Amount (TZS)"};
         for (int i = 0; i < headers.length; i++) {
-            headerRow.createCell(i).setCellValue(headers[i]);
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
         }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        double incomeTotal = 0;
+        double expenseTotal = 0;
+
         for (Transaction tx : transactions) {
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(tx.getDate().format(formatter));
             row.createCell(1).setCellValue(tx.getDescription());
             row.createCell(2).setCellValue(tx.getCategory());
             row.createCell(3).setCellValue(tx.getType());
-            row.createCell(4).setCellValue(tx.getAmount());
+            Cell amountCell = row.createCell(4);
+            amountCell.setCellValue(tx.getAmount());
+            amountCell.setCellStyle(currencyStyle);
+
+            if ("INCOME".equals(tx.getType())) incomeTotal += tx.getAmount();
+            else expenseTotal += tx.getAmount();
         }
+
+        rowNum++;
+        Row incomeTotalRow = sheet.createRow(rowNum++);
+        Cell incomeLabel = incomeTotalRow.createCell(0);
+        incomeLabel.setCellValue("TOTAL INCOME");
+        incomeLabel.setCellStyle(boldStyle);
+        incomeTotalRow.createCell(1).setCellStyle(boldStyle);
+        incomeTotalRow.createCell(2).setCellStyle(boldStyle);
+        incomeTotalRow.createCell(3).setCellStyle(boldStyle);
+        Cell incomeVal = incomeTotalRow.createCell(4);
+        incomeVal.setCellValue(incomeTotal);
+        incomeVal.setCellStyle(currencyStyle);
+
+        Row expenseTotalRow = sheet.createRow(rowNum++);
+        Cell expenseLabel = expenseTotalRow.createCell(0);
+        expenseLabel.setCellValue("TOTAL EXPENSES");
+        expenseLabel.setCellStyle(boldStyle);
+        expenseTotalRow.createCell(1).setCellStyle(boldStyle);
+        expenseTotalRow.createCell(2).setCellStyle(boldStyle);
+        expenseTotalRow.createCell(3).setCellStyle(boldStyle);
+        Cell expenseVal = expenseTotalRow.createCell(4);
+        expenseVal.setCellValue(expenseTotal);
+        expenseVal.setCellStyle(currencyStyle);
+
+        Row netRow = sheet.createRow(rowNum++);
+        Cell netLabel = netRow.createCell(0);
+        netLabel.setCellValue("NET BALANCE");
+        netLabel.setCellStyle(boldStyle);
+        netRow.createCell(1).setCellStyle(boldStyle);
+        netRow.createCell(2).setCellStyle(boldStyle);
+        netRow.createCell(3).setCellStyle(boldStyle);
+        Cell netVal = netRow.createCell(4);
+        netVal.setCellValue(incomeTotal - expenseTotal);
+        netVal.setCellStyle(currencyStyle);
 
         for (int i = 0; i < headers.length; i++) {
             sheet.autoSizeColumn(i);
         }
     }
 
-    private void createCategorySheet(Sheet sheet, Map<String, Double> expensesByCategory) {
+    private void createCategorySheet(Sheet sheet, Map<String, Double> expensesByCategory,
+                                      CellStyle boldStyle, CellStyle currencyStyle, CellStyle headerStyle) {
         int rowNum = 0;
         Row headerRow = sheet.createRow(rowNum++);
-        headerRow.createCell(0).setCellValue("Category");
-        headerRow.createCell(1).setCellValue("Amount (TZS)");
+        String[] headers = {"Category", "Amount (TZS)", "% of Total"};
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
+        }
+
+        double total = expensesByCategory.values().stream().mapToDouble(Double::doubleValue).sum();
 
         for (Map.Entry<String, Double> entry : expensesByCategory.entrySet()) {
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(entry.getKey());
-            row.createCell(1).setCellValue(entry.getValue());
+            Cell amtCell = row.createCell(1);
+            amtCell.setCellValue(entry.getValue());
+            amtCell.setCellStyle(currencyStyle);
+            double pct = total > 0 ? (entry.getValue() / total) * 100 : 0;
+            row.createCell(2).setCellValue(String.format("%.1f%%", pct));
         }
+
+        rowNum++;
+        Row totalRow = sheet.createRow(rowNum++);
+        Cell totalLabel = totalRow.createCell(0);
+        totalLabel.setCellValue("TOTAL EXPENSES");
+        totalLabel.setCellStyle(boldStyle);
+        Cell totalAmt = totalRow.createCell(1);
+        totalAmt.setCellValue(total);
+        totalAmt.setCellStyle(currencyStyle);
+        totalRow.createCell(2).setCellStyle(boldStyle);
+
+        Row balanceRow = sheet.createRow(rowNum++);
+        Cell balanceLabel = balanceRow.createCell(0);
+        balanceLabel.setCellValue("NOTE");
+        balanceLabel.setCellStyle(boldStyle);
+        balanceRow.createCell(1).setCellValue("Expense categories are based on allocated budget categories");
 
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);
+        sheet.autoSizeColumn(2);
     }
 
-    private void createDebtSheet(Sheet sheet, Map<String, Object> debtReport) {
+    private void createDebtSheet(Sheet sheet, Map<String, Object> debtReport,
+                                  CellStyle titleStyle, CellStyle boldStyle, CellStyle currencyStyle) {
         int rowNum = 0;
         Row titleRow = sheet.createRow(rowNum++);
-        titleRow.createCell(0).setCellValue("Debt Summary");
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("Debt Summary");
+        titleCell.setCellStyle(titleStyle);
 
         rowNum++;
         String[] labels = {"Owed to Me", "I Owe", "Net Position", "Active Debts"};
@@ -320,18 +472,29 @@ public class ReportService {
 
         for (int i = 0; i < labels.length; i++) {
             Row row = sheet.createRow(rowNum++);
-            row.createCell(0).setCellValue(labels[i]);
-            row.createCell(1).setCellValue(values[i].toString());
+            Cell labelCell = row.createCell(0);
+            labelCell.setCellValue(labels[i]);
+            labelCell.setCellStyle(boldStyle);
+            Cell valueCell = row.createCell(1);
+            if (i < 3) {
+                valueCell.setCellValue((Double) values[i]);
+                valueCell.setCellStyle(currencyStyle);
+            } else {
+                valueCell.setCellValue(values[i].toString());
+            }
         }
 
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);
     }
 
-    private void createInvestmentSheet(Sheet sheet, Map<String, Object> investmentReport) {
+    private void createInvestmentSheet(Sheet sheet, Map<String, Object> investmentReport,
+                                        CellStyle titleStyle, CellStyle boldStyle, CellStyle currencyStyle) {
         int rowNum = 0;
         Row titleRow = sheet.createRow(rowNum++);
-        titleRow.createCell(0).setCellValue("Investment Summary");
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("Investment Summary");
+        titleCell.setCellStyle(titleStyle);
 
         rowNum++;
         String[] labels = {"Total Invested", "Current Value", "Profit/Loss", "ROI (%)", "Investment Count"};
@@ -339,14 +502,24 @@ public class ReportService {
             investmentReport.get("totalInvested"),
             investmentReport.get("totalCurrentValue"),
             investmentReport.get("totalProfitLoss"),
-            investmentReport.get("roiPercent") + "%",
+            investmentReport.get("roiPercent"),
             investmentReport.get("investmentCount")
         };
 
         for (int i = 0; i < labels.length; i++) {
             Row row = sheet.createRow(rowNum++);
-            row.createCell(0).setCellValue(labels[i]);
-            row.createCell(1).setCellValue(values[i].toString());
+            Cell labelCell = row.createCell(0);
+            labelCell.setCellValue(labels[i]);
+            labelCell.setCellStyle(boldStyle);
+            Cell valueCell = row.createCell(1);
+            if (i < 3) {
+                valueCell.setCellValue((Double) values[i]);
+                valueCell.setCellStyle(currencyStyle);
+            } else if (i == 3) {
+                valueCell.setCellValue(String.format("%.1f%%", values[i]));
+            } else {
+                valueCell.setCellValue(values[i].toString());
+            }
         }
 
         sheet.autoSizeColumn(0);
@@ -384,7 +557,7 @@ public class ReportService {
     }
 
     /**
-     * Internal sync method for PDF generation
+     * Internal sync method for PDF generation with professional formatting and totals
      */
     private byte[] generateMonthlyReportPdfSync(String userId, int year, int month) {
         List<Transaction> transactions = getMonthTransactions(userId, year, month);
@@ -398,117 +571,154 @@ public class ReportService {
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf);
 
-            // Title
             PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
             PdfFont normalFont = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+            PdfFont italicFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_OBLIQUE);
 
             String monthName = Month.of(month).name();
             Paragraph title = new Paragraph("Financial Report - " + monthName + " " + year)
                     .setFont(boldFont)
-                    .setFontSize(20)
+                    .setFontSize(22)
                     .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(20);
+                    .setMarginBottom(5);
             document.add(title);
 
-            // Monthly Summary Section
+            Paragraph generatedDate = new Paragraph("Generated: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm")))
+                    .setFont(italicFont)
+                    .setFontSize(9)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginBottom(20);
+            document.add(generatedDate);
+
             document.add(new Paragraph("Monthly Summary")
                     .setFont(boldFont)
-                    .setFontSize(14)
-                    .setMarginTop(20)
+                    .setFontSize(16)
+                    .setMarginTop(15)
                     .setMarginBottom(10));
 
             Table summaryTable = new Table(UnitValue.createPercentArray(new float[]{50, 50}))
                     .useAllAvailableWidth();
-            summaryTable.addHeaderCell(createCell("Total Income", boldFont, true));
-            summaryTable.addHeaderCell(createCell(formatCurrency(summary.get("totalIncome")), normalFont, false));
-            summaryTable.addHeaderCell(createCell("Total Expenses", boldFont, true));
-            summaryTable.addHeaderCell(createCell(formatCurrency(summary.get("totalExpense")), normalFont, false));
-            summaryTable.addHeaderCell(createCell("Net Savings", boldFont, true));
-            summaryTable.addHeaderCell(createCell(formatCurrency(summary.get("balance")), normalFont, false));
-            summaryTable.addHeaderCell(createCell("Savings Rate", boldFont, true));
-            summaryTable.addHeaderCell(createCell(formatPercent(summary.get("savingsRate")), normalFont, false));
+            summaryTable.addHeaderCell(createPdfCell("Total Income", boldFont, true));
+            summaryTable.addHeaderCell(createPdfCell(formatCurrency(summary.get("totalIncome")), boldFont, true));
+            summaryTable.addHeaderCell(createPdfCell("Total Expenses", boldFont, true));
+            summaryTable.addHeaderCell(createPdfCell(formatCurrency(summary.get("totalExpense")), boldFont, true));
+            summaryTable.addHeaderCell(createPdfCell("Net Savings", boldFont, true));
+            summaryTable.addHeaderCell(createPdfCell(formatCurrency(summary.get("balance")), boldFont, true));
+            summaryTable.addHeaderCell(createPdfCell("Savings Rate", boldFont, true));
+            summaryTable.addHeaderCell(createPdfCell(formatPercent(summary.get("savingsRate")), boldFont, true));
             document.add(summaryTable);
 
-            // Transactions Section
             document.add(new Paragraph("Transactions")
                     .setFont(boldFont)
-                    .setFontSize(14)
+                    .setFontSize(16)
                     .setMarginTop(20)
                     .setMarginBottom(10));
 
-            Table transactionTable = new Table(UnitValue.createPercentArray(new float[]{25, 30, 20, 15, 10}))
+            Table transactionTable = new Table(UnitValue.createPercentArray(new float[]{18, 28, 18, 18, 18}))
                     .useAllAvailableWidth();
-            transactionTable.addHeaderCell(createCell("Date", boldFont, true));
-            transactionTable.addHeaderCell(createCell("Description", boldFont, true));
-            transactionTable.addHeaderCell(createCell("Category", boldFont, true));
-            transactionTable.addHeaderCell(createCell("Type", boldFont, true));
-            transactionTable.addHeaderCell(createCell("Amount", boldFont, true));
+            transactionTable.addHeaderCell(createPdfCell("Date", boldFont, true));
+            transactionTable.addHeaderCell(createPdfCell("Description", boldFont, true));
+            transactionTable.addHeaderCell(createPdfCell("Category", boldFont, true));
+            transactionTable.addHeaderCell(createPdfCell("Type", boldFont, true));
+            transactionTable.addHeaderCell(createPdfCell("Amount", boldFont, true));
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
+            double incomeTotal = 0;
+            double expenseTotal = 0;
+
             for (Transaction tx : transactions) {
-                transactionTable.addCell(createCell(tx.getDate().format(formatter), normalFont, false));
-                transactionTable.addCell(createCell(tx.getDescription(), normalFont, false));
-                transactionTable.addCell(createCell(tx.getCategory(), normalFont, false));
-                transactionTable.addCell(createCell(tx.getType(), normalFont, false));
-                transactionTable.addCell(createCell(formatCurrency(tx.getAmount()), normalFont, false));
+                transactionTable.addCell(createPdfCell(tx.getDate().format(formatter), normalFont, false));
+                transactionTable.addCell(createPdfCell(tx.getDescription(), normalFont, false));
+                transactionTable.addCell(createPdfCell(tx.getCategory(), normalFont, false));
+                transactionTable.addCell(createPdfCell(tx.getType(), normalFont, false));
+                transactionTable.addCell(createPdfCell(formatCurrency(tx.getAmount()), normalFont, false));
+                if ("INCOME".equals(tx.getType())) incomeTotal += tx.getAmount();
+                else expenseTotal += tx.getAmount();
             }
+
+            transactionTable.addCell(createPdfCell("", normalFont, false));
+            transactionTable.addCell(createPdfCell("", normalFont, false));
+            transactionTable.addCell(createPdfCell("", normalFont, false));
+            transactionTable.addCell(createPdfCell("TOTAL INCOME", boldFont, true));
+            transactionTable.addCell(createPdfCell(formatCurrency(incomeTotal), boldFont, true));
+
+            transactionTable.addCell(createPdfCell("", normalFont, false));
+            transactionTable.addCell(createPdfCell("", normalFont, false));
+            transactionTable.addCell(createPdfCell("", normalFont, false));
+            transactionTable.addCell(createPdfCell("TOTAL EXPENSES", boldFont, true));
+            transactionTable.addCell(createPdfCell(formatCurrency(expenseTotal), boldFont, true));
+
+            transactionTable.addCell(createPdfCell("", normalFont, false));
+            transactionTable.addCell(createPdfCell("", normalFont, false));
+            transactionTable.addCell(createPdfCell("", normalFont, false));
+            transactionTable.addCell(createPdfCell("NET BALANCE", boldFont, true));
+            transactionTable.addCell(createPdfCell(formatCurrency(incomeTotal - expenseTotal), boldFont, true));
+
             document.add(transactionTable);
 
-            // Expenses by Category Section
             if (!expensesByCategory.isEmpty()) {
                 document.add(new Paragraph("Expenses by Category")
                         .setFont(boldFont)
-                        .setFontSize(14)
+                        .setFontSize(16)
                         .setMarginTop(20)
                         .setMarginBottom(10));
 
                 Table categoryTable = new Table(UnitValue.createPercentArray(new float[]{50, 50}))
                         .useAllAvailableWidth();
-                categoryTable.addHeaderCell(createCell("Category", boldFont, true));
-                categoryTable.addHeaderCell(createCell("Amount", boldFont, true));
+                categoryTable.addHeaderCell(createPdfCell("Category", boldFont, true));
+                categoryTable.addHeaderCell(createPdfCell("Amount", boldFont, true));
 
+                double catTotal = 0;
                 for (Map.Entry<String, Double> entry : expensesByCategory.entrySet()) {
-                    categoryTable.addCell(createCell(entry.getKey(), normalFont, false));
-                    categoryTable.addCell(createCell(formatCurrency(entry.getValue()), normalFont, false));
+                    categoryTable.addCell(createPdfCell(entry.getKey(), normalFont, false));
+                    categoryTable.addCell(createPdfCell(formatCurrency(entry.getValue()), normalFont, false));
+                    catTotal += entry.getValue();
                 }
+
+                categoryTable.addCell(createPdfCell("TOTAL", boldFont, true));
+                categoryTable.addCell(createPdfCell(formatCurrency(catTotal), boldFont, true));
                 document.add(categoryTable);
             }
 
-            // Debt Summary Section
             document.add(new Paragraph("Debt Summary")
                     .setFont(boldFont)
-                    .setFontSize(14)
+                    .setFontSize(16)
                     .setMarginTop(20)
                     .setMarginBottom(10));
 
             Table debtTable = new Table(UnitValue.createPercentArray(new float[]{50, 50}))
                     .useAllAvailableWidth();
-            debtTable.addHeaderCell(createCell("Owed to Me", boldFont, true));
-            debtTable.addHeaderCell(createCell(formatCurrency(debtReport.get("totalOwedToMe")), normalFont, false));
-            debtTable.addHeaderCell(createCell("I Owe", boldFont, true));
-            debtTable.addHeaderCell(createCell(formatCurrency(debtReport.get("totalIOwe")), normalFont, false));
-            debtTable.addHeaderCell(createCell("Net Position", boldFont, true));
-            debtTable.addHeaderCell(createCell(formatCurrency(debtReport.get("netPosition")), normalFont, false));
+            debtTable.addHeaderCell(createPdfCell("Owed to Me", boldFont, true));
+            debtTable.addHeaderCell(createPdfCell(formatCurrency(debtReport.get("totalOwedToMe")), boldFont, true));
+            debtTable.addHeaderCell(createPdfCell("I Owe", boldFont, true));
+            debtTable.addHeaderCell(createPdfCell(formatCurrency(debtReport.get("totalIOwe")), boldFont, true));
+            debtTable.addHeaderCell(createPdfCell("Net Position", boldFont, true));
+            debtTable.addHeaderCell(createPdfCell(formatCurrency(debtReport.get("netPosition")), boldFont, true));
             document.add(debtTable);
 
-            // Investment Summary Section
             document.add(new Paragraph("Investment Summary")
                     .setFont(boldFont)
-                    .setFontSize(14)
+                    .setFontSize(16)
                     .setMarginTop(20)
                     .setMarginBottom(10));
 
             Table investmentTable = new Table(UnitValue.createPercentArray(new float[]{50, 50}))
                     .useAllAvailableWidth();
-            investmentTable.addHeaderCell(createCell("Total Invested", boldFont, true));
-            investmentTable.addHeaderCell(createCell(formatCurrency(investmentReport.get("totalInvested")), normalFont, false));
-            investmentTable.addHeaderCell(createCell("Current Value", boldFont, true));
-            investmentTable.addHeaderCell(createCell(formatCurrency(investmentReport.get("totalCurrentValue")), normalFont, false));
-            investmentTable.addHeaderCell(createCell("Profit/Loss", boldFont, true));
-            investmentTable.addHeaderCell(createCell(formatCurrency(investmentReport.get("totalProfitLoss")), normalFont, false));
-            investmentTable.addHeaderCell(createCell("ROI", boldFont, true));
-            investmentTable.addHeaderCell(createCell(formatPercent(investmentReport.get("roiPercent")), normalFont, false));
+            investmentTable.addHeaderCell(createPdfCell("Total Invested", boldFont, true));
+            investmentTable.addHeaderCell(createPdfCell(formatCurrency(investmentReport.get("totalInvested")), boldFont, true));
+            investmentTable.addHeaderCell(createPdfCell("Current Value", boldFont, true));
+            investmentTable.addHeaderCell(createPdfCell(formatCurrency(investmentReport.get("totalCurrentValue")), boldFont, true));
+            investmentTable.addHeaderCell(createPdfCell("Profit/Loss", boldFont, true));
+            investmentTable.addHeaderCell(createPdfCell(formatCurrency(investmentReport.get("totalProfitLoss")), boldFont, true));
+            investmentTable.addHeaderCell(createPdfCell("ROI", boldFont, true));
+            investmentTable.addHeaderCell(createPdfCell(formatPercent(investmentReport.get("roiPercent")), boldFont, true));
             document.add(investmentTable);
+
+            Paragraph footer = new Paragraph("\n\nGenerated by Finance Tracker")
+                    .setFont(italicFont)
+                    .setFontSize(8)
+                    .setTextAlignment(TextAlignment.CENTER);
+            document.add(footer);
 
             document.close();
             return bos.toByteArray();
@@ -517,13 +727,12 @@ public class ReportService {
         }
     }
 
-    private Cell createCell(String text, PdfFont font, boolean isHeader) {
-        Cell cell = new Cell();
-        Paragraph paragraph = new Paragraph(text).setFont(font).setFontSize(10);
+    private com.itextpdf.layout.element.Cell createPdfCell(String text, PdfFont font, boolean isHeader) {
+        com.itextpdf.layout.element.Cell cell = new com.itextpdf.layout.element.Cell();
+        Paragraph paragraph = new Paragraph(text).setFont(font).setFontSize(9);
         cell.add(paragraph);
         if (isHeader) {
             cell.setBackgroundColor(ColorConstants.LIGHT_GRAY);
-            cell.setBold();
         }
         return cell;
     }
