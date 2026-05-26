@@ -62,20 +62,14 @@ public class DashboardController {
         LocalDateTime endOfMonth = selectedPeriod.atEndOfMonth().atTime(23, 59, 59);
         LocalDateTime now = LocalDateTime.now();
 
-        System.out.println("Dashboard: userId=" + userId);
-        System.out.println("Dashboard: period=" + selectedPeriod + ", startOfMonth=" + startOfMonth + ", endOfMonth=" + endOfMonth);
-
         double totalIncome = transactionService.getTotalIncome(userId, startOfMonth, endOfMonth);
         double totalExpense = transactionService.getTotalExpense(userId, startOfMonth, endOfMonth);
         
-        // Get opening balance (balance before the selected month) - same logic as DailyEntry
         double openingBalance = dailyEntryService.getBalanceBeforeDate(userId, startOfMonth);
         double currentMonthBalance = totalIncome - totalExpense;
         double totalBalance = openingBalance + currentMonthBalance;
         
         double savingsRate = totalIncome > 0 ? (currentMonthBalance / totalIncome) * 100 : 0;
-
-        System.out.println("Dashboard: totalIncome=" + totalIncome + ", totalExpense=" + totalExpense + ", currentMonthBalance=" + currentMonthBalance + ", openingBalance=" + openingBalance + ", totalBalance=" + totalBalance);
 
         double totalOwedToMe = debtService.getTotalOwedToMe(userId);
         double totalIOwe = debtService.getTotalIOwe(userId);

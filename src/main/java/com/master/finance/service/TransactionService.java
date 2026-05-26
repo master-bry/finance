@@ -2,6 +2,8 @@ package com.master.finance.service;
 
 import com.master.finance.model.Transaction;
 import com.master.finance.repository.TransactionRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
@@ -16,6 +18,8 @@ import java.util.Optional;
 
 @Service
 public class TransactionService {
+
+    private static final Logger log = LoggerFactory.getLogger(TransactionService.class);
 
     @Autowired
     private TransactionRepository transactionRepository;
@@ -128,14 +132,13 @@ public class TransactionService {
             budgetService.updateBudgetActuals(userId, month);
         } catch (Exception e) {
             // Log error but don't fail transaction
-            System.err.println("Failed to update budget actuals: " + e.getMessage());
+            log.error("Failed to update budget actuals: {}", e.getMessage());
         }
     }
 
     @Cacheable(value = "dashboard", key = "#userId + '_income_' + #start.toString() + '_' + #end.toString()")
     public Double getTotalIncome(String userId, LocalDateTime start, LocalDateTime end) {
         List<Transaction> transactions = transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end);
-        System.out.println("TransactionService.getTotalIncome: userId=" + userId + ", start=" + start + ", end=" + end + ", transactions found=" + transactions.size());
         return transactions.stream()
                 .filter(t -> "INCOME".equals(t.getType()))
                 .mapToDouble(Transaction::getAmount)

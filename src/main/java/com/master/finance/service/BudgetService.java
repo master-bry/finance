@@ -4,6 +4,8 @@ import com.master.finance.model.Budget;
 import com.master.finance.model.Transaction;
 import com.master.finance.repository.BudgetRepository;
 import com.master.finance.repository.TransactionRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,8 @@ import java.util.*;
 
 @Service
 public class BudgetService {
+
+    private static final Logger log = LoggerFactory.getLogger(BudgetService.class);
 
     @Autowired
     private BudgetRepository budgetRepository;
@@ -289,9 +293,9 @@ public class BudgetService {
             
             // This would require getting all users - for now, we'll create on-demand
             // Implementation would depend on UserService.getAllUsers() method
-            System.out.println("Monthly budget creation scheduled for: " + currentMonth);
+            log.info("Monthly budget creation scheduled for: {}", currentMonth);
         } catch (Exception e) {
-            System.err.println("Error in monthly budget creation: " + e.getMessage());
+            log.error("Error in monthly budget creation: {}", e.getMessage());
         }
     }
 
