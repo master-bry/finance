@@ -1,5 +1,6 @@
 package com.master.finance.config;
 
+import com.master.finance.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,22 +11,22 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-import com.master.finance.service.CustomUserDetailsService;
-
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)  // Added for method-level security (optional but good)
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
+
+    @Autowired
+    private CustomAuthenticationFailureHandler authenticationFailureHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
-                // Public resources and pages
                 .requestMatchers(
                     "/", "/login", "/register",
                     "/auth/logout",
@@ -33,7 +34,6 @@ public class SecurityConfig {
                     "/css/**", "/js/**", "/static/**",
                     "/images/**"
                 ).permitAll()
-                // All authenticated pages
                 .requestMatchers(
                     "/dashboard", "/transactions/**", "/debts/**",
                     "/investments/**", "/goals/**", "/budget/**",
@@ -44,18 +44,38 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/login")
                 .defaultSuccessUrl("/dashboard", true)
+                .failureHandler(authenticationFailureHandler)
                 .permitAll()
+            )
+            .rememberMe(remember -> remember
+                .key("FinanceTrackerSecureKey_2024!@#$")
+                .tokenValiditySeconds(1209600)
+                .userDetailsService(userDetailsService)
+                .rememberMeParameter("remember-me")
+                .authenticationSuccessHandler((request, response, authentication) -> {
+                    response.sendRedirect("/dashboard");
+                })
             )
             .logout(logout -> logout
-                .logoutSuccessUrl("/login?logout")   // FIXED: use standard redirect instead of /auth/logout
+                .logoutSuccessUrl("/login?logout")
                 .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID")
+                .deleteCookies("JSESSIONID", "remember-me")
                 .permitAll()
             )
+            .sessionManagement(session -> session
+                .sessionFixation().migrateSession()
+                .maximumSessions(1)
+                .maxSessionsPreventsLogin(false)
+            )
+            .headers(headers -> headers
+                .contentTypeOptions(options -> options.disable())
+                .frameOptions(frame -> frame.deny())
+                .httpStrictTransportSecurity(hsts -> hsts
+                    .includeSubDomains(true)
+                    .maxAgeInSeconds(31536000)
+                )
+            )
             .userDetailsService(userDetailsService);
-
-        // Optional: if you need H2 console, uncomment next line
-        // http.headers().frameOptions().disable();
 
         return http.build();
     }

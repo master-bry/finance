@@ -3,13 +3,11 @@ package com.master.finance.controller;
 import com.master.finance.model.User;
 import com.master.finance.service.AuditService;
 import com.master.finance.service.UserService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -44,16 +42,17 @@ public class ProfileController {
 
     @PostMapping("/update")
     public String updateProfile(Authentication authentication,
-                                @Valid @ModelAttribute("profileUser") User updatedUser,
-                                BindingResult result,
+                                @RequestParam(required = false) String fullName,
+                                @RequestParam(required = false) String phoneNumber,
+                                @RequestParam(required = false) String currency,
                                 RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", "Please fix the validation errors");
-            return "redirect:/profile";
-        }
-
         String userId = userService.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found")).getId();
+
+        User updatedUser = new User();
+        updatedUser.setFullName(fullName);
+        updatedUser.setPhoneNumber(phoneNumber);
+        if (currency != null) updatedUser.setCurrency(currency);
 
         userService.updateProfile(userId, updatedUser);
         auditService.logAsync(userId, "PROFILE_UPDATE", "User", userId, "Profile updated");

@@ -114,6 +114,11 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         
         .btn:hover {
@@ -122,9 +127,25 @@
         }
         
         .btn:disabled {
-            opacity: 0.6;
+            opacity: 0.7;
             cursor: not-allowed;
+            transform: none;
         }
+
+        .btn .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .btn.loading .spinner { display: inline-block; }
+        .btn.loading .btn-text { opacity: 0.7; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
         
         .login-link {
             text-align: center;
@@ -276,7 +297,10 @@
                 </div>
             </div>
             
-            <button type="submit" class="btn" id="submitBtn">Create Account</button>
+            <button type="submit" class="btn" id="submitBtn">
+                <span class="spinner"></span>
+                <span class="btn-text">Create Account</span>
+            </button>
         </form>
         
         <div class="login-link">
@@ -385,9 +409,8 @@
             if (!isValid) {
                 e.preventDefault();
             } else {
-                // Disable button to prevent double submission
+                submitBtn.classList.add('loading');
                 submitBtn.disabled = true;
-                submitBtn.textContent = 'Creating Account...';
             }
         });
 

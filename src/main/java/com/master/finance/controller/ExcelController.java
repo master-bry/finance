@@ -58,7 +58,7 @@ public class ExcelController {
         model.addAttribute("allBills", allBills);
         model.addAttribute("pendingBills", pendingBills);
         model.addAttribute("currentPage", "daily");
-        model.addAttribute("pageSubtitle", "Record your daily expenses and income");
+        model.addAttribute("pageSubtitle", "Daily cash journal — log income, expenses, and track your daily balance");
         model.addAttribute("title", "Daily Entry");
 
         return "excel/daily-entry";
@@ -285,7 +285,7 @@ public class ExcelController {
         List<DailyEntry> history = dailyEntryService.getUserEntries(userId);
         model.addAttribute("history", history);
         model.addAttribute("currentPage", "daily");
-        model.addAttribute("pageSubtitle", "Daily Entry History");
+        model.addAttribute("pageSubtitle", "Historical daily entries — review past financial activity");
         model.addAttribute("title", "History");
         return "excel/history";
     }

@@ -113,9 +113,16 @@
         <!-- Top Bar -->
         <div class="top-bar">
             <div class="welcome-text">
-                <h3>Welcome back, <span sec:authentication="name"></span>!</h3>
+                <h3><span id="greeting">Welcome</span>, <span sec:authentication="name"></span>!</h3>
                 <p th:text="${pageSubtitle}">Manage your finances</p>
             </div>
+            <script>
+                var h = new Date().getHours();
+                var g = document.getElementById('greeting');
+                if (h < 12) g.textContent = 'Good morning';
+                else if (h < 17) g.textContent = 'Good afternoon';
+                else g.textContent = 'Good evening';
+            </script>
             <div class="user-info">
                 <a href="/profile" class="logout-btn" style="margin-right:0.5rem;" title="Profile Settings">
                     <i class="fas fa-user-cog"></i>
@@ -163,6 +170,15 @@
         <!-- Page Content -->
         <div layout:fragment="content">
             <!-- Page-specific content goes here -->
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-content">
+                <span>&copy; <span th:text="${#temporals.year(#temporals.createNow())}"></span> FinanceTracker. All rights reserved.</span>
+                <span class="footer-separator">|</span>
+                <span>Built with <i class="fas fa-heart" style="color: var(--danger);"></i> for financial freedom</span>
+            </div>
         </div>
     </div>
     <!-- Delete Confirmation Modal -->

@@ -2,6 +2,7 @@ package com.master.finance.controller;
 
 import com.master.finance.model.User;
 import com.master.finance.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +32,12 @@ public class AuthController {
     public String login(@RequestParam(value = "error", required = false) String error,
                         @RequestParam(value = "logout", required = false) String logout,
                         @RequestParam(value = "registered", required = false) String registered,
-                        Model model) {
+                        Model model, HttpServletResponse response) {
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, private");
+        response.setHeader("Pragma", "no-cache");
+        response.setHeader("Expires", "0");
         if (error != null) {
-            model.addAttribute("error", "Invalid username or password");
+            model.addAttribute("error", error);
             log.warn("Login failed attempt");
         }
         if (logout != null) {

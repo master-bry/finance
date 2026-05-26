@@ -134,6 +134,36 @@ body {
     margin-left: var(--sidebar-width);
     padding: 1.5rem;
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+.footer {
+    margin-top: auto;
+    padding: 1rem 0.5rem 0.5rem;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--gray-500);
+    border-top: 1px solid var(--gray-300);
+    background: var(--white);
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -1px 5px rgba(0,0,0,0.03);
+}
+
+.footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.footer-separator {
+    color: var(--gray-300);
 }
 
 /* ============================================

@@ -17,9 +17,9 @@ public class AsyncConfig {
     @Bean(name = "taskExecutor")
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(5);
-        executor.setQueueCapacity(100);
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(15);
+        executor.setQueueCapacity(200);
         executor.setThreadNamePrefix("Finance-Async-");
         executor.setRejectedExecutionHandler(new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy());
         executor.initialize();
@@ -29,9 +29,9 @@ public class AsyncConfig {
     @Bean(name = "reportExecutor")
     public Executor reportExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(1);
-        executor.setMaxPoolSize(2);
-        executor.setQueueCapacity(50);
+        executor.setCorePoolSize(3);
+        executor.setMaxPoolSize(6);
+        executor.setQueueCapacity(100);
         executor.setThreadNamePrefix("Finance-Report-");
         executor.setRejectedExecutionHandler(new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy());
         executor.initialize();

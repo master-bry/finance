@@ -158,7 +158,7 @@ public class DashboardController {
 
         // Layout attributes
         model.addAttribute("currentPage", "dashboard");
-        model.addAttribute("pageSubtitle", "Here's your financial overview");
+        model.addAttribute("pageSubtitle", "Financial dashboard — track income, expenses, and portfolio performance at a glance");
         model.addAttribute("title", "Dashboard");
 
         return "dashboard";
