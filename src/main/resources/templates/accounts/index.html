@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Bank Accounts</title>
+    <style>
+        .account-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid var(--gray-200);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .account-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+        .account-info h3 { margin: 0 0 0.3rem 0; color: var(--primary-dark); }
+        .account-info .type-badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            background: var(--accent-light, #E6FFFA);
+            color: var(--accent, #319795);
+        }
+        .account-balance { text-align: right; }
+        .account-balance .amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+        .account-balance .currency {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+        }
+        .total-balance-card {
+            background: linear-gradient(135deg, var(--primary-dark), var(--secondary));
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .total-balance-card .label { font-size: 0.9rem; opacity: 0.9; }
+        .total-balance-card .amount { font-size: 2rem; font-weight: 700; }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="total-balance-card">
+            <div>
+                <div class="label">Total Balance</div>
+                <div class="amount" th:text="${#numbers.formatDecimal(totalBalance, 1, 2)}">0.00</div>
+            </div>
+            <a href="/accounts/add" class="btn" style="background: white; color: var(--primary-dark); padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                <i class="fas fa-plus"></i> Add Account
+            </a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(accounts)}" style="text-align: center; padding: 3rem; color: var(--gray-500);">
+            <i class="fas fa-university" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+            <p>No accounts yet. Add your first bank account to track balances.</p>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(accounts)}" style="display: grid; gap: 1rem;">
+            <div th:each="account : ${accounts}" class="account-card">
+                <div class="account-info">
+                    <h3 th:text="${account.name}">Account Name</h3>
+                    <span class="type-badge" th:text="${account.type ?: 'General'}">Type</span>
+                    <span th:if="${account.bankName}" style="margin-left: 0.5rem; font-size: 0.85rem; color: var(--gray-500);" th:text="${account.bankName}">Bank</span>
+                    <p th:if="${account.accountNumber}" style="margin: 0.3rem 0 0; font-size: 0.85rem; color: var(--gray-500);" th:text="'****' + ${#strings.substring(account.accountNumber, account.accountNumber.length() - 4)}">Number</p>
+                    <div style="margin-top: 0.8rem;">
+                        <a th:href="@{/accounts/edit/{id}(id=${account.id})}" class="btn-sm" style="margin-right: 0.5rem;"><i class="fas fa-edit"></i></a>
+                        <a th:href="@{/accounts/delete/{id}(id=${account.id})}" class="btn-sm" style="color: var(--danger, #E53E3E);" onclick="return confirm('Delete this account?')"><i class="fas fa-trash"></i></a>
+                    </div>
+                </div>
+                <div class="account-balance">
+                    <div class="amount" th:text="${#numbers.formatDecimal(account.balance, 1, 2)}">0.00</div>
+                    <div class="currency" th:text="${account.currency ?: 'TZS'}">TZS</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

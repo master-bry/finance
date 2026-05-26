@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Add Recurring Transaction</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="form-container">
+            <h2 style="color: var(--primary-dark); margin-bottom: 1.5rem;">Add Recurring Transaction</h2>
+
+            <form action="#" th:action="@{/recurring/add}" th:object="${recurring}" method="post">
+                <div class="form-group">
+                    <label for="description">Description *</label>
+                    <input type="text" id="description" th:field="*{description}" required placeholder="e.g. Monthly Salary">
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="amount">Amount *</label>
+                        <input type="number" step="0.01" id="amount" th:field="*{amount}" required min="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="type">Type *</label>
+                        <select id="type" th:field="*{type}" required>
+                            <option value="INCOME">Income</option>
+                            <option value="EXPENSE">Expense</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category *</label>
+                    <input type="text" id="category" th:field="*{category}" required list="category-list">
+                    <datalist id="category-list">
+                        <option value="Salary">
+                        <option value="Rent">
+                        <option value="Utilities">
+                        <option value="Insurance">
+                        <option value="Subscription">
+                        <option value="Loan Payment">
+                        <option value="Investment">
+                    </datalist>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="frequency">Frequency *</label>
+                        <select id="frequency" th:field="*{frequency}" required>
+                            <option value="DAILY">Daily</option>
+                            <option value="WEEKLY">Weekly</option>
+                            <option value="MONTHLY" selected>Monthly</option>
+                            <option value="YEARLY">Yearly</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="intervalValue">Every N periods</label>
+                        <input type="number" id="intervalValue" th:field="*{intervalValue}" min="1" value="1">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="nextDate">Next Date</label>
+                        <input type="date" id="nextDate" th:field="*{nextDate}">
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">End Date (optional)</label>
+                        <input type="date" id="endDate" th:field="*{endDate}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" th:field="*{notes}" rows="2"></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Create Recurring</button>
+                    <a href="/recurring" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

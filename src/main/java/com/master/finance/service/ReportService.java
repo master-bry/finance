@@ -749,6 +749,53 @@ public class ReportService {
         return String.format("%.1f%%", percent);
     }
 
+    // ─── TAX REPORT ───────────────────────────────────────────────────────────
+
+    public Map<String, Object> generateTaxReport(String userId, int year) {
+        LocalDateTime start = LocalDateTime.of(year, 1, 1, 0, 0);
+        LocalDateTime end = start.plusYears(1);
+        List<Transaction> transactions = transactionRepository
+                .findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end);
+
+        double totalIncome = transactions.stream()
+                .filter(t -> "INCOME".equals(t.getType()))
+                .mapToDouble(Transaction::getAmount).sum();
+
+        double totalExpense = transactions.stream()
+                .filter(t -> "EXPENSE".equals(t.getType()))
+                .mapToDouble(Transaction::getAmount).sum();
+
+        Map<String, Double> deductibleExpenses = new LinkedHashMap<>();
+        double totalDeductible = 0;
+        String[] taxCategories = {"TAX", "INSURANCE", "MEDICAL", "EDUCATION", "CHARITY", "RENT", "UTILITIES"};
+        for (Transaction tx : transactions) {
+            if (!"EXPENSE".equals(tx.getType())) continue;
+            boolean isDeductible = false;
+            for (String cat : taxCategories) {
+                if (tx.getCategory().toUpperCase().contains(cat)) {
+                    isDeductible = true; break;
+                }
+            }
+            if (isDeductible) {
+                deductibleExpenses.merge(tx.getCategory(), tx.getAmount(), Double::sum);
+                totalDeductible += tx.getAmount();
+            }
+        }
+
+        double taxableIncome = Math.max(0, totalIncome - totalDeductible);
+
+        Map<String, Object> report = new LinkedHashMap<>();
+        report.put("year", year);
+        report.put("totalIncome", totalIncome);
+        report.put("totalExpenses", totalExpense);
+        report.put("totalDeductible", totalDeductible);
+        report.put("taxableIncome", taxableIncome);
+        report.put("deductibleExpenses", deductibleExpenses);
+        report.put("netProfit", totalIncome - totalExpense);
+        report.put("transactionCount", transactions.size());
+        return report;
+    }
+
     // ─── PRIVATE HELPERS ──────────────────────────────────────────────────────
 
     private List<Transaction> getMonthTransactions(String userId, int year, int month) {

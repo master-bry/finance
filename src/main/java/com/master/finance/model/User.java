@@ -43,6 +43,9 @@ public class User {
     private LocalDateTime lastLogin;
     private List<String> notifications = new ArrayList<>();
     
+    private String totpSecret;
+    private boolean totpEnabled;
+
     // Soft delete fields
     private LocalDateTime deletedAt;
     
@@ -94,4 +97,9 @@ public class User {
     
     public LocalDateTime getDeletedAt() { return deletedAt; }
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
+
+    public String getTotpSecret() { return totpSecret; }
+    public void setTotpSecret(String totpSecret) { this.totpSecret = totpSecret; }
+    public boolean isTotpEnabled() { return totpEnabled; }
+    public void setTotpEnabled(boolean totpEnabled) { this.totpEnabled = totpEnabled; }
 }

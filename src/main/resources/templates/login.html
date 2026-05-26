@@ -10,10 +10,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-dark: #2F6B3F;
-            --secondary: #7FB77E;
-            --accent: #F7C85C;
-            --background: #FFF6C0;
+            --primary-dark: #1B2A4A;
+            --secondary: #2C5282;
+            --accent: #319795;
+            --background: #0F172A;
             --white: #FFFFFF;
             --danger: #EF4444;
             --success: #10B981;
@@ -23,7 +23,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--background) 0%, #FFE8A0 100%);
+            background: linear-gradient(135deg, #0F172A 0%, #1B2A4A 50%, #0F172A 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -37,8 +37,20 @@
             padding: 40px;
             width: 100%;
             max-width: 450px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
             animation: fadeIn 0.5s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-dark), var(--accent), var(--secondary));
         }
 
         @keyframes fadeIn {

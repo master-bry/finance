@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Recurring Transactions</title>
+    <style>
+        .recurring-table { width: 100%; border-collapse: collapse; background: var(--white); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .recurring-table th { background: var(--primary-dark); color: white; padding: 0.8rem 1rem; text-align: left; font-size: 0.85rem; }
+        .recurring-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--gray-200); }
+        .recurring-table tr:hover td { background: var(--gray-50); }
+        .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .badge-income { background: #C6F6D5; color: #276749; }
+        .badge-expense { background: #FED7D7; color: #9B2C2C; }
+        .badge-active { background: #C6F6D5; color: #276749; }
+        .badge-inactive { background: #E2E8F0; color: #4A5568; }
+        .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="header-actions">
+            <h2 style="color: var(--primary-dark); margin: 0;">Recurring Transactions</h2>
+            <a href="/recurring/add" class="btn btn-primary"><i class="fas fa-plus"></i> Add Recurring</a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(recurringList)}" style="text-align: center; padding: 3rem; color: var(--gray-500);">
+            <i class="fas fa-sync-alt" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+            <p>No recurring transactions yet. Create one to automate your finances.</p>
+        </div>
+
+        <table class="recurring-table" th:unless="${#lists.isEmpty(recurringList)}">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Frequency</th>
+                    <th>Next Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="rt : ${recurringList}">
+                    <td th:text="${rt.description}">Description</td>
+                    <td style="font-weight: 600;" th:text="${#numbers.formatDecimal(rt.amount, 1, 2)}">0.00</td>
+                    <td><span class="badge" th:classappend="${rt.type == 'INCOME' ? 'badge-income' : 'badge-expense'}" th:text="${rt.type}">Type</span></td>
+                    <td th:text="${rt.category}">Category</td>
+                    <td th:text="${rt.frequency}">Frequency</td>
+                    <td th:text="${rt.nextDate}">Next Date</td>
+                    <td><span class="badge" th:classappend="${rt.active ? 'badge-active' : 'badge-inactive'}" th:text="${rt.active ? 'Active' : 'Inactive'}">Status</span></td>
+                    <td>
+                        <a th:href="@{/recurring/toggle/{id}(id=${rt.id})}" class="btn-sm" th:title="${rt.active ? 'Deactivate' : 'Activate'}">
+                            <i class="fas" th:classappend="${rt.active ? 'fa-pause' : 'fa-play'}"></i>
+                        </a>
+                        <a th:href="@{/recurring/edit/{id}(id=${rt.id})}" class="btn-sm"><i class="fas fa-edit"></i></a>
+                        <a th:href="@{/recurring/delete/{id}(id=${rt.id})}" class="btn-sm" style="color: var(--danger, #E53E3E);" onclick="return confirm('Delete this recurring transaction?')"><i class="fas fa-trash"></i></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

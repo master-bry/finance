@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Tax Report</title>
+    <style>
+        .tax-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .tax-card { background: var(--white); border-radius: 12px; padding: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; }
+        .tax-card .label { font-size: 0.85rem; color: var(--gray-500); margin-bottom: 0.3rem; }
+        .tax-card .value { font-size: 1.5rem; font-weight: 700; color: var(--primary-dark); }
+        .tax-card .value.positive { color: var(--success, #38A169); }
+        .tax-card .value.negative { color: var(--danger, #E53E3E); }
+        .year-selector { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+        .year-selector select { padding: 0.5rem; border-radius: 8px; border: 1px solid var(--gray-300); }
+        table { width: 100%; border-collapse: collapse; background: var(--white); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        th { background: var(--primary-dark); color: white; padding: 0.8rem 1rem; text-align: left; }
+        td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--gray-200); }
+        tr:hover td { background: var(--gray-50); }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <form method="get" th:action="@{/reports/tax}" class="year-selector">
+            <label for="year" style="font-weight: 600;">Select Year:</label>
+            <select id="year" name="year" onchange="this.form.submit()">
+                <option th:each="y : ${#numbers.sequence(#temporals.year(#temporals.createNow()) - 5, #temporals.year(#temporals.createNow()) + 1)}"
+                        th:value="${y}" th:text="${y}"
+                        th:selected="${y == reportYear}"></option>
+            </select>
+        </form>
+
+        <div class="tax-summary">
+            <div class="tax-card">
+                <div class="label">Total Income</div>
+                <div class="value positive" th:text="${#numbers.formatDecimal(taxReport.totalIncome, 1, 2)}">0</div>
+            </div>
+            <div class="tax-card">
+                <div class="label">Total Expenses</div>
+                <div class="value negative" th:text="${#numbers.formatDecimal(taxReport.totalExpenses, 1, 2)}">0</div>
+            </div>
+            <div class="tax-card">
+                <div class="label">Deductible Expenses</div>
+                <div class="value positive" th:text="${#numbers.formatDecimal(taxReport.totalDeductible, 1, 2)}">0</div>
+            </div>
+            <div class="tax-card" style="border: 2px solid var(--primary-dark);">
+                <div class="label">Taxable Income</div>
+                <div class="value" th:text="${#numbers.formatDecimal(taxReport.taxableIncome, 1, 2)}">0</div>
+            </div>
+            <div class="tax-card">
+                <div class="label">Net Profit</div>
+                <div class="value" th:classappend="${taxReport.netProfit >= 0 ? 'positive' : 'negative'}"
+                     th:text="${#numbers.formatDecimal(taxReport.netProfit, 1, 2)}">0</div>
+            </div>
+            <div class="tax-card">
+                <div class="label">Transactions</div>
+                <div class="value" th:text="${taxReport.transactionCount}">0</div>
+            </div>
+        </div>
+
+        <h3 style="color: var(--primary-dark); margin-bottom: 1rem;">Deductible Expenses by Category</h3>
+        <div th:if="${taxReport.deductibleExpenses.isEmpty()}" style="text-align: center; padding: 2rem; color: var(--gray-500);">
+            No tax-deductible expenses found for this year.
+        </div>
+        <table th:unless="${taxReport.deductibleExpenses.isEmpty()}">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="entry : ${taxReport.deductibleExpenses}">
+                    <td th:text="${entry.key}">Category</td>
+                    <td style="font-weight: 600;" th:text="${#numbers.formatDecimal(entry.value, 1, 2)}">0.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top: 1.5rem; padding: 1rem; background: #EBF8FF; border-radius: 8px; font-size: 0.85rem;">
+            <strong>Note:</strong> Deductible categories are identified as: TAX, INSURANCE, MEDICAL, EDUCATION, CHARITY, RENT, UTILITIES.
+            This is a simplified tax estimate. Consult a tax professional for accurate tax filing.
+        </div>
+    </div>
+</body>
+</html>

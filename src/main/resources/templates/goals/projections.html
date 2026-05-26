@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Savings Projections</title>
+    <style>
+        .projection-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid var(--gray-200);
+            transition: transform 0.2s;
+        }
+        .projection-card:hover { transform: translateY(-2px); }
+        .projection-card .name { font-size: 1.1rem; font-weight: 700; color: var(--primary-dark); }
+        .progress-bar-bg { height: 8px; background: var(--gray-200); border-radius: 4px; margin: 0.8rem 0; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--secondary)); border-radius: 4px; transition: width 0.3s; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div th:if="${#lists.isEmpty(projections)}" style="text-align: center; padding: 3rem; color: var(--gray-500);">
+            <i class="fas fa-chart-line" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+            <p>No active goals to project. Create a savings goal first!</p>
+            <a href="/goals/add" class="btn btn-primary" style="margin-top: 1rem;"><i class="fas fa-plus"></i> Create Goal</a>
+        </div>
+
+        <div class="grid" th:unless="${#lists.isEmpty(projections)}">
+            <div class="projection-card" th:each="p : ${projections}">
+                <div class="name" th:text="${p.name}">Goal Name</div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" th:style="'width: ' + ${p.progressPercentage} + '%'"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--gray-500);">
+                    <span th:text="${#numbers.formatDecimal(p.currentAmount, 1, 2)}">0</span>
+                    <span th:text="${#numbers.formatDecimal(p.targetAmount, 1, 2)}">Target</span>
+                </div>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
+                    <div th:if="${p.daysLeft != null}" style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                        <span>Days remaining:</span>
+                        <strong th:text="${p.daysLeft}">0</strong>
+                    </div>
+                    <div th:if="${p.recommendedMonthly != null}" style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                        <span>Recommended monthly:</span>
+                        <strong th:text="${#numbers.formatDecimal(p.recommendedMonthly, 1, 2)}">0</strong>
+                    </div>
+                </div>
+                <a th:href="@{/goals/projection/{id}(id=${p.id})}" class="btn btn-primary" style="margin-top: 1rem; display: block; text-align: center;">
+                    <i class="fas fa-chart-line"></i> View Forecast
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

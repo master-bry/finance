@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Import CSV</title>
+    <style>
+        .import-box {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        .file-upload-area {
+            border: 2px dashed var(--gray-300);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            margin: 1.5rem 0;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .file-upload-area:hover {
+            border-color: var(--accent);
+            background: var(--gray-50);
+        }
+        .file-upload-area input { display: none; }
+        .file-upload-area .icon { font-size: 3rem; color: var(--accent); margin-bottom: 1rem; }
+        .file-upload-area .text { color: var(--gray-500); }
+        .file-upload-area .text strong { color: var(--accent); }
+        .format-info {
+            text-align: left;
+            background: var(--gray-50);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+        }
+        .format-info code {
+            background: var(--gray-200);
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="import-box">
+            <h2 style="color: var(--primary-dark);">Import CSV</h2>
+            <p style="color: var(--gray-500);">Upload a CSV file to bulk import transactions</p>
+
+            <form action="#" th:action="@{/transactions/import}" method="post" enctype="multipart/form-data">
+                <div class="file-upload-area" onclick="document.getElementById('csvFile').click()">
+                    <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <div class="text">
+                        <strong>Click to select</strong> or drag a CSV file here
+                    </div>
+                    <p id="fileName" style="margin-top: 0.5rem; font-weight: 600; color: var(--primary-dark);"></p>
+                    <input type="file" id="csvFile" name="file" accept=".csv" onchange="document.getElementById('fileName').textContent = this.files[0]?.name || ''">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">
+                    <i class="fas fa-upload"></i> Import Transactions
+                </button>
+            </form>
+
+            <div class="format-info">
+                <strong>CSV Format:</strong><br>
+                The CSV must have these columns (header row is skipped):<br><br>
+                <code>Description, Type, Amount, Category, Date, Notes</code><br><br>
+                <strong>Type:</strong> <code>INCOME</code>, <code>EXPENSE</code>, <code>CREDIT</code>, or <code>DEBIT</code><br>
+                <strong>Date format:</strong> <code>yyyy-MM-dd HH:mm</code> (optional)<br><br>
+                <strong>Example:</strong><br>
+                <code>Freelance Payment,INCOME,500000.00,Salary,2026-01-15 09:00,January work</code><br>
+                <code>Office Rent,EXPENSE,200000.00,Rent,2026-01-01 00:00,Monthly rent</code>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

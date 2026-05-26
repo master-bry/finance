@@ -10,7 +10,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RequestMapping("/transactions")
@@ -119,6 +126,56 @@ public class TransactionController {
         // This will soft delete AND sync removal to DailyEntry
         transactionService.deleteTransaction(id);
         redirectAttributes.addFlashAttribute("success", "Transaction deleted successfully!");
+        return "redirect:/transactions";
+    }
+
+    @GetMapping("/import")
+    public String showImportForm(Model model) {
+        model.addAttribute("currentPage", "transactions");
+        model.addAttribute("pageSubtitle", "Import transactions from CSV");
+        return "transactions/import";
+    }
+
+    @PostMapping("/import")
+    public String importCsv(@RequestParam("file") MultipartFile file,
+                            Authentication authentication,
+                            RedirectAttributes redirectAttributes) {
+        if (file.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Please select a CSV file.");
+            return "redirect:/transactions/import";
+        }
+        String userId = getUserId(authentication);
+        List<Transaction> imported = new ArrayList<>();
+        int errors = 0;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+            String line;
+            boolean firstLine = true;
+            while ((line = br.readLine()) != null) {
+                if (firstLine) { firstLine = false; continue; }
+                String[] cols = line.split(",");
+                if (cols.length < 4) { errors++; continue; }
+                try {
+                    Transaction tx = new Transaction();
+                    tx.setUserId(userId);
+                    tx.setDescription(cols[0].trim());
+                    String type = cols[1].trim().toUpperCase();
+                    tx.setType(type.startsWith("INC") || type.equals("CREDIT") ? "INCOME" : "EXPENSE");
+                    tx.setAmount(Math.abs(Double.parseDouble(cols[2].trim())));
+                    tx.setCategory(cols.length > 3 ? cols[3].trim() : "Uncategorized");
+                    if (cols.length > 4 && !cols[4].trim().isEmpty()) {
+                        tx.setDate(LocalDateTime.parse(cols[4].trim(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+                    }
+                    tx.setNotes(cols.length > 5 ? cols[5].trim() : "");
+                    imported.add(tx);
+                } catch (Exception e) { errors++; }
+            }
+            transactionService.saveAll(imported);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to parse CSV: " + e.getMessage());
+            return "redirect:/transactions/import";
+        }
+        redirectAttributes.addFlashAttribute("success",
+                "Imported " + imported.size() + " transactions" + (errors > 0 ? " (" + errors + " skipped)" : ""));
         return "redirect:/transactions";
     }
 

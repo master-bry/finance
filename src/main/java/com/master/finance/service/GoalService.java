@@ -5,7 +5,10 @@ import com.master.finance.repository.GoalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -134,5 +137,66 @@ public class GoalService {
         return getUserGoals(userId).stream()
                 .filter(g -> category.equals(g.getCategory()))
                 .toList();
+    }
+
+    public Map<String, Object> getSavingsProjection(String goalId) {
+        Goal goal = goalRepository.findById(goalId).orElseThrow();
+        Map<String, Object> projection = new LinkedHashMap<>();
+        projection.put("goalName", goal.getName());
+        projection.put("targetAmount", goal.getTargetAmount());
+        projection.put("currentAmount", goal.getCurrentAmount());
+        projection.put("remainingAmount", goal.getRemainingAmount());
+        projection.put("progressPercentage", goal.getProgressPercentage());
+
+        if (goal.getTargetDate() != null) {
+            long daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), goal.getTargetDate());
+            projection.put("daysLeft", Math.max(0, daysLeft));
+
+            double remaining = goal.getRemainingAmount();
+            double dailyRate = daysLeft > 0 ? remaining / daysLeft : remaining;
+            double monthlyRate = daysLeft > 0 ? remaining / (daysLeft / 30.0) : remaining;
+            projection.put("recommendedDaily", Math.max(0, Math.round(dailyRate * 100.0) / 100.0));
+            projection.put("recommendedMonthly", Math.max(0, Math.round(monthlyRate * 100.0) / 100.0));
+
+            List<Map<String, Object>> forecast = new java.util.ArrayList<>();
+            double projectedAmount = goal.getCurrentAmount();
+            double avgDaily = 0;
+            if (!goal.getDailyProgress().isEmpty()) {
+                avgDaily = goal.getDailyProgress().stream()
+                        .mapToDouble(Goal.DailyProgress::getAmount)
+                        .average().orElse(0);
+            }
+            for (int i = 1; i <= Math.min(daysLeft, 12); i++) {
+                projectedAmount += avgDaily > 0 ? avgDaily : dailyRate;
+                Map<String, Object> point = new LinkedHashMap<>();
+                point.put("month", i);
+                point.put("projectedAmount", Math.round(projectedAmount * 100.0) / 100.0);
+                point.put("onTrack", projectedAmount >= goal.getTargetAmount());
+                forecast.add(point);
+            }
+            projection.put("forecast", forecast);
+        }
+        return projection;
+    }
+
+    public List<Map<String, Object>> getAllSavingsProjections(String userId) {
+        List<Goal> active = getActiveGoals(userId);
+        return active.stream().map(g -> {
+            Map<String, Object> proj = new LinkedHashMap<>();
+            proj.put("id", g.getId());
+            proj.put("name", g.getName());
+            proj.put("targetAmount", g.getTargetAmount());
+            proj.put("currentAmount", g.getCurrentAmount());
+            proj.put("remainingAmount", g.getRemainingAmount());
+            proj.put("progressPercentage", g.getProgressPercentage());
+            if (g.getTargetDate() != null) {
+                long daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), g.getTargetDate());
+                proj.put("daysLeft", Math.max(0, daysLeft));
+                double remaining = g.getRemainingAmount();
+                double monthlyRate = daysLeft > 0 ? remaining / (daysLeft / 30.0) : remaining;
+                proj.put("recommendedMonthly", Math.max(0, Math.round(monthlyRate * 100.0) / 100.0));
+            }
+            return proj;
+        }).toList();
     }
 }

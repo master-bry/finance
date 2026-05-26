@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.TextStyle;
 import java.util.Locale;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/reports")
@@ -93,6 +94,22 @@ public class ReportsController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(new ByteArrayResource(pdfData));
+    }
+
+    @GetMapping("/tax")
+    public String showTaxReport(Authentication authentication,
+                                @RequestParam(required = false) Integer year,
+                                Model model) {
+        String userId = getUserId(authentication);
+        int reportYear = (year != null) ? year : LocalDate.now().getYear();
+        Map<String, Object> taxReport = reportService.generateTaxReport(userId, reportYear);
+
+        model.addAttribute("taxReport", taxReport);
+        model.addAttribute("reportYear", reportYear);
+        model.addAttribute("currentPage", "reports");
+        model.addAttribute("pageSubtitle", "Tax Report for " + reportYear);
+        model.addAttribute("title", "Tax Report");
+        return "reports/tax";
     }
 
     private String getUserId(Authentication authentication) {

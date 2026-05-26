@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Goal Forecast</title>
+    <style>
+        .forecast-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .stat { text-align: center; padding: 1rem; background: var(--gray-50); border-radius: 8px; }
+        .stat .label { font-size: 0.8rem; color: var(--gray-500); }
+        .stat .value { font-size: 1.3rem; font-weight: 700; color: var(--primary-dark); }
+        .stat .value.on-track { color: var(--success, #38A169); }
+        .stat .value.off-track { color: var(--danger, #E53E3E); }
+        table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; }
+        th { background: var(--primary-dark); color: white; padding: 0.7rem 1rem; text-align: left; }
+        td { padding: 0.7rem 1rem; border-bottom: 1px solid var(--gray-200); }
+        tr:hover td { background: var(--gray-50); }
+        .tracking { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .on-track { background: #C6F6D5; color: #276749; }
+        .off-track { background: #FED7D7; color: #9B2C2C; }
+        .progress-bg { height: 12px; background: var(--gray-200); border-radius: 6px; overflow: hidden; margin: 1rem 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--secondary)); border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="forecast-card">
+            <h2 style="color: var(--primary-dark);" th:text="${goal.name}">Goal Name</h2>
+            <div class="progress-bg">
+                <div class="progress-fill" th:style="'width: ' + ${projection.progressPercentage} + '%'"></div>
+            </div>
+
+            <div class="stat-grid">
+                <div class="stat">
+                    <div class="label">Target</div>
+                    <div class="value" th:text="${#numbers.formatDecimal(projection.targetAmount, 1, 2)}">0</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Current</div>
+                    <div class="value" th:text="${#numbers.formatDecimal(projection.currentAmount, 1, 2)}">0</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Remaining</div>
+                    <div class="value" th:text="${#numbers.formatDecimal(projection.remainingAmount, 1, 2)}">0</div>
+                </div>
+                <div class="stat" th:if="${projection.daysLeft != null}">
+                    <div class="label">Days Left</div>
+                    <div class="value" th:text="${projection.daysLeft}">0</div>
+                </div>
+            </div>
+
+            <div th:if="${projection.recommendedDaily != null}" style="background: #EBF8FF; border-radius: 8px; padding: 1rem; margin: 1rem 0;">
+                <strong>To reach your goal on time, save:</strong><br>
+                <span th:text="${#numbers.formatDecimal(projection.recommendedDaily, 1, 2)}">0</span> per day or
+                <span th:text="${#numbers.formatDecimal(projection.recommendedMonthly, 1, 2)}">0</span> per month
+            </div>
+
+            <h3 style="color: var(--primary-dark); margin-top: 2rem;">Monthly Forecast</h3>
+            <div th:if="${projection.forecast.isEmpty()}" style="text-align: center; padding: 2rem; color: var(--gray-500);">
+                Not enough data for a forecast. Add daily progress to see projections.
+            </div>
+            <table th:unless="${projection.forecast.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Projected Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="point : ${projection.forecast}">
+                        <td th:text="'Month ' + ${point.month}">1</td>
+                        <td style="font-weight: 600;" th:text="${#numbers.formatDecimal(point.projectedAmount, 1, 2)}">0</td>
+                        <td><span class="tracking" th:classappend="${point.onTrack ? 'on-track' : 'off-track'}" th:text="${point.onTrack ? 'On Track' : 'Behind'}">Status</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <a href="/goals" class="btn btn-secondary" style="margin-top: 1.5rem; display: inline-block;"><i class="fas fa-arrow-left"></i> Back to Goals</a>
+        </div>
+    </div>
+</body>
+</html>

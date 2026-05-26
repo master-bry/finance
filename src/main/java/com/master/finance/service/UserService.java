@@ -131,4 +131,8 @@ public class UserService {
                 .filter(user -> !user.isDeleted())
                 .count();
     }
+
+    public User save(User user) {
+        return userRepository.save(user);
+    }
 }

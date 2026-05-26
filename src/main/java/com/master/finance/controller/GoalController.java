@@ -160,6 +160,37 @@ public class GoalController {
         return "redirect:/goals";
     }
 
+    @GetMapping("/projections")
+    public String showProjections(Authentication authentication, Model model) {
+        String userId = getUserId(authentication);
+        model.addAttribute("projections", goalService.getAllSavingsProjections(userId));
+        model.addAttribute("currentPage", "goals");
+        model.addAttribute("pageSubtitle", "Savings projections and forecasts");
+        return "goals/projections";
+    }
+
+    @GetMapping("/projection/{id}")
+    public String showGoalProjection(@PathVariable String id,
+                                     Authentication authentication,
+                                     Model model,
+                                     RedirectAttributes redirectAttributes) {
+        String userId = getUserId(authentication);
+        boolean found = goalService.getGoal(id)
+                .filter(g -> userId.equals(g.getUserId()))
+                .map(g -> {
+                    model.addAttribute("goal", g);
+                    model.addAttribute("projection", goalService.getSavingsProjection(id));
+                    return true;
+                })
+                .orElse(false);
+        if (!found) {
+            redirectAttributes.addFlashAttribute("error", "Goal not found.");
+            return "redirect:/goals";
+        }
+        model.addAttribute("currentPage", "goals");
+        return "goals/projection";
+    }
+
     // ─── HELPER ──────────────────────────────────────────────────────────────
 
     private String getUserId(Authentication authentication) {
