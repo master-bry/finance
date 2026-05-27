@@ -12,8 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "debts")
-@CompoundIndex(name = "user_type_idx", def = "{'userId': 1, 'type': 1}")
-@CompoundIndex(name = "user_type_status_idx", def = "{'userId': 1, 'type': 1, 'status': 1}")
+@CompoundIndex(name = "user_deleted_idx", def = "{'userId': 1, 'deleted': 1}")
+@CompoundIndex(name = "user_type_idx", def = "{'userId': 1, 'type': 1, 'deleted': 1}")
+@CompoundIndex(name = "user_type_status_idx", def = "{'userId': 1, 'type': 1, 'status': 1, 'deleted': 1}")
 public class Debt {
     @Id
     private String id;
@@ -37,6 +38,7 @@ public class Debt {
     private String notes;
 
     // Soft delete fields
+    @Indexed
     private boolean deleted = false;
     private LocalDateTime deletedAt;
 

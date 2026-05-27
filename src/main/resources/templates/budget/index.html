@@ -162,8 +162,8 @@
                     <tbody>
                         <tr th:each="entry : ${budget.categoryBudgets}">
                             <td th:text="${entry.key}">Category</td>
-                            <td th:text="${#numbers.formatDecimal(entry.value.planned, 1, 0)}">Planned</td>
-                            <td th:text="${#numbers.formatDecimal(entry.value.actual, 1, 0)}">Actual</td>
+                            <td th:text="|${#numbers.formatDecimal(entry.value.planned * conversionRate, 1, 0)} ${userCurrency}|">Planned</td>
+                            <td th:text="|${#numbers.formatDecimal(entry.value.actual * conversionRate, 1, 0)} ${userCurrency}|">Actual</td>
                             <td>
                                 <div class="progress-container" th:if="${entry.value.planned > 0}">
                                     <div class="progress-bar" 
@@ -176,7 +176,7 @@
                                 </div>
                             </td>
                             <td th:class="${entry.value.variance > 0 ? 'over-budget' : 'under-budget'}" 
-                                th:text="${(entry.value.variance > 0 ? '+' : '') + #numbers.formatDecimal(entry.value.variance, 1, 0)}">Variance</td>
+                                th:text="${(entry.value.variance > 0 ? '+' : '') + #numbers.formatDecimal(entry.value.variance * conversionRate, 1, 0)} + ' ' + ${userCurrency}">Variance</td>
                             <td>
                                 <span th:if="${entry.value.variance > 0}" class="badge badge-danger">⚠️ Over</span>
                                 <span th:if="${entry.value.variance < 0}" class="badge badge-success">✅ Under</span>

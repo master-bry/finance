@@ -153,9 +153,13 @@ src/main/resources/
 |-----------|-------------|
 | ![Dashboard](screenshots/dashboard.png) | ![Transactions](screenshots/transaction.png) |
 
-| Debts | Budget |
+| Debts | Login |
 |-------|--------|
-| ![Debts](screenshots/daily.png) | ![Budget](screenshots/budget.png) |
+| ![Debts](screenshots/debt.png) | ![Security](screenshots/login.png) |
+| Security | Security |
+|-------|--------|
+| ![Debts](screenshots/security.png) | ![Security](screenshots/security2.png) |
+
 
 
 ----

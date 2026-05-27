@@ -8,33 +8,26 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Arrays;
 
-/**
- * Cache configuration for performance optimization
- */
 @Configuration
 @EnableCaching
 public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        ConcurrentMapCacheManager cacheManager = new ConcurrentMapCacheManager();
-        
-        // Define cache regions for different data types
-        cacheManager.setCacheNames(Arrays.asList(
-            "transactions",      // User transactions
-            "dashboard",         // Dashboard statistics
-            "budgets",           // Budget data
-            "debts",             // Debt information
-            "investments",       // Investment data
-            "goals",             // Goal data
-            "reports",           // Report calculations
-            "userStats",         // User statistics
-            "exchangeRates"      // Currency exchange rates
+        ConcurrentMapCacheManager cm = new ConcurrentMapCacheManager();
+        cm.setCacheNames(Arrays.asList(
+            "transactions",
+            "dashboard",
+            "budgets",
+            "debts",
+            "investments",
+            "goals",
+            "reports",
+            "userStats",
+            "exchangeRates",
+            "users"
         ));
-        
-        // Allow null values in cache
-        cacheManager.setAllowNullValues(true);
-        
-        return cacheManager;
+        cm.setAllowNullValues(true);
+        return cm;
     }
 }

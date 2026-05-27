@@ -33,24 +33,24 @@
         <div class="tax-summary">
             <div class="tax-card">
                 <div class="label">Total Income</div>
-                <div class="value positive" th:text="${#numbers.formatDecimal(taxReport.totalIncome, 1, 2)}">0</div>
+                <div class="value positive" th:text="|${#numbers.formatDecimal(taxReport.totalIncome * conversionRate, 1, 2)} ${userCurrency}|">0</div>
             </div>
             <div class="tax-card">
                 <div class="label">Total Expenses</div>
-                <div class="value negative" th:text="${#numbers.formatDecimal(taxReport.totalExpenses, 1, 2)}">0</div>
+                <div class="value negative" th:text="|${#numbers.formatDecimal(taxReport.totalExpenses * conversionRate, 1, 2)} ${userCurrency}|">0</div>
             </div>
             <div class="tax-card">
                 <div class="label">Deductible Expenses</div>
-                <div class="value positive" th:text="${#numbers.formatDecimal(taxReport.totalDeductible, 1, 2)}">0</div>
+                <div class="value positive" th:text="|${#numbers.formatDecimal(taxReport.totalDeductible * conversionRate, 1, 2)} ${userCurrency}|">0</div>
             </div>
             <div class="tax-card" style="border: 2px solid var(--primary-dark);">
                 <div class="label">Taxable Income</div>
-                <div class="value" th:text="${#numbers.formatDecimal(taxReport.taxableIncome, 1, 2)}">0</div>
+                <div class="value" th:text="|${#numbers.formatDecimal(taxReport.taxableIncome * conversionRate, 1, 2)} ${userCurrency}|">0</div>
             </div>
             <div class="tax-card">
                 <div class="label">Net Profit</div>
                 <div class="value" th:classappend="${taxReport.netProfit >= 0 ? 'positive' : 'negative'}"
-                     th:text="${#numbers.formatDecimal(taxReport.netProfit, 1, 2)}">0</div>
+                     th:text="|${#numbers.formatDecimal(taxReport.netProfit * conversionRate, 1, 2)} ${userCurrency}|">0</div>
             </div>
             <div class="tax-card">
                 <div class="label">Transactions</div>
@@ -66,13 +66,13 @@
             <thead>
                 <tr>
                     <th>Category</th>
-                    <th>Amount</th>
+                    <th th:text="'Amount (' + ${userCurrency} + ')'">Amount (TZS)</th>
                 </tr>
             </thead>
             <tbody>
                 <tr th:each="entry : ${taxReport.deductibleExpenses}">
                     <td th:text="${entry.key}">Category</td>
-                    <td style="font-weight: 600;" th:text="${#numbers.formatDecimal(entry.value, 1, 2)}">0.00</td>
+                    <td style="font-weight: 600;" th:text="|${#numbers.formatDecimal(entry.value * conversionRate, 1, 2)} ${userCurrency}|">0.00</td>
                 </tr>
             </tbody>
         </table>

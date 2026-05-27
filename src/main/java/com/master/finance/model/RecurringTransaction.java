@@ -2,6 +2,7 @@ package com.master.finance.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,6 +10,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Document(collection = "recurring_transactions")
+@CompoundIndex(name = "user_deleted_idx", def = "{'userId': 1, 'deleted': 1}")
+@CompoundIndex(name = "active_deleted_nextdate_idx", def = "{'active': 1, 'deleted': 1, 'nextDate': 1}")
 public class RecurringTransaction {
     @Id
     private String id;
@@ -30,10 +33,12 @@ public class RecurringTransaction {
 
     private String frequency;
     private int intervalValue;
+    @Indexed
     private LocalDate nextDate;
     private LocalDate endDate;
     private boolean active;
     private String notes;
+    @Indexed
     private boolean deleted;
     private LocalDateTime createdAt;
     private int occurrencesGenerated;

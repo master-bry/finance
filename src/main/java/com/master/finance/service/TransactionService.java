@@ -203,11 +203,10 @@ public class TransactionService {
     }
 
     public List<Transaction> searchTransactions(String userId, String keyword) {
-        return transactionRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId)
-                .stream()
-                .filter(t -> t.getDescription().toLowerCase().contains(keyword.toLowerCase()) ||
-                            t.getCategory().toLowerCase().contains(keyword.toLowerCase()))
-                .toList();
+        if (keyword == null || keyword.isBlank()) {
+            return transactionRepository.findByUserIdAndDeletedFalseOrderByDateDesc(userId);
+        }
+        return transactionRepository.searchByUserIdAndKeyword(userId, keyword);
     }
 
     public List<Transaction> filterByType(String userId, String type) {

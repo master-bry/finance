@@ -3,6 +3,8 @@ package com.master.finance.service;
 import com.master.finance.model.User;
 import com.master.finance.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -29,6 +31,7 @@ public class UserService {
         return userRepository.save(user);
     }
     
+    @Cacheable(value = "users", key = "#username")
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
@@ -83,6 +86,7 @@ public class UserService {
         });
     }
     
+    @CacheEvict(value = "users", allEntries = true)
     public User updateProfile(String userId, User updatedUser) {
         return userRepository.findById(userId).map(user -> {
             user.setFullName(updatedUser.getFullName());
@@ -95,6 +99,7 @@ public class UserService {
         }).orElseThrow();
     }
     
+    @CacheEvict(value = "users", allEntries = true)
     public void changePassword(String userId, String newPassword) {
         userRepository.findById(userId).ifPresent(user -> {
             user.setPassword(passwordEncoder.encode(newPassword));
@@ -138,6 +143,7 @@ public class UserService {
                 .count();
     }
 
+    @CacheEvict(value = "users", allEntries = true)
     public User save(User user) {
         return userRepository.save(user);
     }

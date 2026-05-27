@@ -2,11 +2,13 @@ package com.master.finance.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 @Document(collection = "accounts")
+@CompoundIndex(name = "user_deleted_idx", def = "{'userId': 1, 'deleted': 1}")
 public class Account {
     @Id
     private String id;
@@ -23,6 +25,7 @@ public class Account {
     private String bankName;
     private String accountNumber;
     private String notes;
+    @Indexed
     private boolean deleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

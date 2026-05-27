@@ -21,6 +21,7 @@ public class AuditLog {
     private String description;
     private String details;
     private String ipAddress;
+    @Indexed
     private LocalDateTime timestamp;
     private String severity;
 

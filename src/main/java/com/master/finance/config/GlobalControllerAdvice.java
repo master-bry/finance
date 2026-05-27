@@ -53,12 +53,17 @@ public class GlobalControllerAdvice {
     @ModelAttribute("passwordExpired")
     public boolean addPasswordExpired(Authentication authentication) {
         User user = getCurrentUser(authentication);
-        return user != null && userService.isPasswordExpired(user);
+        return user != null && user.getPasswordChangedAt() != null
+            && user.getPasswordChangedAt().plusDays(90).isBefore(java.time.LocalDateTime.now());
     }
 
     @ModelAttribute("passwordDaysRemaining")
     public long addPasswordDaysRemaining(Authentication authentication) {
         User user = getCurrentUser(authentication);
-        return user != null ? userService.getPasswordDaysRemaining(user) : 90;
+        if (user == null || user.getPasswordChangedAt() == null) return 90;
+        return java.time.LocalDateTime.now().until(
+            user.getPasswordChangedAt().plusDays(90),
+            java.time.temporal.ChronoUnit.DAYS
+        );
     }
 }

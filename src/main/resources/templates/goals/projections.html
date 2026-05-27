@@ -35,8 +35,8 @@
                     <div class="progress-bar-fill" th:style="'width: ' + ${p.progressPercentage} + '%'"></div>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--gray-500);">
-                    <span th:text="${#numbers.formatDecimal(p.currentAmount, 1, 2)}">0</span>
-                    <span th:text="${#numbers.formatDecimal(p.targetAmount, 1, 2)}">Target</span>
+                    <span th:text="|${#numbers.formatDecimal(p.currentAmount * conversionRate, 1, 2)} ${userCurrency}|">0</span>
+                    <span th:text="|${#numbers.formatDecimal(p.targetAmount * conversionRate, 1, 2)} ${userCurrency}|">Target</span>
                 </div>
                 <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
                     <div th:if="${p.daysLeft != null}" style="display: flex; justify-content: space-between; font-size: 0.9rem;">
@@ -45,7 +45,7 @@
                     </div>
                     <div th:if="${p.recommendedMonthly != null}" style="display: flex; justify-content: space-between; font-size: 0.9rem;">
                         <span>Recommended monthly:</span>
-                        <strong th:text="${#numbers.formatDecimal(p.recommendedMonthly, 1, 2)}">0</strong>
+                        <strong th:text="|${#numbers.formatDecimal(p.recommendedMonthly * conversionRate, 1, 2)} ${userCurrency}|">0</strong>
                     </div>
                 </div>
                 <a th:href="@{/goals/projection/{id}(id=${p.id})}" class="btn btn-primary" style="margin-top: 1rem; display: block; text-align: center;">

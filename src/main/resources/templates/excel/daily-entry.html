@@ -391,7 +391,7 @@
                                        onchange="updatePrepaidTotal()">
                                 <span class="prepaid-checkbox-name" th:text="${bill.name}">Prepaid</span>
                                 <span class="prepaid-checkbox-balance"
-                                      th:text="|${#numbers.formatDecimal(bill.amount,1,0)} ${userCurrency} remaining|">
+                                      th:text="|${#numbers.formatDecimal(bill.amount * conversionRate,1,0)} ${userCurrency} remaining|">
                                 </span>
                             </label>
                         </th:block>

@@ -7,13 +7,19 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "daily_entries")
+@CompoundIndex(name = "user_deleted_date_desc", def = "{'userId': 1, 'deleted': 1, 'date': -1}")
+@CompoundIndex(name = "user_date_deleted_asc", def = "{'userId': 1, 'date': 1, 'deleted': 1}")
 public class DailyEntry {
     @Id
     private String id;
+    @Indexed
     private String userId;
+    @Indexed
     private LocalDateTime date;
     private Double openingBalance;
     private Double totalIncome;
@@ -31,6 +37,7 @@ public class DailyEntry {
     private boolean completed;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    @Indexed
     private boolean deleted = false;
     private LocalDateTime deletedAt;
 

@@ -60,7 +60,7 @@
         <div class="total-balance-card">
             <div>
                 <div class="label">Total Balance</div>
-                <div class="amount" th:text="${#numbers.formatDecimal(totalBalance, 1, 2)}">0.00</div>
+                <div class="amount" th:text="|${#numbers.formatDecimal(totalBalance * conversionRate, 1, 2)} ${userCurrency}|">0.00</div>
             </div>
             <a href="/accounts/add" class="btn">
                 <i class="fas fa-plus"></i> Add Account

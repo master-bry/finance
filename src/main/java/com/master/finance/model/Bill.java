@@ -1,19 +1,25 @@
 package com.master.finance.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Document(collection = "bills")
+@CompoundIndex(name = "user_deleted_status_idx", def = "{'userId': 1, 'deleted': 1, 'status': 1}")
+@CompoundIndex(name = "user_deleted_due_status_idx", def = "{'userId': 1, 'deleted': 1, 'dueDate': 1, 'status': 1}")
 public class Bill {
     @Id
     private String id;
+    @Indexed
     private String userId;
     private String name;
     private Double amount;
     private String category;
+    @Indexed
     private String status; // PENDING, PAID, PARTIAL
     private boolean recurring;
     private String frequency; // MONTHLY, WEEKLY, YEARLY, NONE
@@ -26,6 +32,7 @@ public class Bill {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    @Indexed
     private boolean deleted = false;
     private LocalDateTime deletedAt;
 

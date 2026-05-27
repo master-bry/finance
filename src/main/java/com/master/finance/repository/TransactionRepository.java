@@ -32,4 +32,7 @@ public interface TransactionRepository extends MongoRepository<Transaction, Stri
     // For balance calculations: get transactions before a specific date
     @Query("{ 'userId': ?0, 'date': { $lt: ?1 }, 'deleted': false }")
     List<Transaction> findByUserIdAndDateBeforeAndDeletedFalse(String userId, LocalDateTime date);
+
+    @Query(value = "{ 'userId': ?0, 'deleted': false, $or: [ { 'description': { $regex: ?1, $options: 'i' } }, { 'category': { $regex: ?1, $options: 'i' } } ] }", sort = "{ 'date': -1 }")
+    List<Transaction> searchByUserIdAndKeyword(String userId, String keyword);
 }

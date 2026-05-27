@@ -41,15 +41,15 @@
             <div class="stat-grid">
                 <div class="stat">
                     <div class="label">Target</div>
-                    <div class="value" th:text="${#numbers.formatDecimal(projection.targetAmount, 1, 2)}">0</div>
+                    <div class="value" th:text="|${#numbers.formatDecimal(projection.targetAmount * conversionRate, 1, 2)} ${userCurrency}|">0</div>
                 </div>
                 <div class="stat">
                     <div class="label">Current</div>
-                    <div class="value" th:text="${#numbers.formatDecimal(projection.currentAmount, 1, 2)}">0</div>
+                    <div class="value" th:text="|${#numbers.formatDecimal(projection.currentAmount * conversionRate, 1, 2)} ${userCurrency}|">0</div>
                 </div>
                 <div class="stat">
                     <div class="label">Remaining</div>
-                    <div class="value" th:text="${#numbers.formatDecimal(projection.remainingAmount, 1, 2)}">0</div>
+                    <div class="value" th:text="|${#numbers.formatDecimal(projection.remainingAmount * conversionRate, 1, 2)} ${userCurrency}|">0</div>
                 </div>
                 <div class="stat" th:if="${projection.daysLeft != null}">
                     <div class="label">Days Left</div>
@@ -59,8 +59,8 @@
 
             <div th:if="${projection.recommendedDaily != null}" style="background: #EBF8FF; border-radius: 8px; padding: 1rem; margin: 1rem 0;">
                 <strong>To reach your goal on time, save:</strong><br>
-                <span th:text="${#numbers.formatDecimal(projection.recommendedDaily, 1, 2)}">0</span> per day or
-                <span th:text="${#numbers.formatDecimal(projection.recommendedMonthly, 1, 2)}">0</span> per month
+                <span th:text="|${#numbers.formatDecimal(projection.recommendedDaily * conversionRate, 1, 2)} ${userCurrency}|">0</span> per day or
+                <span th:text="|${#numbers.formatDecimal(projection.recommendedMonthly * conversionRate, 1, 2)} ${userCurrency}|">0</span> per month
             </div>
 
             <h3 style="color: var(--primary-dark); margin-top: 2rem;">Monthly Forecast</h3>
@@ -71,14 +71,14 @@
                 <thead>
                     <tr>
                         <th>Month</th>
-                        <th>Projected Amount</th>
+                        <th th:text="'Projected Amount (' + ${userCurrency} + ')'">Projected Amount (TZS)</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr th:each="point : ${projection.forecast}">
                         <td th:text="'Month ' + ${point.month}">1</td>
-                        <td style="font-weight: 600;" th:text="${#numbers.formatDecimal(point.projectedAmount, 1, 2)}">0</td>
+                        <td style="font-weight: 600;" th:text="|${#numbers.formatDecimal(point.projectedAmount * conversionRate, 1, 2)} ${userCurrency}|">0</td>
                         <td><span class="tracking" th:classappend="${point.onTrack ? 'on-track' : 'off-track'}" th:text="${point.onTrack ? 'On Track' : 'Behind'}">Status</span></td>
                     </tr>
                 </tbody>

@@ -2,6 +2,7 @@ package com.master.finance.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "investments")
+@CompoundIndex(name = "user_deleted_idx", def = "{'userId': 1, 'deleted': 1}")
 public class Investment {
     @Id
     private String id;
@@ -32,6 +34,7 @@ public class Investment {
     private String provider;
     private String notes;
     private List<InvestmentTransaction> transactions = new ArrayList<>();
+    @Indexed
     private boolean deleted = false;
     private LocalDate deletedAt;
 
