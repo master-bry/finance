@@ -101,16 +101,16 @@
     <div class="summary-grid">
         <div class="summary-card">
             <div class="label">💰 Owed to Me</div>
-            <div class="value green" th:text="${#numbers.formatDecimal(totalOwedToMe, 1, 0) + ' TZS'}">0 TZS</div>
+            <div class="value green" th:text="|${#numbers.formatDecimal(totalOwedToMe * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</div>
         </div>
         <div class="summary-card">
             <div class="label">💸 I Owe</div>
-            <div class="value red" th:text="${#numbers.formatDecimal(totalIOwe, 1, 0) + ' TZS'}">0 TZS</div>
+            <div class="value red" th:text="|${#numbers.formatDecimal(totalIOwe * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</div>
         </div>
         <div class="summary-card">
             <div class="label">⚖️ Net Position</div>
             <div class="value" th:classappend="${netPosition >= 0 ? 'green' : 'red'}"
-                 th:text="${#numbers.formatDecimal(netPosition, 1, 0) + ' TZS'}">0 TZS</div>
+                 th:text="|${#numbers.formatDecimal(netPosition * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</div>
         </div>
         <div class="summary-card">
             <div class="label">📋 Total Records</div>
@@ -159,7 +159,7 @@
                 <option value="SETTLED" th:selected="${filterStatus == 'SETTLED'}">Settled</option>
             </select>
             <button type="submit" class="btn-filter" style="padding:0.5rem 1rem;">Filter</button>
-            <a th:href="@{/debts(grouped=${groupedView})}" class="btn-secondary" style="padding:0.5rem 1rem;">Reset</a>
+            <a th:href="@{/debts(grouped=${groupedView})}" class="btn btn-secondary">Reset</a>
             <div class="page-size-selector" th:if="${groupedView == null or !groupedView}">
                 <label>Show:</label>
                 <select name="size" onchange="this.form.submit()">
@@ -199,8 +199,8 @@
                         <span class="badge" th:classappend="${debt.type == 'OWED_TO_ME' ? 'badge-owed' : 'badge-iowe'}"
                               th:text="${debt.type == 'OWED_TO_ME' ? '💰 Owed to Me' : '💸 I Owe'}"></span>
                     </td>
-                    <td th:text="${#numbers.formatDecimal(debt.amount, 1, 0) + ' TZS'}"></td>
-                    <td><strong th:text="${#numbers.formatDecimal(debt.remainingAmount, 1, 0) + ' TZS'}"></strong></td>
+                    <td th:text="|${#numbers.formatDecimal(debt.amount * conversionRate, 1, 2)} ${userCurrency}|"></td>
+                    <td><strong th:text="|${#numbers.formatDecimal(debt.remainingAmount * conversionRate, 1, 2)} ${userCurrency}|"></strong></td>
                     <td>
                         <span class="badge"
                               th:classappend="${debt.status == 'SETTLED' ? 'badge-settled' : (debt.status == 'PARTIAL' ? 'badge-partial' : 'badge-pending')}"
@@ -278,10 +278,10 @@
                               th:text="${group.overallStatus}">ACTIVE</span>
                     </p>
                     <p style="font-size:0.85rem;color:var(--gray-500);">
-                        Original: <strong th:text="${group.formattedTotalAmount}">0 TZS</strong>
+                        Original: <strong th:text="|${group.formattedTotalAmount} ${userCurrency}|">0 TZS</strong>
                     </p>
                     <p style="font-size:1rem;font-weight:700;color:var(--primary-dark);">
-                        Remaining: <span th:text="${group.formattedTotalRemaining}">0 TZS</span>
+                        Remaining: <span th:text="|${group.formattedTotalRemaining} ${userCurrency}|">0 TZS</span>
                     </p>
                 </div>
             </div>
@@ -301,8 +301,8 @@
                                 <div th:if="${debt.notes != null and !debt.notes.isEmpty()}"
                                      style="font-size:0.75rem;color:var(--gray-500);" th:text="${debt.notes}"></div>
                             </td>
-                            <td th:text="${#numbers.formatDecimal(debt.amount, 1, 0) + ' TZS'}">0</td>
-                            <td><strong th:text="${#numbers.formatDecimal(debt.remainingAmount, 1, 0) + ' TZS'}">0</strong></td>
+                            <td th:text="|${#numbers.formatDecimal(debt.amount * conversionRate, 1, 2)} ${userCurrency}|">0</td>
+                            <td><strong th:text="|${#numbers.formatDecimal(debt.remainingAmount * conversionRate, 1, 2)} ${userCurrency}|">0</strong></td>
                             <td>
                                 <span class="badge"
                                       th:classappend="${debt.status == 'SETTLED' ? 'badge-settled' : (debt.status == 'PARTIAL' ? 'badge-partial' : 'badge-pending')}"

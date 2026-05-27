@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title th:text="${forced} ? 'Password Expired' : 'Change Password'">Change Password</title>
+    <th:block layout:fragment="styles">
+        <style>
+            .password-card {
+                max-width: 500px;
+                margin: 0 auto;
+            }
+            .password-card .form-group {
+                margin-bottom: 1.25rem;
+            }
+            .password-card label {
+                display: block;
+                font-weight: 600;
+                margin-bottom: 0.4rem;
+                color: var(--gray-700);
+                font-size: 0.9rem;
+            }
+            .password-card input {
+                width: 100%;
+                padding: 0.7rem 1rem;
+                border: 2px solid var(--gray-200);
+                border-radius: 10px;
+                font-size: 0.95rem;
+                transition: border-color 0.2s;
+            }
+            .password-card input:focus {
+                outline: none;
+                border-color: var(--primary-dark);
+            }
+            .expired-banner {
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+                border-left: 4px solid var(--danger);
+                border-radius: var(--radius-md);
+                padding: 1rem 1.25rem;
+                margin-bottom: 1.5rem;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                color: #991b1b;
+                font-weight: 500;
+            }
+            .expired-banner i {
+                font-size: 1.5rem;
+                color: var(--danger);
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="section-card password-card">
+            <div class="section-header">
+                <h4><i class="fas fa-lock"></i> <span th:text="${forced} ? 'Password Expired - Change Required' : 'Change Password'">Change Password</span></h4>
+            </div>
+
+            <div th:if="${forced}" class="expired-banner">
+                <i class="fas fa-circle-exclamation"></i>
+                <span>Your password has expired. You must set a new password before continuing.</span>
+            </div>
+
+            <form method="post" th:action="${forced} ? '/password/change?forced=true' : '/password/change'">
+                <div th:unless="${forced}" class="form-group">
+                    <label>Current Password</label>
+                    <input type="password" name="currentPassword" required
+                           placeholder="Enter your current password"/>
+                </div>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" name="newPassword" required minlength="6"
+                           placeholder="At least 6 characters"/>
+                </div>
+                <div class="form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" name="confirmPassword" required minlength="6"
+                           placeholder="Re-enter new password"/>
+                </div>
+                <button type="submit" class="btn btn-primary" style="padding:0.75rem 2rem;">
+                    <i class="fas fa-key"></i> <span th:text="${forced} ? 'Set New Password' : 'Change Password'">Change Password</span>
+                </button>
+                <a th:unless="${forced}" href="/profile" class="btn btn-secondary" style="padding:0.75rem 2rem; margin-left: 0.5rem;">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

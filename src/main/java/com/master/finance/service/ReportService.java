@@ -345,7 +345,7 @@ public class ReportService {
                                           CellStyle boldStyle, CellStyle currencyStyle, CellStyle headerStyle) {
         int rowNum = 0;
         Row headerRow = sheet.createRow(rowNum++);
-        String[] headers = {"Date", "Description", "Category", "Type", "Amount (TZS)"};
+        String[] headers = {"Date", "Description", "Category", "Type", "Amount"};
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(headers[i]);
@@ -413,7 +413,7 @@ public class ReportService {
                                       CellStyle boldStyle, CellStyle currencyStyle, CellStyle headerStyle) {
         int rowNum = 0;
         Row headerRow = sheet.createRow(rowNum++);
-        String[] headers = {"Category", "Amount (TZS)", "% of Total"};
+        String[] headers = {"Category", "Amount", "% of Total"};
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(headers[i]);
@@ -738,9 +738,13 @@ public class ReportService {
     }
 
     private String formatCurrency(Object value) {
-        if (value == null) return "0 TZS";
+        return formatCurrency(value, "TZS");
+    }
+
+    private String formatCurrency(Object value, String currency) {
+        if (value == null) return "0 " + currency;
         double amount = ((Number) value).doubleValue();
-        return String.format("%,.0f TZS", amount);
+        return String.format("%,.0f %s", amount, currency);
     }
 
     private String formatPercent(Object value) {

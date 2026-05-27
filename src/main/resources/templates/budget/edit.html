@@ -87,7 +87,7 @@
                                    placeholder="Amount" 
                                    style="width: 100%; padding: 0.75rem; border: 2px solid #E5E7EB; border-radius: 10px;">
                         </div>
-                        <div th:text="'Current: ' + ${#numbers.formatDecimal(entry.value.actual, 1, 0)} + ' TZS'" 
+                        <div th:text="|Current: ${#numbers.formatDecimal(entry.value.actual * conversionRate, 1, 2)} ${userCurrency}|" 
                              style="color: #6B7280; font-size: 0.85rem;"></div>
                     </div>
                 </div>

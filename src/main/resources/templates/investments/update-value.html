@@ -18,8 +18,8 @@
             
             <div class="debt-info">
                 <p><strong>Investment:</strong> <span th:text="${investment.name}"></span></p>
-                <p><strong>Current Value:</strong> <span th:text="${#numbers.formatDecimal(investment.currentValue, 1, 0)}"></span> TZS</p>
-                <p><strong>Amount Invested:</strong> <span th:text="${#numbers.formatDecimal(investment.amountInvested, 1, 0)}"></span> TZS</p>
+                <p><strong>Current Value:</strong> <span th:text="${#numbers.formatDecimal(investment.currentValue * conversionRate, 1, 2)}"></span> <span th:text="${userCurrency}"></span></p>
+                <p><strong>Amount Invested:</strong> <span th:text="${#numbers.formatDecimal(investment.amountInvested * conversionRate, 1, 2)}"></span> <span th:text="${userCurrency}"></span></p>
             </div>
             
             <form id="updateValueForm" th:action="@{/investments/update-value/{id}(id=${investment.id})}" method="post" novalidate>

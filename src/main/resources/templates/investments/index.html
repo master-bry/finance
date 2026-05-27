@@ -10,16 +10,16 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-title">💰 Total Invested</div>
-                <div class="stat-value" th:text="${#numbers.formatDecimal(totalInvested, 1, 0)} + ' TZS'">0 TZS</div>
+                <div class="stat-value" th:text="|${#numbers.formatDecimal(totalInvested * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</div>
             </div>
             <div class="stat-card">
                 <div class="stat-title">📈 Current Value</div>
-                <div class="stat-value" th:text="${#numbers.formatDecimal(totalCurrentValue, 1, 0)} + ' TZS'">0 TZS</div>
+                <div class="stat-value" th:text="|${#numbers.formatDecimal(totalCurrentValue * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</div>
             </div>
             <div class="stat-card">
                 <div class="stat-title">📊 Total Profit/Loss</div>
                 <div class="stat-value" th:class="${totalProfitLoss >= 0 ? 'positive' : 'negative'}">
-                    <span th:text="${#numbers.formatDecimal(totalProfitLoss, 1, 0)}"></span> TZS
+                    <span th:text="${#numbers.formatDecimal(totalProfitLoss * conversionRate, 1, 2)}"></span> <span th:text="${userCurrency}"></span>
                 </div>
             </div>
         </div>
@@ -38,14 +38,14 @@
             
             <div class="investment-details">
                 <div class="investment-detail">
-                    <strong>Invested:</strong> <span th:text="${#numbers.formatDecimal(inv.amountInvested, 1, 0)}"></span> TZS
+                    <strong>Invested:</strong> <span th:text="${#numbers.formatDecimal(inv.amountInvested * conversionRate, 1, 2)}"></span> <span th:text="${userCurrency}"></span>
                 </div>
                 <div class="investment-detail">
-                    <strong>Current Value:</strong> <span th:text="${#numbers.formatDecimal(inv.currentValue, 1, 0)}"></span> TZS
+                    <strong>Current Value:</strong> <span th:text="${#numbers.formatDecimal(inv.currentValue * conversionRate, 1, 2)}"></span> <span th:text="${userCurrency}"></span>
                 </div>
                 <div class="investment-detail">
                     <strong>Profit/Loss:</strong> <span th:class="${inv.profitLoss >= 0 ? 'positive' : 'negative'}" 
-                          th:text="${#numbers.formatDecimal(inv.profitLoss, 1, 0)}"></span> TZS
+                          th:text="${#numbers.formatDecimal(inv.profitLoss * conversionRate, 1, 2)}"></span> <span th:text="${userCurrency}"></span>
                 </div>
                 <div class="investment-detail">
                     <strong>Risk Level:</strong> <span th:text="${inv.riskLevel}"></span>

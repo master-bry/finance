@@ -13,7 +13,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/profile")
@@ -38,7 +45,7 @@ public class ProfileController {
         model.addAttribute("pageSubtitle", "Manage your account settings");
         model.addAttribute("title", "Profile Settings");
 
-        String[] currencies = {"TZS", "USD", "EUR", "GBP", "KES", "UGX", "RWF", "ZAR", "NGN", "GHS"};
+        String[] currencies = {"TZS", "USD", "EUR", "GBP", "KES", "UGX", "RWF", "ZAR", "NGN", "GHS", "JPY", "CNY", "INR", "BRL", "MXN", "CAD", "AUD", "CHF", "SEK", "NOK", "DKK", "AED", "SAR", "TRY", "PKR", "BDT", "LKR", "NPR", "ETB", "MAD", "EGP", "NGN", "GHS", "ZAR", "KES", "UGX", "RWF", "BIF", "SSP"};
         model.addAttribute("currencies", currencies);
 
         return "profile/index";
@@ -49,6 +56,7 @@ public class ProfileController {
                                 @RequestParam(required = false) String fullName,
                                 @RequestParam(required = false) String phoneNumber,
                                 @RequestParam(required = false) String currency,
+                                @RequestParam("profilePhoto") MultipartFile profilePhoto,
                                 RedirectAttributes redirectAttributes) {
         String userId = userService.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found")).getId();
@@ -57,6 +65,23 @@ public class ProfileController {
         updatedUser.setFullName(fullName);
         updatedUser.setPhoneNumber(phoneNumber);
         if (currency != null) updatedUser.setCurrency(currency);
+
+        if (profilePhoto != null && !profilePhoto.isEmpty()) {
+            try {
+                String uploadsDir = "src/main/resources/static/uploads/";
+                Path uploadPath = Paths.get(uploadsDir);
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);
+                }
+                String filename = UUID.randomUUID() + "_" + profilePhoto.getOriginalFilename();
+                Path filePath = uploadPath.resolve(filename);
+                Files.copy(profilePhoto.getInputStream(), filePath);
+                updatedUser.setProfilePhoto("/uploads/" + filename);
+            } catch (IOException e) {
+                redirectAttributes.addFlashAttribute("error", "Failed to upload profile photo");
+                return "redirect:/profile";
+            }
+        }
 
         userService.updateProfile(userId, updatedUser);
         auditService.logAsync(userId, "PROFILE_UPDATE", "User", userId, "Profile updated");
@@ -142,6 +167,19 @@ public class ProfileController {
             redirectAttributes.addFlashAttribute("error", "Invalid code. Please try again.");
             return "redirect:/profile/setup-2fa";
         }
+        return "redirect:/profile";
+    }
+
+    @PostMapping("/remove-photo")
+    public String removePhoto(Authentication authentication,
+                              RedirectAttributes redirectAttributes) {
+        String userId = userService.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found")).getId();
+        userService.findById(userId).ifPresent(user -> {
+            user.setProfilePhoto(null);
+            userService.save(user);
+        });
+        redirectAttributes.addFlashAttribute("success", "Profile photo removed");
         return "redirect:/profile";
     }
 

@@ -57,10 +57,10 @@ public class DebtGroupDTO {
     public void setType(String type) { this.type = type; }
     
     public String getFormattedTotalAmount() {
-        return String.format("%,.0f TZS", totalAmount);
+        return String.format("%,.0f", totalAmount);
     }
     
     public String getFormattedTotalRemaining() {
-        return String.format("%,.0f TZS", totalRemaining);
+        return String.format("%,.0f", totalRemaining);
     }
 }

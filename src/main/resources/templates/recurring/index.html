@@ -52,11 +52,11 @@
                     <td th:text="${rt.nextDate}">Next Date</td>
                     <td><span class="badge" th:classappend="${rt.active ? 'badge-active' : 'badge-inactive'}" th:text="${rt.active ? 'Active' : 'Inactive'}">Status</span></td>
                     <td>
-                        <a th:href="@{/recurring/toggle/{id}(id=${rt.id})}" class="btn-sm" th:title="${rt.active ? 'Deactivate' : 'Activate'}">
+                        <a th:href="@{/recurring/toggle/{id}(id=${rt.id})}" class="btn-sm" style="background: var(--teal-500); color: white;" th:title="${rt.active ? 'Deactivate' : 'Activate'}">
                             <i class="fas" th:classappend="${rt.active ? 'fa-pause' : 'fa-play'}"></i>
                         </a>
-                        <a th:href="@{/recurring/edit/{id}(id=${rt.id})}" class="btn-sm"><i class="fas fa-edit"></i></a>
-                        <a th:href="@{/recurring/delete/{id}(id=${rt.id})}" class="btn-sm" style="color: var(--danger, #E53E3E);" onclick="return confirm('Delete this recurring transaction?')"><i class="fas fa-trash"></i></a>
+                        <a th:href="@{/recurring/edit/{id}(id=${rt.id})}" class="btn-sm" style="background: var(--info); color: white;"><i class="fas fa-edit"></i></a>
+                        <a th:href="@{/recurring/delete/{id}(id=${rt.id})}" class="btn-sm" style="background: var(--danger); color: white;" onclick="return confirm('Delete this recurring transaction?')"><i class="fas fa-trash"></i></a>
                     </td>
                 </tr>
             </tbody>

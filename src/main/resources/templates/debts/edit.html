@@ -84,7 +84,7 @@
                             <span class="payment-date" th:text="${#temporals.format(payment.paymentDate, 'dd MMM yyyy HH:mm')}"></span>
                             <div th:if="${payment.notes}" style="font-size:0.82rem; color: var(--gray-500);" th:text="${payment.notes}"></div>
                         </div>
-                        <span class="payment-amount" th:text="${#numbers.formatDecimal(payment.amountPaid, 1, 0)} + ' TZS'"></span>
+                        <span class="payment-amount" th:text="|${#numbers.formatDecimal(payment.amountPaid * conversionRate, 1, 2)} ${userCurrency}|"></span>
                     </li>
                 </ul>
             </div>

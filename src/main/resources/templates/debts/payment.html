@@ -15,9 +15,9 @@
             <div class="debt-info">
                 <p><strong>Person:</strong> <span th:text="${debt.personName}"></span></p>
                 <p><strong>Type:</strong> <span th:text="${debt.type == 'OWED_TO_ME' ? 'Owed to Me' : 'I Owe'}"></span></p>
-                <p><strong>Original Amount:</strong> <span th:text="${#numbers.formatDecimal(debt.amount, 1, 0)} + ' TZS'"></span></p>
+                <p><strong>Original Amount:</strong> <span th:text="|${#numbers.formatDecimal(debt.amount * conversionRate, 1, 2)} ${userCurrency}|"></span></p>
                 <p><strong>Remaining Balance:</strong> 
-                    <span class="remaining-highlight" th:text="${#numbers.formatDecimal(debt.remainingAmount, 1, 0)} + ' TZS'"></span>
+                    <span class="remaining-highlight" th:text="|${#numbers.formatDecimal(debt.remainingAmount * conversionRate, 1, 2)} ${userCurrency}|"></span>
                 </p>
             </div>
             

@@ -108,22 +108,22 @@
                 <div class="stat-card">
                     <div class="stat-title">💰 Actual Income</div>
                     <div class="stat-value">
-                        <span th:text="${budget != null ? #numbers.formatDecimal(budget.totalIncome, 1, 0) : '0'}"></span> TZS
+                        <span th:text="${budget != null ? #numbers.formatDecimal(budget.totalIncome * conversionRate, 1, 2) : '0'}"></span> <span th:text="${userCurrency}"></span>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">💸 Actual Expenses</div>
                     <div class="stat-value">
-                        <span th:text="${budget != null ? #numbers.formatDecimal(budget.totalExpense, 1, 0) : '0'}"></span> TZS
+                        <span th:text="${budget != null ? #numbers.formatDecimal(budget.totalExpense * conversionRate, 1, 2) : '0'}"></span> <span th:text="${userCurrency}"></span>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">🎯 Savings Target</div>
                     <div class="stat-value">
-                        <span th:text="${budget != null ? #numbers.formatDecimal(budget.savingsTarget, 1, 0) : '0'}"></span> TZS
+                        <span th:text="${budget != null ? #numbers.formatDecimal(budget.savingsTarget * conversionRate, 1, 2) : '0'}"></span> <span th:text="${userCurrency}"></span>
                     </div>
                     <div class="spending-velocity" th:if="${budget != null}">
-                        Actual: <span th:text="${#numbers.formatDecimal(budget.actualSavings, 1, 0)}"></span> TZS
+                        Actual: <span th:text="${#numbers.formatDecimal(budget.actualSavings * conversionRate, 1, 2)}"></span> <span th:text="${userCurrency}"></span>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -152,8 +152,8 @@
                     <thead>
                         <tr>
                             <th>Category</th>
-                            <th>Planned (TZS)</th>
-                            <th>Actual (TZS)</th>
+                            <th th:text="'Planned (' + ${userCurrency} + ')'">Planned (TZS)</th>
+                            <th th:text="'Actual (' + ${userCurrency} + ')'">Actual (TZS)</th>
                             <th>Progress</th>
                             <th>Variance</th>
                             <th>Status</th>
@@ -213,15 +213,15 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; font-size: 0.85rem;">
                         <div>
                             <strong>Avg Income:</strong><br>
-                            <span th:text="${#numbers.formatDecimal(recommendations.avgIncome, 1, 0)} + ' TZS'"></span>
+                            <span th:text="|${#numbers.formatDecimal(recommendations.avgIncome * conversionRate, 1, 2)} ${userCurrency}|"></span>
                         </div>
                         <div>
                             <strong>Avg Expenses:</strong><br>
-                            <span th:text="${#numbers.formatDecimal(recommendations.avgExpense, 1, 0)} + ' TZS'"></span>
+                            <span th:text="|${#numbers.formatDecimal(recommendations.avgExpense * conversionRate, 1, 2)} ${userCurrency}|"></span>
                         </div>
                         <div>
                             <strong>Avg Savings:</strong><br>
-                            <span th:text="${#numbers.formatDecimal(recommendations.avgSavings, 1, 0)} + ' TZS'"></span>
+                            <span th:text="|${#numbers.formatDecimal(recommendations.avgSavings * conversionRate, 1, 2)} ${userCurrency}|"></span>
                         </div>
                     </div>
                 </div>

@@ -188,19 +188,19 @@
                 <div class="receipt-row">
                     <span class="receipt-label">Amount Paid:</span>
                     <span class="receipt-value amount-large"
-                          th:text="'TZS ' + ${#numbers.formatDecimal(latestPayment != null ? latestPayment.amountPaid : 0, 1, 0)}"></span>
+                          th:text="${userCurrency} + ' ' + ${#numbers.formatDecimal(latestPayment != null ? latestPayment.amountPaid * conversionRate : 0, 1, 0)}"></span>
                 </div>
 
                 <div class="receipt-row">
                     <span class="receipt-label">Original Amount:</span>
                     <span class="receipt-value"
-                          th:text="'TZS ' + ${#numbers.formatDecimal(debt.amount, 1, 0)}"></span>
+                          th:text="${userCurrency} + ' ' + ${#numbers.formatDecimal(debt.amount * conversionRate, 1, 2)}"></span>
                 </div>
 
                 <div class="receipt-row">
                     <span class="receipt-label">Remaining Balance:</span>
                     <span class="receipt-value"
-                          th:text="'TZS ' + ${#numbers.formatDecimal(debt.remainingAmount, 1, 0)}"></span>
+                          th:text="${userCurrency} + ' ' + ${#numbers.formatDecimal(debt.remainingAmount * conversionRate, 1, 2)}"></span>
                 </div>
 
                 <div class="receipt-row">
@@ -244,7 +244,7 @@
                     <strong style="margin-left: 0.5rem;">Payment Recorded ✓</strong>
                     <p style="margin-top: 0.5rem; margin-bottom: 0;">
                         Remaining balance:
-                        <strong th:text="'TZS ' + ${#numbers.formatDecimal(debt.remainingAmount, 1, 0)}"></strong>
+                        <strong th:text="${userCurrency} + ' ' + ${#numbers.formatDecimal(debt.remainingAmount * conversionRate, 1, 2)}"></strong>
                     </p>
                 </div>
 
@@ -257,7 +257,7 @@
                             <td th:text="${stat.index + 1} + '.'">1.</td>
                             <td th:text="${#temporals.format(p.paymentDate, 'dd MMM yyyy HH:mm')}"></td>
                             <td style="text-align:right; font-weight:600;"
-                                th:text="'TZS ' + ${#numbers.formatDecimal(p.amountPaid, 1, 0)}"></td>
+                                th:text="${userCurrency} + ' ' + ${#numbers.formatDecimal(p.amountPaid * conversionRate, 1, 2)}"></td>
                             <td>
                                 <a th:href="@{/debts/view-receipt/{id}/{idx}(id=${debt.id}, idx=${stat.index})}"
                                    style="color: #6366f1; font-size:0.75rem; text-decoration:none;">

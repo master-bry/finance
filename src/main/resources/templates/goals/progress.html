@@ -108,15 +108,15 @@
                 <div class="status-details">
                     <div class="detail-item">
                         <span class="detail-label">Target</span>
-                        <span class="detail-value" th:text="${#numbers.formatDecimal(goal.targetAmount, 1, 0)} + ' TZS'">0 TZS</span>
+                        <span class="detail-value" th:text="|${#numbers.formatDecimal(goal.targetAmount * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Current</span>
-                        <span class="detail-value" th:text="${#numbers.formatDecimal(goal.currentAmount, 1, 0)} + ' TZS'">0 TZS</span>
+                        <span class="detail-value" th:text="|${#numbers.formatDecimal(goal.currentAmount * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Remaining</span>
-                        <span class="detail-value" th:text="${#numbers.formatDecimal(goal.remainingAmount, 1, 0)} + ' TZS'">0 TZS</span>
+                        <span class="detail-value" th:text="|${#numbers.formatDecimal(goal.remainingAmount * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</span>
                     </div>
                 </div>
             </div>

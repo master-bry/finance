@@ -39,73 +39,95 @@
             <h2>Finance<span>Tracker</span></h2>
             <p>Professional Edition</p>
         </div>
-        <div class="nav-section-label">Main</div>
-        <ul class="nav-menu">
-            <li class="nav-item">
-                <a href="/dashboard" class="nav-link" th:classappend="${currentPage == 'dashboard' ? 'active' : ''}">
-                    <i class="fas fa-th-large"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/transactions" class="nav-link" th:classappend="${currentPage == 'transactions' ? 'active' : ''}">
-                    <i class="fas fa-arrows-left-right"></i> Transactions
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/accounts" class="nav-link" th:classappend="${currentPage == 'accounts' ? 'active' : ''}">
-                    <i class="fas fa-building-columns"></i> Accounts
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/budget" class="nav-link" th:classappend="${currentPage == 'budget' ? 'active' : ''}">
-                    <i class="fas fa-wallet"></i> Budget
-                </a>
-            </li>
-        </ul>
-        <div class="nav-section-label">Planning</div>
-        <ul class="nav-menu">
-            <li class="nav-item">
-                <a href="/goals" class="nav-link" th:classappend="${currentPage == 'goals' ? 'active' : ''}">
-                    <i class="fas fa-bullseye"></i> Goals
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/recurring" class="nav-link" th:classappend="${currentPage == 'recurring' ? 'active' : ''}">
-                    <i class="fas fa-rotate"></i> Recurring
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/investments" class="nav-link" th:classappend="${currentPage == 'investments' ? 'active' : ''}">
-                    <i class="fas fa-trend-up"></i> Investments
-                </a>
-            </li>
-        </ul>
-        <div class="nav-section-label">Management</div>
-        <ul class="nav-menu">
-            <li class="nav-item">
-                <a href="/debts" class="nav-link" th:classappend="${currentPage == 'debts' ? 'active' : ''}">
-                    <i class="fas fa-hand-holding-dollar"></i> Debts
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/bills" class="nav-link" th:classappend="${currentPage == 'bills' ? 'active' : ''}">
-                    <i class="fas fa-file-invoice"></i> Bills
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/excel/daily-entry" class="nav-link" th:classappend="${currentPage == 'daily' ? 'active' : ''}">
-                    <i class="fas fa-calendar-day"></i> Daily Entry
-                </a>
-            </li>
-        </ul>
-        <div class="nav-section-label">Analytics</div>
-        <ul class="nav-menu">
-            <li class="nav-item">
-                <a href="/reports" class="nav-link" th:classappend="${currentPage == 'reports' ? 'active' : ''}">
-                    <i class="fas fa-chart-bar"></i> Reports
-                </a>
-            </li>
-        </ul>
+        <div class="side-menu-scroll">
+            <div class="nav-group">
+                <div class="nav-group-header" onclick="toggleNavGroup('main')">
+                    <span class="nav-section-label">Main</span>
+                    <i class="fas fa-chevron-down nav-chevron"></i>
+                </div>
+                <ul class="nav-menu nav-group-content" id="navGroup-main">
+                    <li class="nav-item">
+                        <a href="/dashboard" class="nav-link" th:classappend="${currentPage == 'dashboard' ? 'active' : ''}">
+                            <i class="fas fa-th-large"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/transactions" class="nav-link" th:classappend="${currentPage == 'transactions' ? 'active' : ''}">
+                            <i class="fas fa-arrows-left-right"></i> Transactions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/accounts" class="nav-link" th:classappend="${currentPage == 'accounts' ? 'active' : ''}">
+                            <i class="fas fa-building-columns"></i> Accounts
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/budget" class="nav-link" th:classappend="${currentPage == 'budget' ? 'active' : ''}">
+                            <i class="fas fa-wallet"></i> Budget
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="nav-group">
+                <div class="nav-group-header" onclick="toggleNavGroup('planning')">
+                    <span class="nav-section-label">Planning</span>
+                    <i class="fas fa-chevron-down nav-chevron"></i>
+                </div>
+                <ul class="nav-menu nav-group-content" id="navGroup-planning">
+                    <li class="nav-item">
+                        <a href="/goals" class="nav-link" th:classappend="${currentPage == 'goals' ? 'active' : ''}">
+                            <i class="fas fa-bullseye"></i> Goals
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/recurring" class="nav-link" th:classappend="${currentPage == 'recurring' ? 'active' : ''}">
+                            <i class="fas fa-rotate"></i> Recurring
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/investments" class="nav-link" th:classappend="${currentPage == 'investments' ? 'active' : ''}">
+                            <i class="fas fa-trend-up"></i> Investments
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="nav-group">
+                <div class="nav-group-header" onclick="toggleNavGroup('management')">
+                    <span class="nav-section-label">Management</span>
+                    <i class="fas fa-chevron-down nav-chevron"></i>
+                </div>
+                <ul class="nav-menu nav-group-content" id="navGroup-management">
+                    <li class="nav-item">
+                        <a href="/debts" class="nav-link" th:classappend="${currentPage == 'debts' ? 'active' : ''}">
+                            <i class="fas fa-hand-holding-dollar"></i> Debts
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/bills" class="nav-link" th:classappend="${currentPage == 'bills' ? 'active' : ''}">
+                            <i class="fas fa-file-invoice"></i> Bills
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/excel/daily-entry" class="nav-link" th:classappend="${currentPage == 'daily' ? 'active' : ''}">
+                            <i class="fas fa-calendar-day"></i> Daily Entry
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="nav-group">
+                <div class="nav-group-header" onclick="toggleNavGroup('analytics')">
+                    <span class="nav-section-label">Analytics</span>
+                    <i class="fas fa-chevron-down nav-chevron"></i>
+                </div>
+                <ul class="nav-menu nav-group-content" id="navGroup-analytics">
+                    <li class="nav-item">
+                        <a href="/reports" class="nav-link" th:classappend="${currentPage == 'reports' ? 'active' : ''}">
+                            <i class="fas fa-chart-bar"></i> Reports
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
         <div class="sidebar-footer">
             <a href="/profile" class="nav-link" th:classappend="${currentPage == 'profile' ? 'active' : ''}">
                 <i class="fas fa-user-gear"></i> Profile & Settings
@@ -127,15 +149,16 @@
                 else g.textContent = 'Good evening';
             </script>
             <div class="user-info">
-                <a href="/profile" class="user-avatar" title="Profile Settings">
-                    <span th:text="${#authentication != null and #authentication.name != null ? #strings.substring(#authentication.name, 0, 1).toUpperCase() : 'U'}">U</span>
-                </a>
-                <a href="/profile" class="header-icon-btn" title="Profile Settings">
-                    <i class="fas fa-user-gear"></i>
-                </a>
-                <a href="#" onclick="confirmLogout()" class="header-icon-btn header-logout">
-                    <i class="fas fa-right-from-bracket"></i> <span>Logout</span>
-                </a>
+                <div class="user-dropdown">
+                    <button class="user-avatar" onclick="toggleUserMenu()" title="Profile">
+                        <img th:if="${currentUser != null and currentUser.profilePhoto != null}" th:src="${currentUser.profilePhoto}" alt="Profile" class="avatar-img"/>
+                        <span th:unless="${currentUser != null and currentUser.profilePhoto != null}" th:text="${#authentication != null and #authentication.name != null ? #strings.substring(#authentication.name, 0, 1).toUpperCase() : 'U'}">U</span>
+                    </button>
+                    <div class="user-menu" id="userMenu">
+                        <a href="/profile" class="user-menu-item"><i class="fas fa-user-gear"></i> Settings</a>
+                        <a href="#" onclick="confirmLogout()" class="user-menu-item user-menu-logout"><i class="fas fa-right-from-bracket"></i> Logout</a>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -145,6 +168,15 @@
         </div>
         <div th:if="${error}" class="status-message status-error">
             <div class="status-text" th:text="${error}"></div>
+            <button type="button" class="status-dismiss" onclick="dismissStatusMessage(this)">Dismiss</button>
+        </div>
+        <div th:if="${passwordDaysRemaining >= 0 and passwordDaysRemaining <= 14 and !forced}"
+             class="status-message status-warning" style="display:flex;">
+            <div class="status-text">
+                <i class="fas fa-clock" style="margin-right:0.5rem;"></i>
+                Your password will expire in <strong th:text="${passwordDaysRemaining}">14</strong> day(s).
+                <a href="/password/change" style="color:inherit; text-decoration:underline; font-weight:600;">Change now</a>
+            </div>
             <button type="button" class="status-dismiss" onclick="dismissStatusMessage(this)">Dismiss</button>
         </div>
 
@@ -191,6 +223,45 @@
 
     <script th:inline="javascript">
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+
+        function toggleUserMenu() {
+            document.getElementById('userMenu').classList.toggle('show');
+        }
+
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('userMenu');
+            const avatar = document.querySelector('.user-avatar');
+            if (menu.classList.contains('show') && !menu.contains(event.target) && !avatar.contains(event.target)) {
+                menu.classList.remove('show');
+            }
+        });
+
+        function toggleNavGroup(group) {
+            const content = document.getElementById('navGroup-' + group);
+            const header = content.previousElementSibling;
+            const chevron = header.querySelector('.nav-chevron');
+            content.classList.toggle('collapsed');
+            chevron.classList.toggle('collapsed');
+            const state = JSON.parse(localStorage.getItem('navGroups') || '{}');
+            state[group] = content.classList.contains('collapsed');
+            localStorage.setItem('navGroups', JSON.stringify(state));
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const state = JSON.parse(localStorage.getItem('navGroups') || '{}');
+            document.querySelectorAll('.nav-group-content').forEach(function(el) {
+                const id = el.id;
+                const group = id.replace('navGroup-', '');
+                if (state[group]) {
+                    el.classList.add('collapsed');
+                    const header = el.previousElementSibling;
+                    if (header) {
+                        const chevron = header.querySelector('.nav-chevron');
+                        if (chevron) chevron.classList.add('collapsed');
+                    }
+                }
+            });
+        });
 
         document.addEventListener('click', function(event) {
             const sidebar = document.getElementById('sidebar');

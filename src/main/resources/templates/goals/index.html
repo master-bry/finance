@@ -28,7 +28,7 @@
             <div th:each="goal : ${activeGoals}" class="goal-item">
                 <div class="goal-header">
                     <span th:text="${goal.name}"></span>
-                    <span th:text="${#numbers.formatDecimal(goal.currentAmount, 1, 0)} + ' / ' + ${#numbers.formatDecimal(goal.targetAmount, 1, 0)} + ' TZS'"></span>
+                    <span th:text="|${#numbers.formatDecimal(goal.currentAmount * conversionRate, 1, 2)} / ${#numbers.formatDecimal(goal.targetAmount * conversionRate, 1, 2)} ${userCurrency}|"></span>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill" th:style="'width: ' + ${goal.progressPercentage} + '%;'"></div>

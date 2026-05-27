@@ -60,16 +60,16 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-title">💰 Total Income</div>
-                <div class="stat-value positive" th:text="${#numbers.formatDecimal(stats.totalIncome, 1, 0)} + ' TZS'">0 TZS</div>
+                <div class="stat-value positive" th:text="|${#numbers.formatDecimal(stats.totalIncome * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</div>
             </div>
             <div class="stat-card">
                 <div class="stat-title">💸 Total Expense</div>
-                <div class="stat-value negative" th:text="${#numbers.formatDecimal(stats.totalExpense, 1, 0)} + ' TZS'">0 TZS</div>
+                <div class="stat-value negative" th:text="|${#numbers.formatDecimal(stats.totalExpense * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</div>
             </div>
             <div class="stat-card">
                 <div class="stat-title">💵 Balance</div>
                 <div class="stat-value" th:class="${stats.balance >= 0 ? 'positive' : 'negative'}"
-                     th:text="${#numbers.formatDecimal(stats.balance, 1, 0)} + ' TZS'">0 TZS</div>
+                     th:text="|${#numbers.formatDecimal(stats.balance * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</div>
             </div>
             <div class="stat-card">
                 <div class="stat-title">📊 Total Count</div>
@@ -134,6 +134,8 @@
         <script th:inline="javascript">
             // Get transactions data from server (Thymeleaf renders as JSON)
             const transactions = /*[[${transactions}]]*/ [];
+            const convRate = /*[[${conversionRate}]]*/ 1;
+            const curr = /*[[${userCurrency}]]*/ 'TZS';
             let currentFilter = 'all';
             let currentPage = 1;
             let pageSize = 10;   // default 10, will be set by dropdown
@@ -189,7 +191,7 @@
                                     <td>${dateStr}</td>
                                     <td>${escapeHtml(trans.description)}</td>
                                     <td><span class="category-badge">${escapeHtml(trans.category)}</span></td>
-                                    <td class="${amountClass}">${sign} ${formatAmount(trans.amount)} TZS</td>
+                                    <td class="${amountClass}">${sign} ${formatAmount(trans.amount * convRate)} ${curr}</td>
                                     <td><span class="badge ${badgeClass}">${badgeIcon}</span></td>
                                     <td><div class="actions">
                                         <a href="/transactions/edit/${trans.id}" class="btn-xs btn-edit">✏️ Edit</a>

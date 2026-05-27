@@ -41,7 +41,7 @@
         }
         .total-balance-card {
             background: linear-gradient(135deg, var(--primary-dark), var(--secondary));
-            color: white;
+            color: black;
             border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 2rem;
@@ -51,6 +51,8 @@
         }
         .total-balance-card .label { font-size: 0.9rem; opacity: 0.9; }
         .total-balance-card .amount { font-size: 2rem; font-weight: 700; }
+        .total-balance-card .btn { background: var(--teal-500); color: var(--white); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .total-balance-card .btn:hover { background: var(--teal-400); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
@@ -60,7 +62,7 @@
                 <div class="label">Total Balance</div>
                 <div class="amount" th:text="${#numbers.formatDecimal(totalBalance, 1, 2)}">0.00</div>
             </div>
-            <a href="/accounts/add" class="btn" style="background: white; color: var(--primary-dark); padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; font-weight: 600;">
+            <a href="/accounts/add" class="btn">
                 <i class="fas fa-plus"></i> Add Account
             </a>
         </div>
@@ -78,13 +80,13 @@
                     <span th:if="${account.bankName}" style="margin-left: 0.5rem; font-size: 0.85rem; color: var(--gray-500);" th:text="${account.bankName}">Bank</span>
                     <p th:if="${account.accountNumber}" style="margin: 0.3rem 0 0; font-size: 0.85rem; color: var(--gray-500);" th:text="'****' + ${#strings.substring(account.accountNumber, account.accountNumber.length() - 4)}">Number</p>
                     <div style="margin-top: 0.8rem;">
-                        <a th:href="@{/accounts/edit/{id}(id=${account.id})}" class="btn-sm" style="margin-right: 0.5rem;"><i class="fas fa-edit"></i></a>
-                        <a th:href="@{/accounts/delete/{id}(id=${account.id})}" class="btn-sm" style="color: var(--danger, #E53E3E);" onclick="return confirm('Delete this account?')"><i class="fas fa-trash"></i></a>
+                        <a th:href="@{/accounts/edit/{id}(id=${account.id})}" class="btn-sm" style="background: var(--info); color: white; margin-right: 0.5rem;"><i class="fas fa-edit"></i></a>
+                        <a th:href="@{/accounts/delete/{id}(id=${account.id})}" class="btn-sm" style="background: var(--danger); color: white;" onclick="return confirm('Delete this account?')"><i class="fas fa-trash"></i></a>
                     </div>
                 </div>
                 <div class="account-balance">
                     <div class="amount" th:text="${#numbers.formatDecimal(account.balance, 1, 2)}">0.00</div>
-                    <div class="currency" th:text="${account.currency ?: 'TZS'}">TZS</div>
+                    <div class="currency" th:text="${account.currency ?: userCurrency}">TZS</div>
                 </div>
             </div>
         </div>

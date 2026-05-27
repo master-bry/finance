@@ -25,7 +25,7 @@
                 <tbody>
                     <tr th:each="bill : ${overdueBills}" th:if="${bill != null}">
                         <td th:text="${bill.name}">...</td>
-                        <td class="negative" th:text="${#numbers.formatDecimal(bill.amount,1,0)} + ' TZS'">...</td>
+                        <td class="negative" th:text="|${#numbers.formatDecimal(bill.amount * conversionRate, 1, 2)} ${userCurrency}|">...</td>
                         <td th:text="${#temporals.format(bill.dueDate, 'dd MMM yyyy')}">...</td>
                         <td>
                             <a th:href="@{/bills/pay/{id}(id=${bill.id})}" class="btn-xs btn-success">Pay Now</a>
@@ -52,7 +52,7 @@
                 <tbody>
                     <tr th:each="bill : ${bills}" th:if="${bill != null}">
                         <td th:text="${bill.name}">...</td>
-                        <td th:text="${#numbers.formatDecimal(bill.amount,1,0)} + ' TZS'">...</td>
+                        <td th:text="|${#numbers.formatDecimal(bill.amount * conversionRate, 1, 2)} ${userCurrency}|">...</td>
                         <td th:text="${bill.category}">...</td>
                         <td th:text="${#temporals.format(bill.dueDate, 'dd MMM yyyy')}">...</td>
                         <td>

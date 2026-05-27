@@ -45,6 +45,8 @@ public class User {
     
     private String totpSecret;
     private boolean totpEnabled;
+    private String profilePhoto;
+    private LocalDateTime passwordChangedAt;
 
     // Soft delete fields
     private LocalDateTime deletedAt;
@@ -102,4 +104,10 @@ public class User {
     public void setTotpSecret(String totpSecret) { this.totpSecret = totpSecret; }
     public boolean isTotpEnabled() { return totpEnabled; }
     public void setTotpEnabled(boolean totpEnabled) { this.totpEnabled = totpEnabled; }
+
+    public String getProfilePhoto() { return profilePhoto; }
+    public void setProfilePhoto(String profilePhoto) { this.profilePhoto = profilePhoto; }
+
+    public LocalDateTime getPasswordChangedAt() { return passwordChangedAt; }
+    public void setPasswordChangedAt(LocalDateTime passwordChangedAt) { this.passwordChangedAt = passwordChangedAt; }
 }

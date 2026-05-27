@@ -30,12 +30,12 @@
                     <tbody>
                         <tr th:each="entry : ${history}">
                             <td th:text="${#temporals.format(entry.date, 'yyyy-MM-dd')}">Date</td>
-                            <td th:text="${#numbers.formatDecimal(entry.openingBalance, 1, 0)} + ' TZS'">0 TZS</td>
-                            <td class="positive" th:text="'+ ' + ${#numbers.formatDecimal(entry.totalIncome, 1, 0)} + ' TZS'">0 TZS</td>
-                            <td class="negative" th:text="'- ' + ${#numbers.formatDecimal(entry.totalExpense, 1, 0)} + ' TZS'">0 TZS</td>
+                            <td th:text="|${#numbers.formatDecimal(entry.openingBalance * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</td>
+                            <td class="positive" th:text="|+ ${#numbers.formatDecimal(entry.totalIncome * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</td>
+                            <td class="negative" th:text="|- ${#numbers.formatDecimal(entry.totalExpense * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</td>
                             <td th:class="${entry.totalIncome - entry.totalExpense >= 0 ? 'positive' : 'negative'}"
-                                th:text="${#numbers.formatDecimal(entry.totalIncome - entry.totalExpense, 1, 0)} + ' TZS'">0 TZS</td>
-                            <td th:text="${#numbers.formatDecimal(entry.closingBalance, 1, 0)} + ' TZS'">0 TZS</td>
+                                th:text="|${#numbers.formatDecimal((entry.totalIncome - entry.totalExpense) * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</td>
+                            <td th:text="|${#numbers.formatDecimal(entry.closingBalance * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</td>
                             <td>
                                 <a th:href="'/excel/delete/' + ${entry.id}" 
                                    class="btn-xs btn-delete" 

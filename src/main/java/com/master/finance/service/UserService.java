@@ -20,7 +20,9 @@ public class UserService {
     
     public User registerUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setCreatedAt(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        user.setCreatedAt(now);
+        user.setPasswordChangedAt(now);
         user.setEnabled(true);
         user.setDeleted(false);
         user.setRole("USER");
@@ -86,6 +88,9 @@ public class UserService {
             user.setFullName(updatedUser.getFullName());
             user.setPhoneNumber(updatedUser.getPhoneNumber());
             user.setCurrency(updatedUser.getCurrency());
+            if (updatedUser.getProfilePhoto() != null) {
+                user.setProfilePhoto(updatedUser.getProfilePhoto());
+            }
             return userRepository.save(user);
         }).orElseThrow();
     }
@@ -93,6 +98,7 @@ public class UserService {
     public void changePassword(String userId, String newPassword) {
         userRepository.findById(userId).ifPresent(user -> {
             user.setPassword(passwordEncoder.encode(newPassword));
+            user.setPasswordChangedAt(LocalDateTime.now());
             userRepository.save(user);
         });
     }
@@ -134,5 +140,24 @@ public class UserService {
 
     public User save(User user) {
         return userRepository.save(user);
+    }
+
+    public boolean isPasswordExpired(User user) {
+        if (user.getPasswordChangedAt() == null) {
+            user.setPasswordChangedAt(LocalDateTime.now());
+            userRepository.save(user);
+            return false;
+        }
+        return user.getPasswordChangedAt().plusDays(90).isBefore(LocalDateTime.now());
+    }
+
+    public long getPasswordDaysRemaining(User user) {
+        if (user.getPasswordChangedAt() == null) {
+            user.setPasswordChangedAt(LocalDateTime.now());
+            userRepository.save(user);
+            return 90;
+        }
+        LocalDateTime expiryDate = user.getPasswordChangedAt().plusDays(90);
+        return LocalDateTime.now().until(expiryDate, java.time.temporal.ChronoUnit.DAYS);
     }
 }

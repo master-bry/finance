@@ -28,7 +28,8 @@ public class CacheConfig {
             "investments",       // Investment data
             "goals",             // Goal data
             "reports",           // Report calculations
-            "userStats"          // User statistics
+            "userStats",         // User statistics
+            "exchangeRates"      // Currency exchange rates
         ));
         
         // Allow null values in cache

@@ -49,6 +49,50 @@
                 padding-top: 1.5rem;
                 margin-top: 1.5rem;
             }
+            .photo-upload-section {
+                grid-column: 1 / -1;
+                padding: 1rem;
+                background: var(--gray-50);
+                border-radius: var(--radius-md);
+                border: 2px dashed var(--gray-300);
+                text-align: center;
+            }
+            .photo-upload-section label {
+                font-weight: 600;
+                color: var(--gray-700);
+                font-size: 0.9rem;
+                display: block;
+                margin-bottom: 0.75rem;
+            }
+            .photo-preview {
+                width: 100px;
+                height: 100px;
+                border-radius: 50%;
+                overflow: hidden;
+                margin: 0 auto 0.75rem;
+                border: 3px solid var(--teal-400);
+                box-shadow: var(--shadow-md);
+            }
+            .profile-photo-img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            .photo-placeholder {
+                width: 100%;
+                height: 100%;
+                background: var(--gray-200);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 2.5rem;
+                color: var(--gray-500);
+            }
+            .photo-input {
+                display: block;
+                margin: 0.5rem auto;
+                font-size: 0.85rem;
+            }
         </style>
     </th:block>
 </head>
@@ -59,7 +103,7 @@
                 <h4><i class="fas fa-user-cog"></i> Account Settings</h4>
             </div>
 
-            <form method="post" action="/profile/update" class="profile-grid">
+            <form method="post" action="/profile/update" class="profile-grid" enctype="multipart/form-data">
                 <div>
                     <div class="form-group">
                         <label><i class="fas fa-user"></i> Username</label>
@@ -95,12 +139,29 @@
                                     th:text="${cur}"
                                     th:selected="${profileUser.currency == cur}"></option>
                         </select>
-                        <div class="input-hint">This will be used as default for all reports and displays</div>
+                        <div class="input-hint">All amounts will be converted and displayed in this currency</div>
                     </div>
                     <div class="form-group">
                         <label><i class="fas fa-calendar-alt"></i> Member Since</label>
                         <input type="text" th:value="${#temporals.format(profileUser.createdAt, 'dd MMM yyyy')}" disabled
                                style="background: var(--gray-100); cursor: not-allowed;"/>
+                    </div>
+                </div>
+                <div class="photo-upload-section">
+                    <label><i class="fas fa-camera"></i> Profile Photo</label>
+                    <div class="photo-preview">
+                        <img th:if="${profileUser.profilePhoto != null}"
+                             th:src="${profileUser.profilePhoto}"
+                             alt="Profile Photo" class="profile-photo-img"/>
+                        <div th:unless="${profileUser.profilePhoto != null}" class="photo-placeholder">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                    <input type="file" name="profilePhoto" accept="image/*" class="photo-input"/>
+                    <div th:if="${profileUser.profilePhoto != null}" style="margin-top: 0.5rem;">
+                        <button type="submit" form="removePhotoForm" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash"></i> Remove Photo
+                        </button>
                     </div>
                 </div>
                 <div style="grid-column: 1 / -1;">
@@ -109,6 +170,7 @@
                     </button>
                 </div>
             </form>
+            <form id="removePhotoForm" method="post" action="/profile/remove-photo" style="display:none;"></form>
         </div>
 
         <div class="section-card">

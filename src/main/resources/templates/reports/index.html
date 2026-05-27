@@ -132,16 +132,16 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-title">💰 Total Income</div>
-                    <div class="stat-value positive" th:text="${#numbers.formatDecimal(monthlyReport.totalIncome, 1, 0)} + ' TZS'"></div>
+                    <div class="stat-value positive" th:text="|${#numbers.formatDecimal(monthlyReport.totalIncome * conversionRate, 1, 2)} ${userCurrency}|"></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">💸 Total Expenses</div>
-                    <div class="stat-value negative" th:text="${#numbers.formatDecimal(monthlyReport.totalExpense, 1, 0)} + ' TZS'"></div>
+                    <div class="stat-value negative" th:text="|${#numbers.formatDecimal(monthlyReport.totalExpense * conversionRate, 1, 2)} ${userCurrency}|"></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">📊 Net Savings</div>
                     <div class="stat-value" th:class="${monthlyReport.balance >= 0 ? 'positive' : 'negative'}"
-                         th:text="${#numbers.formatDecimal(monthlyReport.balance, 1, 0)} + ' TZS'"></div>
+                         th:text="|${#numbers.formatDecimal(monthlyReport.balance * conversionRate, 1, 2)} ${userCurrency}|"></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">📈 Savings Rate</div>
@@ -172,7 +172,7 @@
                             <th>Description</th>
                             <th>Category</th>
                             <th>Type</th>
-                            <th style="text-align:right;">Amount (TZS)</th>
+                            <th style="text-align:right;" th:text="'Amount (' + ${userCurrency} + ')'">Amount (TZS)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -222,7 +222,7 @@
                     <thead>
                         <tr>
                             <th>Category</th>
-                            <th>Amount (TZS)</th>
+                            <th th:text="'Amount (' + ${userCurrency} + ')'">Amount (TZS)</th>
                             <th class="category-bar-cell">Share</th>
                         </tr>
                     </thead>
@@ -268,16 +268,16 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-title">💰 Owed to Me</div>
-                    <div class="stat-value positive" th:text="${#numbers.formatDecimal(debtReport.totalOwedToMe, 1, 0)} + ' TZS'"></div>
+                    <div class="stat-value positive" th:text="|${#numbers.formatDecimal(debtReport.totalOwedToMe * conversionRate, 1, 2)} ${userCurrency}|"></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">💸 I Owe</div>
-                    <div class="stat-value negative" th:text="${#numbers.formatDecimal(debtReport.totalIOwe, 1, 0)} + ' TZS'"></div>
+                    <div class="stat-value negative" th:text="|${#numbers.formatDecimal(debtReport.totalIOwe * conversionRate, 1, 2)} ${userCurrency}|"></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">⚖️ Net Position</div>
                     <div class="stat-value" th:class="${debtReport.netPosition >= 0 ? 'positive' : 'negative'}"
-                         th:text="${#numbers.formatDecimal(debtReport.netPosition, 1, 0)} + ' TZS'"></div>
+                         th:text="|${#numbers.formatDecimal(debtReport.netPosition * conversionRate, 1, 2)} ${userCurrency}|"></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">📋 Active Debts</div>
@@ -297,16 +297,16 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-title">💰 Total Invested</div>
-                    <div class="stat-value neutral" th:text="${#numbers.formatDecimal(investmentReport.totalInvested, 1, 0)} + ' TZS'"></div>
+                    <div class="stat-value neutral" th:text="|${#numbers.formatDecimal(investmentReport.totalInvested * conversionRate, 1, 2)} ${userCurrency}|"></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">📈 Current Value</div>
-                    <div class="stat-value neutral" th:text="${#numbers.formatDecimal(investmentReport.totalCurrentValue, 1, 0)} + ' TZS'"></div>
+                    <div class="stat-value neutral" th:text="|${#numbers.formatDecimal(investmentReport.totalCurrentValue * conversionRate, 1, 2)} ${userCurrency}|"></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">📊 Profit / Loss</div>
                     <div class="stat-value" th:class="${investmentReport.totalProfitLoss >= 0 ? 'positive' : 'negative'}"
-                         th:text="${#numbers.formatDecimal(investmentReport.totalProfitLoss, 1, 0)} + ' TZS'"></div>
+                         th:text="|${#numbers.formatDecimal(investmentReport.totalProfitLoss * conversionRate, 1, 2)} ${userCurrency}|"></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">🔄 ROI</div>

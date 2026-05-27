@@ -1,6 +1,7 @@
 package com.master.finance.controller;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.master.finance.model.Bill;
 import com.master.finance.model.DailyEntry;
 import com.master.finance.model.Transaction;
+import com.master.finance.model.User;
 import com.master.finance.service.BillService;
 import com.master.finance.service.DailyEntryService;
 import com.master.finance.service.TransactionService;
@@ -34,10 +36,10 @@ public class ExcelController {
     private DailyEntryService dailyEntryService;
 
     @Autowired
-    private TransactionService transactionService;
+    private UserService userService;
 
     @Autowired
-    private UserService userService;
+    private TransactionService transactionService;
 
     @Autowired
     private BillService billService;
@@ -67,30 +69,23 @@ public class ExcelController {
     @PostMapping("/add-expense")
     public String addExpense(@RequestParam String description,
                              @RequestParam Double amount,
-                             @RequestParam String category,
-                             @RequestParam(defaultValue = "CASH") String paymentMethod,
-                             @RequestParam(required = false) String billId,
+                             @RequestParam(required = false) String category,
+                             @RequestParam(required = false, defaultValue = "CASH") String paymentMethod,
+                             @RequestParam(required = false) List<String> billIds,
                              Authentication authentication,
                              RedirectAttributes redirectAttributes) {
         try {
             String userId = getUserId(authentication);
-
-            // Guard: if BILL selected but no bill chosen, reject early
-            if ("BILL".equals(paymentMethod) && (billId == null || billId.isBlank())) {
-                redirectAttributes.addFlashAttribute("error", "Please select prepaid credit before continuing.");
-                return "redirect:/excel/daily-entry";
-            }
-
-            // Guard: Check balance for cash expenses (cash deny till top-up)
+            String curr = userService.findById(userId).map(User::getCurrency).orElse("TZS");
+            
             if ("CASH".equals(paymentMethod)) {
                 Double currentBalance = dailyEntryService.getCurrentBalance(userId);
                 if (currentBalance == null || currentBalance <= 0) {
                     redirectAttributes.addFlashAttribute("error", "Insufficient balance! Please add income first before using cash.");
                     return "redirect:/excel/daily-entry";
                 }
-                // Also check if expense amount exceeds available balance
                 if (currentBalance < amount) {
-                    redirectAttributes.addFlashAttribute("error", "Insufficient balance! You only have " + currentBalance + " TZS, but you're trying to use " + amount + " TZS. Please add income first.");
+                    redirectAttributes.addFlashAttribute("error", "Insufficient balance! You only have " + String.format("%.0f", currentBalance) + " " + curr + ", but you're trying to use " + String.format("%.0f", amount) + " " + curr + ". Please add income first.");
                     return "redirect:/excel/daily-entry";
                 }
             }
@@ -105,14 +100,46 @@ public class ExcelController {
             expense.setPaymentMethod(paymentMethod);
 
             if ("BILL".equals(paymentMethod)) {
-                Bill bill = billService.applyPayment(billId, amount);
-                expense.setBillId(billId);
+                if (billIds == null || billIds.isEmpty()) {
+                    redirectAttributes.addFlashAttribute("error", "Please select at least one prepaid credit.");
+                    return "redirect:/excel/daily-entry";
+                }
+                
+                double totalAvailable = 0;
+                List<Bill> selectedBills = new ArrayList<>();
+                for (String bid : billIds) {
+                    Bill b = billService.getBill(bid).orElse(null);
+                    if (b != null) {
+                        selectedBills.add(b);
+                        totalAvailable += b.getAmount();
+                    }
+                }
+                
+                if (totalAvailable + 0.01 < amount) {
+                    redirectAttributes.addFlashAttribute("error",
+                        "Insufficient prepaid balance. Selected credits have " + String.format("%.0f", totalAvailable) + " " + curr +
+                        " but you need " + String.format("%.0f", amount) + " " + curr + ".");
+                    return "redirect:/excel/daily-entry";
+                }
+                
+                double remaining = amount;
+                List<String> chargedNames = new ArrayList<>();
+                String firstBillId = null;
+                for (Bill bill : selectedBills) {
+                    if (remaining <= 0.01) break;
+                    double toCharge = Math.min(remaining, bill.getAmount());
+                    if (toCharge <= 0) continue;
+                    billService.applyPayment(bill.getId(), toCharge);
+                    if (firstBillId == null) firstBillId = bill.getId();
+                    chargedNames.add(bill.getName() + " (" + String.format("%.0f", toCharge) + " " + curr + ")");
+                    remaining -= toCharge;
+                }
+                
+                expense.setBillId(firstBillId);
                 entry.getPrepaidExpenses().add(expense);
                 redirectAttributes.addFlashAttribute("success",
-                    "Used " + amount + " TZS from prepaid '" + bill.getName() +
-                    "'. Remaining: " + bill.getAmount() + " TZS");
+                    "Used " + String.format("%.0f", amount) + " " + curr + " from: " + String.join(", ", chargedNames));
             } else {
-                // Cash expense – create transaction
                 Transaction transaction = new Transaction();
                 transaction.setUserId(userId);
                 transaction.setDescription(description);
@@ -123,7 +150,7 @@ public class ExcelController {
                 transaction.setDeleted(false);
                 transactionService.saveTransaction(transaction);
                 entry.getExpenses().add(expense);
-                redirectAttributes.addFlashAttribute("success", "Cash expense added: " + amount + " TZS");
+                redirectAttributes.addFlashAttribute("success", "Cash expense added: " + String.format("%.0f", amount) + " " + curr);
             }
 
             entry.calculateTotals();
@@ -144,6 +171,7 @@ public class ExcelController {
                             RedirectAttributes redirectAttributes) {
         try {
             String userId = getUserId(authentication);
+            String curr = userService.findById(userId).map(User::getCurrency).orElse("TZS");
             Transaction transaction = new Transaction();
             transaction.setUserId(userId);
             transaction.setDescription(description);
@@ -157,7 +185,7 @@ public class ExcelController {
             DailyEntry entry = dailyEntryService.getOrCreateTodayEntry(userId);
             DailyEntry.IncomeItem income = new DailyEntry.IncomeItem();
             income.setDescription(description);
-             income.setAmount(amount);
+            income.setAmount(amount);
             income.setSource(source);
             income.setTime(LocalDateTime.now());
             entry.getIncomes().add(income);
@@ -165,7 +193,7 @@ public class ExcelController {
             dailyEntryService.saveDailyEntry(entry, userId);
             dailyEntryService.recalculateBalancesFromDate(userId, LocalDateTime.now());
 
-            redirectAttributes.addFlashAttribute("success", "Income added: " + amount + " TZS");
+            redirectAttributes.addFlashAttribute("success", "Income added: " + String.format("%.0f", amount) + " " + curr);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error adding income: " + e.getMessage());
         }

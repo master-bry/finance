@@ -195,6 +195,44 @@
                 box-shadow: 0 2px 4px rgba(47, 107, 63, 0.2);
             }
             
+            /* Multi-prepaid checkbox styles */
+            .prepaid-checkbox-list {
+                margin-top: 0.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .prepaid-checkbox-item {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                padding: 0.6rem 0.75rem;
+                border: 2px solid var(--gray-200);
+                border-radius: 10px;
+                transition: all 0.2s;
+                cursor: pointer;
+            }
+            .prepaid-checkbox-item:has(input:checked) {
+                border-color: var(--primary-dark);
+                background: color-mix(in srgb, var(--primary-dark) 8%, white);
+            }
+            .prepaid-checkbox-item input {
+                accent-color: var(--primary-dark);
+                width: 1.1rem;
+                height: 1.1rem;
+                cursor: pointer;
+            }
+            .prepaid-checkbox-name {
+                flex: 1;
+                font-weight: 500;
+                font-size: 0.9rem;
+            }
+            .prepaid-checkbox-balance {
+                font-size: 0.82rem;
+                color: var(--gray-600);
+                white-space: nowrap;
+            }
+
             /* Form disable state */
             .cash-expense-disabled {
                 opacity: 0.6;
@@ -244,7 +282,7 @@
     <div class="balance-card">
         <div><i class="fas fa-wallet"></i> Current Balance (Cash)</div>
         <div class="balance-amount">
-            <span th:text="${#numbers.formatDecimal(currentBalance, 1, 0)}"></span> TZS
+            <span th:text="${#numbers.formatDecimal(currentBalance * conversionRate, 1, 2)}"></span> <span th:text="${userCurrency}"></span>
         </div>
         <div th:text="${#temporals.format(#temporals.createNow(), 'EEEE, MMMM d, yyyy')}"></div>
     </div>
@@ -255,7 +293,7 @@
             <div class="status-content">
                 <div class="status-title">Insufficient Balance</div>
                 <div class="status-message">
-                    Current balance: <span th:text="${#numbers.formatDecimal(currentBalance, 1, 0)} + ' TZS'">0 TZS</span>
+                    Current balance: <span th:text="|${#numbers.formatDecimal(currentBalance * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</span>
                 </div>
                 <div class="status-action">
                     <button type="button" onclick="scrollToIncomeForm()" class="btn-primary">
@@ -279,17 +317,17 @@
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-title">💰 Today's Income</div>
-            <div class="stat-value income" th:text="${#numbers.formatDecimal(entry.totalIncome, 1, 0)} + ' TZS'">0 TZS</div>
+            <div class="stat-value income" th:text="|${#numbers.formatDecimal(entry.totalIncome * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</div>
         </div>
         <div class="stat-card">
             <div class="stat-title">💸 Today's Cash Expense</div>
-            <div class="stat-value expense" th:text="${#numbers.formatDecimal(entry.totalExpense, 1, 0)} + ' TZS'">0 TZS</div>
+            <div class="stat-value expense" th:text="|${#numbers.formatDecimal(entry.totalExpense * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</div>
         </div>
         <div class="stat-card">
             <div class="stat-title">📊 Today's Cash Savings</div>
             <div class="stat-value"
                  th:class="${(entry.totalIncome - entry.totalExpense) >= 0 ? 'stat-value income' : 'stat-value expense'}"
-                 th:text="${#numbers.formatDecimal(entry.totalIncome - entry.totalExpense, 1, 0)} + ' TZS'">0 TZS</div>
+                 th:text="|${#numbers.formatDecimal((entry.totalIncome - entry.totalExpense) * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</div>
         </div>
     </div>
 
@@ -338,24 +376,28 @@
                 </div>
             </div>
 
-            <!-- Prepaid selector -->
+            <!-- Prepaid selector (multi-select) -->
             <div id="prepaidSelectRow">
                 <th:block th:if="${pendingBills != null and !pendingBills.empty}">
                     <label style="font-weight:600; display:block; margin-bottom:0.4rem;">
-                        Select Prepaid Credit
+                        Select Prepaid Credits
                     </label>
-                    <select name="billId" id="prepaidSelect" style="width:100%;" onchange="showRemainingBalance(this)">
-                        <option value="">-- Choose prepaid credit --</option>
+                    <div id="prepaidTotalNotice" class="bill-remaining"></div>
+                    <div class="prepaid-checkbox-list">
                         <th:block th:each="bill : ${pendingBills}">
-                            <option th:value="${bill.id}"
-                                    th:attr="data-amount=${bill.amount}"
-                                    th:text="${bill.name} + ' — ' + ${#numbers.formatDecimal(bill.amount,1,0)} + ' TZS remaining'">
-                            </option>
+                            <label class="prepaid-checkbox-item">
+                                <input type="checkbox" name="billIds" th:value="${bill.id}"
+                                       th:attr="data-amount=${bill.amount}"
+                                       onchange="updatePrepaidTotal()">
+                                <span class="prepaid-checkbox-name" th:text="${bill.name}">Prepaid</span>
+                                <span class="prepaid-checkbox-balance"
+                                      th:text="|${#numbers.formatDecimal(bill.amount,1,0)} ${userCurrency} remaining|">
+                                </span>
+                            </label>
                         </th:block>
-                    </select>
-                    <div id="remainingBalanceDisplay" class="bill-remaining"></div>
+                    </div>
                     <small style="color:#6c757d; margin-top:0.4rem; display:block;">
-                        Enter the amount you want to use from this prepaid credit (partial payment allowed).
+                        Select one or more prepaid credits to cover this expense. The amount will be deducted from selected credits in order.
                     </small>
                     <div style="margin-top: 8px;">
                         <a href="/bills/add?redirectTo=/excel/daily-entry" class="btn-xs btn-primary">
@@ -422,7 +464,7 @@
                 <span class="badge badge-secondary">💵 Cash</span>
             </div>
             <div>
-                <span class="expense" th:text="'- ' + ${#numbers.formatDecimal(exp.amount, 1, 0)} + ' TZS'"></span>
+                <span class="expense" th:text="|- ${#numbers.formatDecimal(exp.amount * conversionRate, 1, 2)} ${userCurrency}|"></span>
                 <a th:href="'/excel/delete-expense/' + ${stat.index}" class="delete-btn"
                    onclick="confirmDeleteExpense(this, event)">
                     <i class="fas fa-trash"></i>
@@ -444,7 +486,7 @@
                 <span class="prepaid-badge">🎫 Prepaid</span>
             </div>
             <div>
-                <span class="expense" th:text="'- ' + ${#numbers.formatDecimal(exp.amount, 1, 0)} + ' TZS'"></span>
+                <span class="expense" th:text="|- ${#numbers.formatDecimal(exp.amount * conversionRate, 1, 2)} ${userCurrency}|"></span>
                 <a th:href="'/excel/delete-prepaid-expense/' + ${stat.index}" class="delete-btn"
                    onclick="confirmDeletePrepaidExpense(this, event)">
                     <i class="fas fa-trash"></i>
@@ -465,7 +507,7 @@
                 <small class="category-badge" th:text="${inc.source}"></small>
             </div>
             <div>
-                <span class="income" th:text="'+ ' + ${#numbers.formatDecimal(inc.amount, 1, 0)} + ' TZS'"></span>
+                <span class="income" th:text="|+ ${#numbers.formatDecimal(inc.amount * conversionRate, 1, 2)} ${userCurrency}|"></span>
                 <a th:href="'/excel/delete-income/' + ${stat.index}" class="delete-btn"
                    onclick="confirmDeleteIncome(this, event)">
                     <i class="fas fa-trash"></i>
@@ -497,7 +539,7 @@
                       th:classappend="${bill.status == 'PAID' ? 'badge-success' : (bill.status == 'PARTIAL' ? 'badge-warning' : 'badge-pending')}"
                       th:text="${bill.status == 'PAID' ? 'USED UP' : (bill.status == 'PARTIAL' ? 'PARTIALLY USED' : 'AVAILABLE')}"></span>
                 <br>
-                <small th:text="${#numbers.formatDecimal(bill.amount,1,0)} + ' TZS remaining'"></small>
+                <small th:text="|${#numbers.formatDecimal(bill.amount * conversionRate, 1, 2)} ${userCurrency} remaining|"></small>
             </div>
             <div class="bill-actions">
                 <a th:href="@{/bills/edit/{id}(id=${bill.id}, redirectTo='/excel/daily-entry')}"
@@ -513,33 +555,41 @@
 
 <th:block layout:fragment="scripts">
 <script>
+    const convRate = /*[[${conversionRate}]]*/ 1;
+    const curr = /*[[${userCurrency}]]*/ 'TZS';
     function togglePrepaidSelect(radio) {
         const row = document.getElementById('prepaidSelectRow');
         if (!row) return;
         if (radio.value === 'BILL') {
             row.classList.add('visible');
+            updatePrepaidTotal();
         } else {
             row.classList.remove('visible');
-            const sel = document.getElementById('prepaidSelect');
-            if (sel) sel.value = '';
-            document.getElementById('remainingBalanceDisplay').classList.remove('show');
-            document.getElementById('remainingBalanceDisplay').innerHTML = '';
+            const cbs = row.querySelectorAll('input[type="checkbox"]');
+            cbs.forEach(cb => cb.checked = false);
+            const notice = document.getElementById('prepaidTotalNotice');
+            if (notice) { notice.classList.remove('show'); notice.innerHTML = ''; }
         }
     }
 
-    function showRemainingBalance(sel) {
-        const opt = sel.options[sel.selectedIndex];
-        const displayDiv = document.getElementById('remainingBalanceDisplay');
-        if (opt && opt.value !== '') {
-            const remaining = opt.getAttribute('data-amount');
-            const billName = opt.text.split(' — ')[0];
-            displayDiv.innerHTML = '💰 Remaining balance: <strong>' + parseFloat(remaining).toLocaleString() + ' TZS</strong> for "' + billName + '"';
-            displayDiv.classList.add('show');
-        } else {
-            displayDiv.classList.remove('show');
-            displayDiv.innerHTML = '';
+    function updatePrepaidTotal() {
+        const cbs = document.querySelectorAll('.prepaid-checkbox-item input[type="checkbox"]:checked');
+        const notice = document.getElementById('prepaidTotalNotice');
+        if (!notice) return;
+        if (cbs.length === 0) {
+            notice.classList.remove('show');
+            notice.innerHTML = '';
+            return;
         }
-        // DO NOT prefill amount input
+        let total = 0;
+        const names = [];
+        cbs.forEach(cb => {
+            total += parseFloat(cb.getAttribute('data-amount') || 0);
+            const nameEl = cb.closest('.prepaid-checkbox-item')?.querySelector('.prepaid-checkbox-name');
+            if (nameEl) names.push(nameEl.textContent);
+        });
+        notice.innerHTML = '💰 Selected: <strong>' + names.join(', ') + '</strong> — Total available: <strong>' + total.toLocaleString() + ' ' + curr + '</strong>';
+        notice.classList.add('show');
     }
 
     function confirmDeleteExpense(element, event) {
