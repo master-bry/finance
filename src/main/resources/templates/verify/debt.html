@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt Verification - Finance Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-dark: #1e293b;
+            --accent: #0d9488;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .verify-container {
+            max-width: 480px;
+            width: 100%;
+        }
+        .verify-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+        .verify-badge {
+            text-align: center;
+            padding: 2rem 1.5rem 1.5rem;
+            background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+        }
+        .verify-badge .icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--success);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+        }
+        .verify-badge h1 {
+            font-size: 1.25rem;
+            color: #065f46;
+            font-weight: 700;
+        }
+        .verify-badge p {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+        .verify-body {
+            padding: 1.5rem;
+        }
+        .verify-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid #f1f5f9;
+            gap: 1rem;
+        }
+        .verify-row:last-child { border-bottom: none; }
+        .verify-label {
+            font-size: 0.85rem;
+            color: #6b7280;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .verify-value {
+            font-size: 0.9rem;
+            color: #1f2937;
+            font-weight: 600;
+            text-align: right;
+        }
+        .verify-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.2rem 0.65rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .status-verified { background: #d1fae5; color: #065f46; }
+        .status-settled { background: #d1fae5; color: #065f46; }
+        .status-partial { background: #fed7aa; color: #92400e; }
+        .status-pending { background: #e0e7ff; color: #3730a3; }
+        .verify-footer {
+            text-align: center;
+            padding: 1rem 1.5rem 1.5rem;
+            border-top: 1px solid #f1f5f9;
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+        .verify-stamp {
+            text-align: center;
+            margin: 1rem 0;
+            opacity: 0.6;
+        }
+        .verify-stamp i {
+            font-size: 3rem;
+            color: var(--success);
+        }
+        .verify-stamp p {
+            font-size: 0.7rem;
+            color: var(--success);
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="verify-container">
+        <div class="verify-card">
+            <div class="verify-badge">
+                <div class="icon"><i class="fas fa-check"></i></div>
+                <h1><i class="fas fa-shield-alt"></i> Verified Receipt</h1>
+                <p>This receipt has been verified as authentic</p>
+            </div>
+            <div class="verify-body">
+                <div class="verify-row">
+                    <span class="verify-label">Receipt No</span>
+                    <span class="verify-value">RCP-[[${#strings.toUpperCase(#strings.substring(debt.id, 0, 8))}]]-[[${debt.paymentHistory.indexOf(payment) + 1}]]</span>
+                </div>
+                <div class="verify-row">
+                    <span class="verify-label">Date</span>
+                    <span class="verify-value" th:text="${paymentDate}"></span>
+                </div>
+                <div class="verify-row">
+                    <span class="verify-label">Customer</span>
+                    <span class="verify-value" th:text="${debt.personName}"></span>
+                </div>
+                <div class="verify-row" th:if="${debt.phoneNumber != null and !debt.phoneNumber.isEmpty()}">
+                    <span class="verify-label">Phone</span>
+                    <span class="verify-value" th:text="${debt.phoneNumber}"></span>
+                </div>
+                <div class="verify-row">
+                    <span class="verify-label">Type</span>
+                    <span class="verify-value" th:text="${debt.type == 'OWED_TO_ME' ? 'Payment Received' : 'Payment Made'}"></span>
+                </div>
+                <div class="verify-row">
+                    <span class="verify-label">Amount Paid</span>
+                    <span class="verify-value" style="font-size: 1.2rem; color: var(--success); font-weight: 700;" th:text="'TZS ' + ${#numbers.formatDecimal(payment.amountPaid, 1, 2)}"></span>
+                </div>
+                <div class="verify-row">
+                    <span class="verify-label">Remaining</span>
+                    <span class="verify-value" th:text="'TZS ' + ${#numbers.formatDecimal(debt.remainingAmount, 1, 2)}"></span>
+                </div>
+                <div class="verify-row">
+                    <span class="verify-label">Status</span>
+                    <span class="verify-value">
+                        <span th:if="${debt.status == 'SETTLED'}" class="verify-status status-settled"><i class="fas fa-check-circle"></i> SETTLED</span>
+                        <span th:if="${debt.status == 'PARTIAL'}" class="verify-status status-partial"><i class="fas fa-chart-line"></i> PARTIAL</span>
+                        <span th:if="${debt.status == 'PENDING'}" class="verify-status status-pending"><i class="fas fa-clock"></i> PENDING</span>
+                    </span>
+                </div>
+                <div class="verify-row" th:if="${payment.notes != null and !payment.notes.isEmpty()}">
+                    <span class="verify-label">Notes</span>
+                    <span class="verify-value" th:text="${payment.notes}"></span>
+                </div>
+                <div class="verify-stamp">
+                    <i class="fas fa-check-circle"></i>
+                    <p>Verified &bull; Authentic</p>
+                </div>
+            </div>
+            <div class="verify-footer">
+                <p>Generated by FinanceTracker &bull; This is a computer-generated verification</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

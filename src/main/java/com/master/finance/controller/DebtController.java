@@ -316,11 +316,11 @@ public class DebtController {
 
         model.addAttribute("debt", debt);
         model.addAttribute("latestPayment", latestPayment);
+        model.addAttribute("paymentIndex", paymentIndex);
         model.addAttribute("currentDate", LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm")));
         model.addAttribute("receiptNo",
                 "RCP-" + debt.getId().substring(0, 8).toUpperCase() + "-" + (paymentIndex + 1));
-        model.addAttribute("currentPage", "debts");
         model.addAttribute("title", "Payment Receipt");
 
         return "debts/receipt";
@@ -354,11 +354,11 @@ public class DebtController {
 
         model.addAttribute("debt", debt);
         model.addAttribute("latestPayment", payment);
+        model.addAttribute("paymentIndex", paymentIndex);
         model.addAttribute("currentDate", payment.getPaymentDate()
                 .format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm")));
         model.addAttribute("receiptNo",
                 "RCP-" + debt.getId().substring(0, 8).toUpperCase() + "-" + (paymentIndex + 1));
-        model.addAttribute("currentPage", "debts");
         model.addAttribute("title", "Payment Receipt");
 
         return "debts/receipt";

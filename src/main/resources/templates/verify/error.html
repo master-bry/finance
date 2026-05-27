@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Failed - Finance Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .verify-container { max-width: 480px; width: 100%; }
+        .verify-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+            overflow: hidden;
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+        .error-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: #fef2f2;
+            color: var(--danger, #EF4444);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+        }
+        h1 { font-size: 1.25rem; color: #991b1b; font-weight: 700; margin-bottom: 0.5rem; }
+        p { font-size: 0.9rem; color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="verify-container">
+        <div class="verify-card">
+            <div class="error-icon"><i class="fas fa-circle-exclamation"></i></div>
+            <h1>Verification Failed</h1>
+            <p th:text="${error}">The receipt could not be verified. The record may have been deleted or the link is invalid.</p>
+        </div>
+    </div>
+</body>
+</html>
