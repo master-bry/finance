@@ -151,8 +151,8 @@
             <div class="user-info">
                 <div class="user-dropdown">
                     <button class="user-avatar" onclick="toggleUserMenu()" title="Profile">
-                        <img th:if="${currentUser != null and currentUser.profilePhoto != null}" th:src="${currentUser.profilePhoto}" alt="Profile" class="avatar-img"/>
-                        <span th:unless="${currentUser != null and currentUser.profilePhoto != null}" th:text="${#authentication != null and #authentication.name != null ? #strings.substring(#authentication.name, 0, 1).toUpperCase() : 'U'}">U</span>
+                        <img th:if="${currentUser != null and currentUser.profilePhoto != null and #strings.startsWith(currentUser.profilePhoto, 'data:')}" th:src="${currentUser.profilePhoto}" alt="Profile" class="avatar-img"/>
+                        <span th:unless="${currentUser != null and currentUser.profilePhoto != null and #strings.startsWith(currentUser.profilePhoto, 'data:')}" th:text="${#authentication != null and #authentication.name != null ? #strings.substring(#authentication.name, 0, 1).toUpperCase() : 'U'}">U</span>
                     </button>
                     <div class="user-menu" id="userMenu">
                         <a href="/profile" class="user-menu-item"><i class="fas fa-user-gear"></i> Settings</a>

@@ -150,15 +150,15 @@
                 <div class="photo-upload-section">
                     <label><i class="fas fa-camera"></i> Profile Photo</label>
                     <div class="photo-preview">
-                        <img th:if="${profileUser.profilePhoto != null}"
+                        <img th:if="${profileUser.profilePhoto != null and #strings.startsWith(profileUser.profilePhoto, 'data:')}"
                              th:src="${profileUser.profilePhoto}"
                              alt="Profile Photo" class="profile-photo-img"/>
-                        <div th:unless="${profileUser.profilePhoto != null}" class="photo-placeholder">
+                        <div th:unless="${profileUser.profilePhoto != null and #strings.startsWith(profileUser.profilePhoto, 'data:')}" class="photo-placeholder">
                             <i class="fas fa-user"></i>
                         </div>
                     </div>
                     <input type="file" name="profilePhoto" accept="image/*" class="photo-input"/>
-                    <div th:if="${profileUser.profilePhoto != null}" style="margin-top: 0.5rem;">
+                    <div th:if="${profileUser.profilePhoto != null and #strings.startsWith(profileUser.profilePhoto, 'data:')}" style="margin-top: 0.5rem;">
                         <button type="submit" form="removePhotoForm" class="btn btn-danger btn-sm">
                             <i class="fas fa-trash"></i> Remove Photo
                         </button>

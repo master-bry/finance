@@ -17,10 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
 
 @Controller
 @RequestMapping("/profile")
@@ -68,15 +64,14 @@ public class ProfileController {
 
         if (profilePhoto != null && !profilePhoto.isEmpty()) {
             try {
-                String uploadsDir = "src/main/resources/static/uploads/";
-                Path uploadPath = Paths.get(uploadsDir);
-                if (!Files.exists(uploadPath)) {
-                    Files.createDirectories(uploadPath);
+                String contentType = profilePhoto.getContentType();
+                if (contentType == null || !contentType.startsWith("image/")) {
+                    redirectAttributes.addFlashAttribute("error", "Only image files are allowed");
+                    return "redirect:/profile";
                 }
-                String filename = UUID.randomUUID() + "_" + profilePhoto.getOriginalFilename();
-                Path filePath = uploadPath.resolve(filename);
-                Files.copy(profilePhoto.getInputStream(), filePath);
-                updatedUser.setProfilePhoto("/uploads/" + filename);
+                byte[] bytes = profilePhoto.getBytes();
+                String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
+                updatedUser.setProfilePhoto("data:" + contentType + ";base64," + base64);
             } catch (IOException e) {
                 redirectAttributes.addFlashAttribute("error", "Failed to upload profile photo");
                 return "redirect:/profile";
