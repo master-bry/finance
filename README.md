@@ -156,6 +156,7 @@ src/main/resources/
 | Debts | Login |
 |-------|--------|
 | ![Debts](screenshots/debt.png) | ![Security](screenshots/login.png) |
+
 | Security | Security |
 |-------|--------|
 | ![Debts](screenshots/security.png) | ![Security](screenshots/security2.png) |
