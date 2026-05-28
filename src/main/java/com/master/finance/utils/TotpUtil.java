@@ -2,12 +2,14 @@ package com.master.finance.utils;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Locale;
 
 public class TotpUtil {
 
-    private static final int SECRET_SIZE = 20;
+    private static final int SECRET_SIZE = 10;
     private static final int CODE_DIGITS = 6;
     private static final int TIME_STEP = 30;
     private static final String HMAC_ALGORITHM = "HmacSHA1";
@@ -16,7 +18,7 @@ public class TotpUtil {
     public static String generateSecret() {
         byte[] buffer = new byte[SECRET_SIZE];
         new SecureRandom().nextBytes(buffer);
-        return base32Encode(buffer);
+        return base32Encode(buffer).replace("=", "");
     }
 
     private static String base32Encode(byte[] data) {
@@ -44,9 +46,11 @@ public class TotpUtil {
     }
 
     public static String getProvisioningUri(String secret, String accountName, String issuer) {
+        String encodedIssuer = URLEncoder.encode(issuer, StandardCharsets.UTF_8);
+        String encodedAccount = URLEncoder.encode(accountName, StandardCharsets.UTF_8);
         return String.format(
             "otpauth://totp/%s:%s?secret=%s&issuer=%s&algorithm=SHA1&digits=%d&period=%d",
-            issuer, accountName, secret, issuer, CODE_DIGITS, TIME_STEP
+            encodedIssuer, encodedAccount, secret, encodedIssuer, CODE_DIGITS, TIME_STEP
         );
     }
 

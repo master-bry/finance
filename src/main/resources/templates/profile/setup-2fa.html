@@ -89,9 +89,16 @@
                 <div class="step">
                     <div class="step-number">2</div>
                     <div>
-                        <strong>Scan or enter the secret key</strong><br>
+                        <strong>Scan the QR code or enter the key manually</strong><br>
                         <span style="font-size: 0.85rem; color: var(--gray-500);">
-                            Open the app and add a new account. Enter this key manually:
+                            Open the app and scan this code:
+                        </span>
+                        <div style="text-align:center; margin:1rem 0;">
+                            <img th:src="@{/barcode/qr(content=${qrUri}, size=180)}"
+                                 alt="QR Code" style="border-radius:8px;"/>
+                        </div>
+                        <span style="font-size: 0.85rem; color: var(--gray-500);">
+                            Or enter this key manually:
                         </span>
                         <div class="secret-box" th:text="${secret}">SECRETKEY</div>
                     </div>

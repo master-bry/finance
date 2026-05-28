@@ -254,7 +254,7 @@
         <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
         <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
 
-        <form id="loginForm" action="/login" method="post" autocomplete="off">
+        <form id="loginForm" action="/login" method="post" autocomplete="off" novalidate>
             <div class="form-group">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" placeholder="Enter your username" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onmousedown="this.removeAttribute('readonly')">
@@ -274,6 +274,7 @@
                 <span class="spinner"></span>
                 <span class="btn-text"><i class="fas fa-right-to-bracket"></i> Login</span>
             </button>
+            <div id="loginError" class="alert alert-error" style="display:none;"></div>
         </form>
 
         <div class="register-link">
@@ -316,9 +317,40 @@
 
             var loginForm = document.getElementById('loginForm');
             var loginBtn = document.getElementById('loginBtn');
-            loginForm.addEventListener('submit', function() {
+            var loginError = document.getElementById('loginError');
+
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                loginError.style.display = 'none';
                 loginBtn.classList.add('loading');
                 loginBtn.disabled = true;
+
+                try {
+                    var formData = new URLSearchParams(new FormData(this));
+                    var res = await fetch('/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: formData
+                    });
+                    if (res.url.indexOf('/login') >= 0) {
+                        var html = await res.text();
+                        var parser = new DOMParser();
+                        var doc = parser.parseFromString(html, 'text/html');
+                        var errEl = doc.querySelector('.alert-error');
+                        if (errEl) {
+                            loginError.textContent = errEl.textContent.trim();
+                        } else {
+                            loginError.textContent = 'Invalid username or password';
+                        }
+                        loginError.style.display = 'block';
+                        loginBtn.classList.remove('loading');
+                        loginBtn.disabled = false;
+                    } else {
+                        window.location.href = '/dashboard';
+                    }
+                } catch (err) {
+                    this.submit();
+                }
             });
         });
 

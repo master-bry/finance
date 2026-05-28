@@ -530,6 +530,13 @@ body {
   box-shadow: 0 2px 8px rgba(220,38,38,0.2);
 }
 
+.btn-danger:hover {
+  background: linear-gradient(135deg, #7f1d1d, #b91c1c);
+  color: var(--white);
+  box-shadow: 0 4px 14px rgba(220,38,38,0.35);
+  transform: translateY(-1px);
+}
+
 .btn-sm {
   display: inline-flex;
   align-items: center;
@@ -621,12 +628,19 @@ body {
 }
 
 .btn-edit { background: var(--info); color: var(--white); }
+.btn-edit:hover { background: #1d4ed8; color: var(--white); transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .btn-delete { background: var(--danger); color: var(--white); }
+.btn-delete:hover { background: #991b1b; color: var(--white); transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .btn-payment { background: var(--success); color: var(--white); }
+.btn-payment:hover { background: #047857; color: var(--white); transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .btn-complete { background: var(--success); color: var(--white); }
+.btn-complete:hover { background: #047857; color: var(--white); transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .btn-progress { background: var(--teal-500); color: var(--white); }
+.btn-progress:hover { background: #0f766e; color: var(--white); transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .btn-update { background: var(--teal-500); color: var(--white); }
+.btn-update:hover { background: #0f766e; color: var(--white); transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .btn-transaction { background: var(--navy-600); color: var(--white); }
+.btn-transaction:hover { background: var(--navy-800); color: var(--white); transform: translateY(-1px); box-shadow: var(--shadow-md); }
 
 /* ─── FORMS ───────────────────────────────────── */
 
@@ -890,8 +904,9 @@ body {
 }
 
 .filter-btn:hover:not(.active) {
-  border-color: var(--gray-300);
-  background: var(--gray-50);
+  border-color: var(--teal-500);
+  background: var(--teal-100);
+  color: var(--navy-800);
 }
 
 /* ─── MONTH PICKER ────────────────────────────── */
@@ -1336,6 +1351,34 @@ body {
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 4px;
+}
+
+/* ─── SKELETON CARD ──────────────────────────── */
+
+.skeleton-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.skeleton-card .skeleton-line {
+  height: 14px;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.skeleton-card .skeleton-line:last-child { width: 60%; }
+.skeleton-card .skeleton-line-sm { height: 10px; width: 40%; margin-bottom: 8px; }
+.skeleton-card .skeleton-circle {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  margin-bottom: 12px;
+}
+.skeleton-card .skeleton-block {
+  height: 120px;
+  width: 100%;
+  border-radius: 8px;
 }
 
 @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
