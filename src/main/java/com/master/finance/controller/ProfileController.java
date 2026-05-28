@@ -153,6 +153,11 @@ public class ProfileController {
         User user = userService.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (code == null || !code.matches("\\d{6}")) {
+            redirectAttributes.addFlashAttribute("error", "Invalid code format. Please enter a 6-digit code.");
+            return "redirect:/profile/setup-2fa";
+        }
+
         if (TotpUtil.verifyCode(user.getTotpSecret(), code)) {
             user.setTotpEnabled(true);
             userService.save(user);

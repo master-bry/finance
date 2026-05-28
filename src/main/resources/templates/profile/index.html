@@ -149,15 +149,15 @@
                 </div>
                 <div class="photo-upload-section">
                     <label><i class="fas fa-camera"></i> Profile Photo</label>
-                    <div class="photo-preview">
+                    <div class="photo-preview" id="photoPreview">
                         <img th:if="${profileUser.profilePhoto != null and #strings.startsWith(profileUser.profilePhoto, 'data:')}"
                              th:src="${profileUser.profilePhoto}"
-                             alt="Profile Photo" class="profile-photo-img"/>
-                        <div th:unless="${profileUser.profilePhoto != null and #strings.startsWith(profileUser.profilePhoto, 'data:')}" class="photo-placeholder">
+                             alt="Profile Photo" class="profile-photo-img" id="photoImg"/>
+                        <div th:unless="${profileUser.profilePhoto != null and #strings.startsWith(profileUser.profilePhoto, 'data:')}" class="photo-placeholder" id="photoPlaceholder">
                             <i class="fas fa-user"></i>
                         </div>
                     </div>
-                    <input type="file" name="profilePhoto" accept="image/*" class="photo-input"/>
+                    <input type="file" name="profilePhoto" accept="image/*" class="photo-input" id="photoInput"/>
                     <div th:if="${profileUser.profilePhoto != null and #strings.startsWith(profileUser.profilePhoto, 'data:')}" style="margin-top: 0.5rem;">
                         <button type="submit" form="removePhotoForm" class="btn btn-danger btn-sm">
                             <i class="fas fa-trash"></i> Remove Photo
@@ -238,5 +238,29 @@
             </div>
         </div>
     </div>
+<script>
+    document.getElementById('photoInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const preview = document.getElementById('photoPreview');
+                let img = document.getElementById('photoImg');
+                const placeholder = document.getElementById('photoPlaceholder');
+                if (!img) {
+                    img = document.createElement('img');
+                    img.id = 'photoImg';
+                    img.alt = 'Profile Photo';
+                    img.className = 'profile-photo-img';
+                    preview.insertBefore(img, placeholder);
+                }
+                img.src = ev.target.result;
+                img.style.display = 'block';
+                placeholder.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
 </body>
 </html>

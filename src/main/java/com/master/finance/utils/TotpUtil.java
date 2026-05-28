@@ -3,7 +3,6 @@ package com.master.finance.utils;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.Locale;
 
 public class TotpUtil {
@@ -12,13 +11,36 @@ public class TotpUtil {
     private static final int CODE_DIGITS = 6;
     private static final int TIME_STEP = 30;
     private static final String HMAC_ALGORITHM = "HmacSHA1";
+    private static final String BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
     public static String generateSecret() {
         byte[] buffer = new byte[SECRET_SIZE];
         new SecureRandom().nextBytes(buffer);
-        return Base64.getEncoder().encodeToString(buffer)
-                .replaceAll("=+$", "")
-                .replaceAll("[^A-Za-z0-9]", "");
+        return base32Encode(buffer);
+    }
+
+    private static String base32Encode(byte[] data) {
+        StringBuilder result = new StringBuilder();
+        int i = 0;
+        while (i < data.length) {
+            int bytes = Math.min(5, data.length - i);
+            long chunk = 0;
+            for (int j = 0; j < bytes; j++) {
+                chunk = (chunk << 8) | (data[i + j] & 0xFF);
+            }
+            chunk <<= (5 - bytes) * 8;
+            int outputChars = (bytes * 8 + 4) / 5;
+            int padding = 8 - outputChars;
+            for (int j = 0; j < outputChars; j++) {
+                int index = (int) ((chunk >>> (35 - j * 5)) & 0x1F);
+                result.append(BASE32_ALPHABET.charAt(index));
+            }
+            for (int j = 0; j < padding; j++) {
+                result.append('=');
+            }
+            i += bytes;
+        }
+        return result.toString();
     }
 
     public static String getProvisioningUri(String secret, String accountName, String issuer) {
