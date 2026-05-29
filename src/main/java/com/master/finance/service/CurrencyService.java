@@ -21,20 +21,20 @@ public class CurrencyService {
     }
 
     @Cacheable(value = "exchangeRates", key = "#targetCurrency")
-    public double getExchangeRate(String targetCurrency) {
-        if ("TZS".equals(targetCurrency)) return 1.0;
-        try {
-            RestTemplate rest = new RestTemplate();
-            Map response = rest.getForObject(API_URL, Map.class);
-            if (response != null && response.containsKey("rates")) {
-                Map<String, Object> rates = (Map<String, Object>) response.get("rates");
-                if (rates.containsKey(targetCurrency)) {
-                    return ((Number) rates.get(targetCurrency)).doubleValue();
-                }
+public double getExchangeRate(String targetCurrency) {
+    if ("TZS".equals(targetCurrency)) return 1.0;
+    try {
+        RestTemplate rest = new RestTemplate();
+        Map<?, ?> response = rest.getForObject(API_URL, Map.class);
+        if (response != null && response.containsKey("rates")) {
+            Map<String, Object> rates = (Map<String, Object>) response.get("rates");
+            if (rates.containsKey(targetCurrency)) {
+                return ((Number) rates.get(targetCurrency)).doubleValue();
             }
-        } catch (Exception e) {
-            log.error("Failed to fetch exchange rate for {}: {}", targetCurrency, e.getMessage());
         }
-        return 1.0;
+    } catch (Exception e) {
+        log.error("Failed to fetch exchange rate for {}: {}", targetCurrency, e.getMessage());
     }
+    return 1.0;
+}
 }
