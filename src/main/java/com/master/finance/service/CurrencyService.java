@@ -20,6 +20,7 @@ public class CurrencyService {
         return amount * rate;
     }
 
+    
     @Cacheable(value = "exchangeRates", key = "#targetCurrency")
 public double getExchangeRate(String targetCurrency) {
     if ("TZS".equals(targetCurrency)) return 1.0;
