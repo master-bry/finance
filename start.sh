@@ -121,6 +121,7 @@ start_application() {
     print_status "Starting Finance Tracker Application..."
     echo ""
     
+    
     # Load environment variables
     load_env
     
