@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
 import java.util.Map;
 
 @Service
@@ -20,7 +19,7 @@ public class CurrencyService {
         return amount * rate;
     }
 
-    
+
     @Cacheable(value = "exchangeRates", key = "#targetCurrency")
 public double getExchangeRate(String targetCurrency) {
     if ("TZS".equals(targetCurrency)) return 1.0;
