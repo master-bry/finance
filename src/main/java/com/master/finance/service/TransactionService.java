@@ -5,8 +5,10 @@ import com.master.finance.repository.TransactionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,6 +31,9 @@ public class TransactionService {
 
     @Autowired
     private BudgetService budgetService;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     /**
      * Get all transactions for a user, ordered by date descending (newest first)
@@ -54,7 +59,10 @@ public class TransactionService {
      * @param transaction the transaction to save
      * @return the saved transaction
      */
-    @CacheEvict(value = {"transactions", "dashboard", "reports"}, key = "#transaction.userId")
+    @Caching(evict = {
+        @CacheEvict(value = {"transactions", "reports"}, key = "#transaction.userId"),
+        @CacheEvict(value = "dashboard", allEntries = true)
+    })
     public Transaction saveTransaction(Transaction transaction) {
         if (transaction.getDate() == null) {
             transaction.setDate(LocalDateTime.now());
@@ -73,7 +81,10 @@ public class TransactionService {
      * @param transaction the transaction to update
      * @return the updated transaction
      */
-    @CacheEvict(value = {"transactions", "dashboard", "reports"}, key = "#transaction.userId")
+    @Caching(evict = {
+        @CacheEvict(value = {"transactions", "reports"}, key = "#transaction.userId"),
+        @CacheEvict(value = "dashboard", allEntries = true)
+    })
     public Transaction updateTransaction(Transaction transaction) {
         Transaction existing = transactionRepository.findById(transaction.getId())
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
@@ -102,6 +113,9 @@ public class TransactionService {
             // Update budget actuals for deleted transaction
             updateBudgetActuals(transaction.getUserId(), transaction.getDate());
         });
+        // Evict dashboard cache manually since method only takes id param
+        org.springframework.cache.Cache cache = cacheManager.getCache("dashboard");
+        if (cache != null) cache.clear();
     }
 
     public void permanentDeleteTransaction(String id) {
@@ -117,6 +131,8 @@ public class TransactionService {
             
             transactionRepository.deleteById(id);
         });
+        org.springframework.cache.Cache cache = cacheManager.getCache("dashboard");
+        if (cache != null) cache.clear();
     }
 
     public List<Transaction> getTransactionsByDateRange(String userId, LocalDateTime start, LocalDateTime end) {
