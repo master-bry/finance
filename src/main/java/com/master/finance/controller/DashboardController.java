@@ -64,6 +64,13 @@ public class DashboardController {
 
         double totalIncome = transactionService.getTotalIncome(userId, startOfMonth, endOfMonth);
         double totalExpense = transactionService.getTotalExpense(userId, startOfMonth, endOfMonth);
+
+        // Yearly totals for the selected year
+        int selectedYear = selectedPeriod.getYear();
+        LocalDateTime startOfYear = LocalDateTime.of(selectedYear, 1, 1, 0, 0);
+        LocalDateTime endOfYear = LocalDateTime.of(selectedYear, 12, 31, 23, 59, 59);
+        double yearlyIncome = transactionService.getTotalIncome(userId, startOfYear, endOfYear);
+        double yearlyExpense = transactionService.getTotalExpense(userId, startOfYear, endOfYear);
         
         double openingBalance = dailyEntryService.getBalanceBeforeDate(userId, startOfMonth);
         double currentMonthBalance = totalIncome - totalExpense;
@@ -92,6 +99,8 @@ public class DashboardController {
         stats.put("currentMonthBalance", currentMonthBalance); // Current month only
         stats.put("previousMonthBalance", openingBalance); // Opening balance (from before this month)
         stats.put("savingsRate", Math.round(savingsRate));
+        stats.put("yearlyIncome", yearlyIncome);
+        stats.put("yearlyExpense", yearlyExpense);
         stats.put("totalOwedToMe", totalOwedToMe);
         stats.put("totalIOwe", totalIOwe);
         stats.put("netDebtPosition", netDebtPosition);

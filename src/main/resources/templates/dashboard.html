@@ -64,7 +64,7 @@
         <div class="filter-bar">
             <div>
                 <h3><i class="fas fa-chart-simple"></i> Financial Overview</h3>
-                <div class="current-period" th:text="'Showing data for ' + ${selectedMonthName} + ' ' + ${selectedYear}">Showing data for current month</div>
+                <div class="current-period" th:text="'Showing data for ' + ${selectedMonthName} + ' ' + ${selectedYear} + ' — Yearly totals for ' + ${selectedYear}">Showing data for current month — Yearly totals</div>
             </div>
             <form method="get" action="/dashboard" class="filter-controls">
                 <select name="month" th:value="${selectedMonth}">
@@ -122,6 +122,24 @@
                 <div class="stat-info">
                     <div class="stat-title">Savings Rate</div>
                     <div class="stat-value positive" th:text="${#numbers.formatDecimal(stats.savingsRate, 1, 1)} + '%'">0%</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #059669, #34D399);">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-title">Yearly Income</div>
+                    <div class="stat-value positive" th:text="|${#numbers.formatDecimal(stats.yearlyIncome * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #DC2626, #F87171);">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-title">Yearly Expenses</div>
+                    <div class="stat-value negative" th:text="|${#numbers.formatDecimal(stats.yearlyExpense * conversionRate, 1, 2)} ${userCurrency}|">0 TZS</div>
                 </div>
             </div>
         </div>
