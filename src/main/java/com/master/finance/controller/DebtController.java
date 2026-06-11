@@ -265,7 +265,7 @@ public class DebtController {
             tx.setDescription("Debt Payment: " + debt.getPersonName()
                     + (notes.isEmpty() ? "" : " - " + notes));
             tx.setAmount(amount);
-            tx.setType("I_OWE".equals(debt.getType()) ? "EXPENSE" : "INCOME");
+            tx.setType("I_OWE".equals(debt.getType()) ? "INCOME" : "EXPENSE");
             tx.setCategory("Debt");
             tx.setDate(LocalDateTime.now());
             tx.setDeleted(false);
