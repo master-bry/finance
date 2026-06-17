@@ -159,6 +159,20 @@
         });
     }
 
+    function updateActiveNav(url) {
+        var navLinks = document.querySelectorAll('.sidebar .nav-link');
+        navLinks.forEach(function(link) {
+            var href = link.getAttribute('href');
+            link.classList.remove('active');
+            if (href && url.indexOf(href) === 0) {
+                var afterBase = url.substring(href.length);
+                if (afterBase === '' || afterBase === '/' || afterBase.startsWith('?')) {
+                    link.classList.add('active');
+                }
+            }
+        });
+    }
+
     function initAsyncNav(linkSelector, targetSelector) {
         document.addEventListener('click', function(e) {
             var link = e.target.closest(linkSelector || 'a.async-nav');
@@ -167,6 +181,7 @@
             if (!href || href === '#' || href.startsWith('javascript:')) return;
             if (e.ctrlKey || e.metaKey || e.shiftKey) return;
             e.preventDefault();
+            updateActiveNav(href);
             fetchPage(href, targetSelector || '#main-content');
         });
     }

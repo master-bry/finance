@@ -324,18 +324,18 @@
             if (overlay) {
                 var titleEl = overlay.querySelector('.loading-title');
                 var subtitleEl = overlay.querySelector('.loading-subtitle');
-                var progressBar = overlay.querySelector('.loading-progress .progress-bar');
                 if (titleEl) titleEl.textContent = title || 'Processing your request';
                 if (subtitleEl) subtitleEl.textContent = subtitle || "Please wait, we're working on it...";
                 overlay.classList.add('active');
-                if (progressBar) {
-                    progressBar.style.width = '0%';
-                    setTimeout(function() { progressBar.style.width = '70%'; }, 500);
-                    setTimeout(function() { progressBar.style.width = '90%'; }, 1500);
-                }
             }
         }
         function hideLoadingOverlay() { var o = document.getElementById('loadingOverlay'); if (o) o.classList.remove('active'); }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof initAsyncNav === 'function') {
+                initAsyncNav('.sidebar .nav-link', '#main-content');
+            }
+        });
     </script>
 
     <th:block layout:fragment="scripts"></th:block>
