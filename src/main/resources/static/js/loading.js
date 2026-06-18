@@ -8,6 +8,7 @@
     var pageCache = {};
     var maxCacheSize = 10;
     var nProgressBar = null;
+    var lazyObserver = null;
 
     function initNProgress() {
         nProgressBar = document.getElementById('nprogress-bar');
@@ -189,6 +190,7 @@
         if (titleTag) document.title = titleTag.textContent;
         history.pushState({url: url, target: targetSelector || '#main-content'}, '', url);
         window.scrollTo({top: 0, behavior: 'smooth'});
+        reinitLazyLoading();
         hideOverlay();
     }
 
@@ -268,13 +270,48 @@
         }
     });
 
+    function initLazyLoading() {
+        if ('IntersectionObserver' in window) {
+            lazyObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        var el = entry.target;
+                        if (el.dataset.src) {
+                            el.src = el.dataset.src;
+                            el.removeAttribute('data-src');
+                        }
+                        if (el.dataset.background) {
+                            el.style.backgroundImage = 'url(' + el.dataset.background + ')';
+                            el.removeAttribute('data-background');
+                        }
+                        lazyObserver.unobserve(el);
+                    }
+                });
+            }, { rootMargin: '200px' });
+            document.querySelectorAll('[data-src], [data-background]').forEach(function(el) {
+                lazyObserver.observe(el);
+            });
+        }
+    }
+
+    function reinitLazyLoading() {
+        if (lazyObserver && 'IntersectionObserver' in window) {
+            document.querySelectorAll('[data-src], [data-background]').forEach(function(el) {
+                lazyObserver.observe(el);
+            });
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         initNProgress();
         initNavLoading();
         initFormLoading();
         initPageLoad();
         initLogoutHandler();
+        initLazyLoading();
     });
+
+    window.reinitLazyLoading = reinitLazyLoading;
 
     window.showLoadingOverlay = showOverlay;
     window.hideLoadingOverlay = hideOverlay;
