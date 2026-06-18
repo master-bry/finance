@@ -302,6 +302,22 @@
         }
     }
 
+    function initNetworkMonitor() {
+        if ('connection' in navigator) {
+            var conn = navigator.connection;
+            if (conn) {
+                conn.addEventListener('change', function() {
+                    if (conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g') {
+                        var toast = document.querySelector('.toast-warning');
+                        if (!toast) {
+                            showWarningToast('Slow network detected', 'Pages may take longer to load');
+                        }
+                    }
+                });
+            }
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         initNProgress();
         initNavLoading();
@@ -309,6 +325,7 @@
         initPageLoad();
         initLogoutHandler();
         initLazyLoading();
+        initNetworkMonitor();
     });
 
     window.reinitLazyLoading = reinitLazyLoading;
