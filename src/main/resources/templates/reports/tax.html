@@ -20,7 +20,7 @@
     </style>
 </head>
 <body>
-    <div layout:fragment="content">
+    <div layout:fragment="content" class="content-transition">
         <form method="get" th:action="@{/reports/tax}" class="year-selector">
             <label for="year" style="font-weight: 600;">Select Year:</label>
             <select id="year" name="year" onchange="this.form.submit()">
