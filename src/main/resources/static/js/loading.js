@@ -7,6 +7,35 @@
     var navTimeout = null;
     var pageCache = {};
     var maxCacheSize = 10;
+    var nProgressBar = null;
+
+    function initNProgress() {
+        nProgressBar = document.getElementById('nprogress-bar');
+        if (!nProgressBar) {
+            var bar = document.createElement('div');
+            bar.id = 'nprogress-bar';
+            document.body.appendChild(bar);
+            nProgressBar = bar;
+        }
+    }
+
+    function showNProgress() {
+        if (!nProgressBar) return;
+        nProgressBar.style.width = '0%';
+        nProgressBar.style.display = 'block';
+        setTimeout(function() { nProgressBar.style.width = '30%'; }, 50);
+        setTimeout(function() { nProgressBar.style.width = '60%'; }, 500);
+        setTimeout(function() { nProgressBar.style.width = '85%'; }, 1500);
+    }
+
+    function hideNProgress() {
+        if (!nProgressBar) return;
+        nProgressBar.style.width = '100%';
+        setTimeout(function() {
+            nProgressBar.style.display = 'none';
+            nProgressBar.style.width = '0%';
+        }, 400);
+    }
 
     function showOverlay(title, subtitle) {
         if (!overlay) return;
@@ -16,6 +45,7 @@
         if (titleEl) titleEl.textContent = title || 'Loading...';
         if (subtitleEl) subtitleEl.textContent = subtitle || 'Please wait...';
         overlay.classList.add('active');
+        showNProgress();
         if (progressBar) {
             progressBar.style.width = '0%';
             clearInterval(progressInterval);
@@ -32,6 +62,7 @@
         if (!overlay) return;
         if (pendingRequests > 0) return;
         var progressBar = overlay.querySelector('.loading-progress .progress-bar');
+        hideNProgress();
         if (progressBar) {
             progressBar.style.width = '100%';
             clearInterval(progressInterval);
@@ -238,6 +269,7 @@
     });
 
     document.addEventListener('DOMContentLoaded', function() {
+        initNProgress();
         initNavLoading();
         initFormLoading();
         initPageLoad();
