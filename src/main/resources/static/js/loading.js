@@ -318,6 +318,14 @@
         }
     }
 
+    function scheduleIdle(fn, timeout) {
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(fn, { timeout: timeout || 2000 });
+        } else {
+            setTimeout(fn, timeout || 2000);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         initNProgress();
         initNavLoading();
@@ -325,7 +333,9 @@
         initPageLoad();
         initLogoutHandler();
         initLazyLoading();
-        initNetworkMonitor();
+        scheduleIdle(function() {
+            initNetworkMonitor();
+        }, 3000);
     });
 
     window.reinitLazyLoading = reinitLazyLoading;
