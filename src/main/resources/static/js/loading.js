@@ -5,6 +5,8 @@
     var pendingRequests = 0;
     var progressInterval = null;
     var navTimeout = null;
+    var pageCache = {};
+    var maxCacheSize = 10;
 
     function showOverlay(title, subtitle) {
         if (!overlay) return;
@@ -120,8 +122,52 @@
         });
     }
 
+    function addToCache(key, data) {
+        var keys = Object.keys(pageCache);
+        if (keys.length >= maxCacheSize) {
+            delete pageCache[keys[0]];
+        }
+        pageCache[key] = {
+            data: data,
+            timestamp: Date.now()
+        };
+    }
+
+    function getFromCache(key) {
+        var entry = pageCache[key];
+        if (!entry) return null;
+        if (Date.now() - entry.timestamp > 60000) {
+            delete pageCache[key];
+            return null;
+        }
+        return entry.data;
+    }
+
+    function renderFetchedContent(html, url, targetSelector) {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(html, 'text/html');
+        var target = document.querySelector(targetSelector || '#main-content');
+        var newContent = doc.querySelector(targetSelector || '#main-content');
+        if (target && newContent) {
+            target.innerHTML = newContent.innerHTML;
+            target.classList.remove('content-transition');
+            void target.offsetWidth;
+            target.classList.add('content-transition');
+        }
+        var titleTag = doc.querySelector('title');
+        if (titleTag) document.title = titleTag.textContent;
+        history.pushState({url: url, target: targetSelector || '#main-content'}, '', url);
+        window.scrollTo({top: 0, behavior: 'smooth'});
+        hideOverlay();
+    }
+
     function fetchPage(url, targetSelector, title) {
         if (navTimeout) return Promise.reject('Navigation in progress');
+        var cached = getFromCache(url);
+        if (cached) {
+            renderFetchedContent(cached, url, targetSelector);
+            return Promise.resolve();
+        }
         showOverlay(title || getPageTitle(url));
         pendingRequests++;
         navTimeout = setTimeout(function() {
@@ -133,21 +179,8 @@
             if (!response.ok) throw new Error('HTTP ' + response.status);
             return response.text();
         }).then(function(html) {
-            var parser = new DOMParser();
-            var doc = parser.parseFromString(html, 'text/html');
-            var target = document.querySelector(targetSelector || '#main-content');
-            var newContent = doc.querySelector(targetSelector || '#main-content');
-            if (target && newContent) {
-                target.innerHTML = newContent.innerHTML;
-                target.classList.remove('content-transition');
-                void target.offsetWidth;
-                target.classList.add('content-transition');
-            }
-            var titleTag = doc.querySelector('title');
-            if (titleTag) document.title = titleTag.textContent;
-            history.pushState({url: url, target: targetSelector || '#main-content'}, '', url);
-            window.scrollTo({top: 0, behavior: 'smooth'});
-            hideOverlay();
+            addToCache(url, html);
+            renderFetchedContent(html, url, targetSelector);
         }).catch(function(err) {
             console.error('Async navigation failed, falling back to full load:', err);
             window.location.href = url;
