@@ -6,8 +6,8 @@
     <title>Edit Bill</title>
 </head>
 <body>
-<div layout:fragment="content">
-    <div class="form-container">
+    <div layout:fragment="content" class="content-transition">
+        <div class="form-container">
         <h2>✏️ Edit Bill</h2>
         <form th:action="@{/bills/edit/{id}(id=${bill.id})}" th:object="${bill}" method="post">
             <input type="hidden" name="redirectTo" th:value="${param.redirectTo != null ? param.redirectTo : '/excel/daily-entry'}" />

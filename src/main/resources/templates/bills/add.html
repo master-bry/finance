@@ -6,8 +6,8 @@
     <title>Add Bill</title>
 </head>
 <body>
-<div layout:fragment="content">
-    <div class="form-container">
+    <div layout:fragment="content" class="content-transition">
+        <div class="form-container">
         <h2><i class="fas fa-plus"></i> Add New Bill (Prepaid)</h2>
         <form th:action="@{/bills/add}" th:object="${bill}" method="post">
             <input type="hidden" name="redirectTo" th:value="${param.redirectTo != null ? param.redirectTo : '/excel/daily-entry'}" />
