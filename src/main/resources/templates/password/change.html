@@ -53,7 +53,7 @@
     </th:block>
 </head>
 <body>
-    <div layout:fragment="content">
+    <div layout:fragment="content" class="content-transition">
         <div class="section-card password-card">
             <div class="section-header">
                 <h4><i class="fas fa-lock"></i> <span th:text="${forced} ? 'Password Expired - Change Required' : 'Change Password'">Change Password</span></h4>
