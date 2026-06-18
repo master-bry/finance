@@ -119,21 +119,44 @@
     </style>
 </head>
 <body>
-    <div class="error-card">
-        <div class="error-icon">
+    <div class="error-card" id="offlineCard">
+        <div class="error-icon" id="offlineIcon">
             <i class="fas fa-wifi-slash"></i>
             <span class="signal-bars"><i class="fas fa-signal"></i></span>
         </div>
-        <h2>You're Offline</h2>
-        <p>Your internet connection appears to be down. Please check your connection and try again.</p>
+        <h2 id="offlineTitle">You're Offline</h2>
+        <p id="offlineMessage">Your internet connection appears to be down. Please check your connection and try again.</p>
         <div class="btn-group">
-            <button class="btn-primary" onclick="location.reload()">
+            <button class="btn-primary" onclick="location.reload()" id="retryBtn">
                 <i class="fas fa-sync-alt"></i> Retry Connection
             </button>
         </div>
-        <div class="retry-hint">
+        <div class="retry-hint" id="retryHint">
             <i class="fas fa-lightbulb"></i> Your data is safe — we'll sync automatically when you're back online.
         </div>
     </div>
+    <script>
+        (function() {
+            var attempts = 0;
+            var maxAttempts = 20;
+            var checkInterval = setInterval(function() {
+                if (navigator.onLine) {
+                    clearInterval(checkInterval);
+                    document.getElementById('retryBtn').innerHTML = '<i class="fas fa-check-circle"></i> Back Online!';
+                    document.getElementById('retryBtn').style.background = 'linear-gradient(135deg, #059669, #10B981)';
+                    document.getElementById('offlineIcon').innerHTML = '<i class="fas fa-wifi"></i>';
+                    document.getElementById('offlineTitle').textContent = 'Connection Restored!';
+                    document.getElementById('offlineMessage').textContent = 'Redirecting you back to the app...';
+                    setTimeout(function() { window.location.reload(); }, 1500);
+                }
+                attempts++;
+                if (attempts >= maxAttempts) clearInterval(checkInterval);
+            }, 3000);
+            window.addEventListener('online', function() {
+                clearInterval(checkInterval);
+                window.location.reload();
+            });
+        })();
+    </script>
 </body>
 </html>
