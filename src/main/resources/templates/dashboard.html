@@ -6,6 +6,20 @@
 <head>
     <title>Dashboard</title>
     <style layout:fragment="styles">
+        .chart-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 250px;
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            color: var(--gray-400);
+            font-size: 0.9rem;
+        }
+        .chart-placeholder .skeleton-block {
+            width: 80%;
+            height: 200px;
+        }
         .filter-bar {
             background: white;
             border-radius: var(--radius-lg, 12px);
@@ -148,7 +162,10 @@
         <div class="charts-row">
             <div class="chart-card">
                 <h4><i class="fas fa-chart-pie" style="color: var(--teal-500, #0d9488);"></i> Expenses by Category</h4>
-                <canvas id="expenseChart"></canvas>
+                <div id="expenseChartPlaceholder" class="chart-placeholder">
+                    <div class="skeleton skeleton-block"></div>
+                </div>
+                <canvas id="expenseChart" style="display:none;"></canvas>
                 <div th:if="${expenseCategories == null || expenseCategories.isEmpty()}" class="empty-state">
                     <i class="fas fa-chart-pie"></i>
                     <p>No expense data available</p>
@@ -156,7 +173,10 @@
             </div>
             <div class="chart-card">
                 <h4><i class="fas fa-chart-pie" style="color: var(--success, #10B981);"></i> Income by Category</h4>
-                <canvas id="incomeChart"></canvas>
+                <div id="incomeChartPlaceholder" class="chart-placeholder">
+                    <div class="skeleton skeleton-block"></div>
+                </div>
+                <canvas id="incomeChart" style="display:none;"></canvas>
                 <div th:if="${incomeCategories == null || incomeCategories.isEmpty()}" class="empty-state">
                     <i class="fas fa-chart-pie"></i>
                     <p>No income data available</p>
@@ -307,6 +327,8 @@
 
             // Expense Pie Chart
             if (expenseCategories.length > 0 && expenseAmounts.length > 0) {
+                document.getElementById('expenseChartPlaceholder').style.display = 'none';
+                document.getElementById('expenseChart').style.display = 'block';
                 const expenseCtx = document.getElementById('expenseChart').getContext('2d');
                 new Chart(expenseCtx, {
                     type: 'pie',
@@ -341,6 +363,8 @@
 
             // Income Doughnut Chart
             if (incomeCategories.length > 0 && incomeAmounts.length > 0) {
+                document.getElementById('incomeChartPlaceholder').style.display = 'none';
+                document.getElementById('incomeChart').style.display = 'block';
                 const incomeCtx = document.getElementById('incomeChart').getContext('2d');
                 new Chart(incomeCtx, {
                     type: 'doughnut',
