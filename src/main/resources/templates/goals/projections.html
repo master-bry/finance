@@ -21,7 +21,7 @@
     </style>
 </head>
 <body>
-    <div layout:fragment="content">
+    <div layout:fragment="content" class="content-transition">
         <div th:if="${#lists.isEmpty(projections)}" style="text-align: center; padding: 3rem; color: var(--gray-500);">
             <i class="fas fa-chart-line" style="font-size: 3rem; margin-bottom: 1rem;"></i>
             <p>No active goals to project. Create a savings goal first!</p>
