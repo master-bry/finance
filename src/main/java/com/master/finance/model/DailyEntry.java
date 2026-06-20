@@ -69,7 +69,6 @@ public class DailyEntry {
         public String getBillId() { return billId; }
         public void setBillId(String billId) { this.billId = billId; }
     }
-
     @Document
     public static class IncomeItem {
         private String description;
