@@ -1,6 +1,8 @@
 package com.master.finance.service;
 
 import com.master.finance.model.Debt;
+import com.master.finance.model.enums.DebtType;
+import com.master.finance.model.enums.DebtStatus;
 import com.master.finance.repository.DebtRepository;
 import com.master.finance.dto.DebtGroupDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +28,11 @@ public class DebtService {
     }
 
     public List<Debt> getDebtsOwedToMe(String userId) {
-        return debtRepository.findByUserIdAndTypeAndDeletedFalse(userId, "OWED_TO_ME");
+        return debtRepository.findByUserIdAndTypeAndDeletedFalse(userId, DebtType.OWED_TO_ME);
     }
 
     public List<Debt> getDebtsIOwe(String userId) {
-        return debtRepository.findByUserIdAndTypeAndDeletedFalse(userId, "I_OWE");
+        return debtRepository.findByUserIdAndTypeAndDeletedFalse(userId, DebtType.I_OWE);
     }
 
     public Optional<Debt> getDebt(String id) {
@@ -43,18 +45,18 @@ public class DebtService {
         return debtRepository.findByUserIdAndDeletedFalse(userId, pageable);
     }
 
-    public Page<Debt> getUserDebtsByType(String userId, String type, Pageable pageable) {
+    public Page<Debt> getUserDebtsByType(String userId, DebtType type, Pageable pageable) {
         return debtRepository.findByUserIdAndTypeAndDeletedFalse(userId, type, pageable);
     }
 
-    public Page<Debt> getUserDebtsByStatus(String userId, String status, Pageable pageable) {
+    public Page<Debt> getUserDebtsByStatus(String userId, DebtStatus status, Pageable pageable) {
         return debtRepository.findByUserIdAndStatusAndDeletedFalse(userId, status, pageable);
     }
 
-    public Page<Debt> getUserDebtsFiltered(String userId, String type, String status, Pageable pageable) {
-        if (type != null && !type.isEmpty()) {
+    public Page<Debt> getUserDebtsFiltered(String userId, DebtType type, DebtStatus status, Pageable pageable) {
+        if (type != null) {
             return getUserDebtsByType(userId, type, pageable);
-        } else if (status != null && !status.isEmpty()) {
+        } else if (status != null) {
             return getUserDebtsByStatus(userId, status, pageable);
         } else {
             return getUserDebtsPaged(userId, pageable);
@@ -63,13 +65,13 @@ public class DebtService {
 
     // ─── GROUPED DEBTS BY PERSON NAME ─────────────────────────────────────────
     
-    public List<DebtGroupDTO> getGroupedDebtsByPerson(String userId, String typeFilter) {
+    public List<DebtGroupDTO> getGroupedDebtsByPerson(String userId, DebtType typeFilter) {
         List<Debt> debts = getUserDebts(userId);
         
         // Apply type filter if specified
-        if (typeFilter != null && !typeFilter.isEmpty()) {
+        if (typeFilter != null) {
             debts = debts.stream()
-                    .filter(d -> d.getType().equals(typeFilter))
+                    .filter(d -> d.getType() == typeFilter)
                     .collect(Collectors.toList());
         }
         
@@ -96,8 +98,8 @@ public class DebtService {
                             .map(Debt::getPhoneNumber)
                             .orElse(null);
                     
-                    String overallStatus = determineOverallStatus(totalRemaining);
-                    String type = personDebts.stream().findFirst().map(Debt::getType).orElse("UNKNOWN");
+                    DebtStatus overallStatus = determineOverallStatus(totalRemaining);
+                    DebtType type = personDebts.stream().findFirst().map(Debt::getType).orElse(null);
                     
                     return new DebtGroupDTO(personName, phoneNumber, totalAmount, 
                                            totalRemaining, overallStatus, personDebts, type);
@@ -106,11 +108,11 @@ public class DebtService {
                 .collect(Collectors.toList());
     }
     
-    private String determineOverallStatus(BigDecimal totalRemaining) {
+    private DebtStatus determineOverallStatus(BigDecimal totalRemaining) {
         if (totalRemaining.compareTo(BigDecimal.ZERO) == 0) {
-            return "SETTLED";
+            return DebtStatus.SETTLED;
         }
-        return "ACTIVE";
+        return DebtStatus.ACTIVE;
     }
 
     // ─── CREATE ───────────────────────────────────────────────────────────────
@@ -185,9 +187,9 @@ public class DebtService {
         debt.setRemainingAmount(newRemaining <= 0 ? 0.0 : newRemaining);
 
         if (newRemaining <= 0) {
-            debt.setStatus("SETTLED");
+            debt.setStatus(DebtStatus.SETTLED);
         } else if (newRemaining < debt.getAmount()) {
-            debt.setStatus("PARTIAL");
+            debt.setStatus(DebtStatus.PARTIAL);
         }
 
         debt.setLastUpdated(LocalDateTime.now());
@@ -197,12 +199,12 @@ public class DebtService {
     // ─── AGGREGATES ───────────────────────────────────────────────────────────
 
     public Double getTotalOwedToMe(String userId) {
-        return debtRepository.findActiveDebtsByUserIdAndTypeAndDeletedFalse(userId, "OWED_TO_ME")
+        return debtRepository.findActiveDebtsByUserIdAndTypeAndDeletedFalse(userId, DebtType.OWED_TO_ME)
                 .stream().mapToDouble(Debt::getRemainingAmount).sum();
     }
 
     public Double getTotalIOwe(String userId) {
-        return debtRepository.findActiveDebtsByUserIdAndTypeAndDeletedFalse(userId, "I_OWE")
+        return debtRepository.findActiveDebtsByUserIdAndTypeAndDeletedFalse(userId, DebtType.I_OWE)
                 .stream().mapToDouble(Debt::getRemainingAmount).sum();
     }
 
@@ -214,7 +216,7 @@ public class DebtService {
         java.time.LocalDate today = java.time.LocalDate.now();
         return getUserDebts(userId).stream()
                 .filter(d -> d.getDueDate() != null && d.getDueDate().isBefore(today))
-                .filter(d -> !"SETTLED".equals(d.getStatus()))
+                .filter(d -> d.getStatus() != DebtStatus.SETTLED)
                 .toList();
     }
 }
