@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.master.finance.model.Investment;
+import com.master.finance.model.enums.InvestmentTransactionType;
 import com.master.finance.repository.InvestmentRepository;
 
 @Service
@@ -46,7 +47,7 @@ public class InvestmentService {
         return investmentRepository.save(investment);
     }
     
-    public Investment addTransaction(String id, String type, Double amount, String description) {
+    public Investment addTransaction(String id, InvestmentTransactionType type, Double amount, String description) {
         Investment investment = investmentRepository.findById(id).orElseThrow();
         
         Investment.InvestmentTransaction transaction = new Investment.InvestmentTransaction();
@@ -55,13 +56,13 @@ public class InvestmentService {
         transaction.setDescription(description);
         investment.getTransactions().add(transaction);
         
-        if ("DEPOSIT".equals(type)) {
+        if (type == InvestmentTransactionType.DEPOSIT) {
             investment.setAmountInvested(investment.getAmountInvested() + amount);
             investment.setCurrentValue(investment.getCurrentValue() + amount);
-        } else if ("WITHDRAWAL".equals(type)) {
+        } else if (type == InvestmentTransactionType.WITHDRAWAL) {
             investment.setAmountInvested(investment.getAmountInvested() - amount);
             investment.setCurrentValue(investment.getCurrentValue() - amount);
-        } else if ("INTEREST".equals(type) || "DIVIDEND".equals(type)) {
+        } else if (type == InvestmentTransactionType.INTEREST || type == InvestmentTransactionType.DIVIDEND) {
             investment.setCurrentValue(investment.getCurrentValue() + amount);
         }
         
