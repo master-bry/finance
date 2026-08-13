@@ -7,6 +7,8 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
+import com.master.finance.model.enums.AccountType;
+
 @Document(collection = "accounts")
 @CompoundIndex(name = "user_deleted_idx", def = "{'userId': 1, 'deleted': 1}")
 public class Account {
@@ -19,7 +21,7 @@ public class Account {
     @NotBlank(message = "Account name is required")
     private String name;
 
-    private String type;
+    private AccountType type;
     private Double balance;
     private String currency;
     private String bankName;
@@ -43,8 +45,8 @@ public class Account {
     public void setUserId(String userId) { this.userId = userId; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public AccountType getType() { return type; }
+    public void setType(AccountType type) { this.type = type; }
     public Double getBalance() { return balance; }
     public void setBalance(Double balance) { this.balance = balance; }
     public String getCurrency() { return currency; }
