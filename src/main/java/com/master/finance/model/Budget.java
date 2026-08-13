@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.master.finance.model.enums.BudgetStatus;
+
 @Document(collection = "budgets")
 @CompoundIndex(name = "budget_user_month_idx", def = "{'userId': 1, 'month': -1}")
 @CompoundIndex(name = "budget_user_deleted_idx", def = "{'userId': 1, 'deleted': 1}")
@@ -60,10 +62,10 @@ public class Budget {
             return (this.getVariance() / this.planned) * 100;
         }
         
-        public String getStatus() {
-            if (getVariance() > 0) return "OVER";
-            if (getVariance() < 0) return "UNDER";
-            return "ON_TRACK";
+        public BudgetStatus getStatus() {
+            if (getVariance() > 0) return BudgetStatus.OVER;
+            if (getVariance() < 0) return BudgetStatus.UNDER;
+            return BudgetStatus.ON_TRACK;
         }
     }
     
