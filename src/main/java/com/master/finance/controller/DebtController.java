@@ -2,6 +2,9 @@ package com.master.finance.controller;
 
 import com.master.finance.model.Debt;
 import com.master.finance.model.Transaction;
+import com.master.finance.model.enums.DebtType;
+import com.master.finance.model.enums.DebtStatus;
+import com.master.finance.model.enums.TransactionType;
 import com.master.finance.service.DebtService;
 import com.master.finance.service.TransactionService;
 import com.master.finance.service.DailyEntryService;
@@ -78,7 +81,7 @@ public class DebtController {
 
         if (grouped) {
             // ── Grouped view: no pagination ──
-            List<DebtGroupDTO> groupedDebts = debtService.getGroupedDebtsByPerson(userId, type);
+            List<DebtGroupDTO> groupedDebts = debtService.getGroupedDebtsByPerson(userId, parseType(type));
             model.addAttribute("groupedDebts", groupedDebts);
             model.addAttribute("totalItems", groupedDebts.stream()
                     .mapToInt(DebtGroupDTO::getDebtCount).sum());
@@ -88,7 +91,7 @@ public class DebtController {
         } else {
             // ── List view: paginated ──
             Pageable pageable = PageRequest.of(page, size, Sort.by("dateGiven").descending());
-            Page<Debt> debtPage = debtService.getUserDebtsFiltered(userId, type, status, pageable);
+            Page<Debt> debtPage = debtService.getUserDebtsFiltered(userId, parseType(type), parseStatus(status), pageable);
             model.addAttribute("debts", debtPage.getContent());
             model.addAttribute("paginationPage", page);
             model.addAttribute("totalPages", debtPage.getTotalPages());
@@ -120,7 +123,7 @@ public class DebtController {
             redirectAttributes.addFlashAttribute("debt", debt);
             return "redirect:/debts/add";
         }
-        if (debt.getType() == null || debt.getType().isBlank()) {
+        if (debt.getType() == null) {
             redirectAttributes.addFlashAttribute("error", "Debt type is required.");
             redirectAttributes.addFlashAttribute("debt", debt);
             return "redirect:/debts/add";
@@ -134,7 +137,7 @@ public class DebtController {
         String userId = getUserId(authentication);
         debt.setUserId(userId);
         debt.setRemainingAmount(debt.getAmount());
-        debt.setStatus("PENDING");
+        debt.setStatus(DebtStatus.PENDING);
         debt.setDateGiven(LocalDateTime.now());
         debt.setLastUpdated(LocalDateTime.now());
 
@@ -265,7 +268,7 @@ public class DebtController {
             tx.setDescription("Debt Payment: " + debt.getPersonName()
                     + (notes.isEmpty() ? "" : " - " + notes));
             tx.setAmount(amount);
-            tx.setType("I_OWE".equals(debt.getType()) ? "INCOME" : "EXPENSE");
+            tx.setType(debt.getType() == DebtType.I_OWE ? TransactionType.INCOME : TransactionType.EXPENSE);
             tx.setCategory("Debt");
             tx.setDate(LocalDateTime.now());
             tx.setDeleted(false);
@@ -362,5 +365,23 @@ public class DebtController {
         model.addAttribute("title", "Payment Receipt");
 
         return "debts/receipt";
+    }
+
+    private DebtType parseType(String type) {
+        if (type == null || type.isBlank()) return null;
+        try {
+            return DebtType.valueOf(type.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private DebtStatus parseStatus(String status) {
+        if (status == null || status.isBlank()) return null;
+        try {
+            return DebtStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 }
