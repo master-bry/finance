@@ -2,22 +2,25 @@ package com.master.finance.dto;
 
 import java.math.BigDecimal;
 import java.util.List;
+
 import com.master.finance.model.Debt;
+import com.master.finance.model.enums.DebtType;
+import com.master.finance.model.enums.DebtStatus;
 
 public class DebtGroupDTO {
     private String personName;
     private String phoneNumber;
     private BigDecimal totalAmount;
     private BigDecimal totalRemaining;
-    private String overallStatus;
+    private DebtStatus overallStatus;
     private List<Debt> debts;
     private int debtCount;
-    private String type; // "OWED_TO_ME" or "I_OWE"
+    private DebtType type;
     
     public DebtGroupDTO() {}
     
     public DebtGroupDTO(String personName, String phoneNumber, BigDecimal totalAmount, 
-                        BigDecimal totalRemaining, String overallStatus, List<Debt> debts, String type) {
+                        BigDecimal totalRemaining, DebtStatus overallStatus, List<Debt> debts, DebtType type) {
         this.personName = personName;
         this.phoneNumber = phoneNumber;
         this.totalAmount = totalAmount;
@@ -41,8 +44,8 @@ public class DebtGroupDTO {
     public BigDecimal getTotalRemaining() { return totalRemaining; }
     public void setTotalRemaining(BigDecimal totalRemaining) { this.totalRemaining = totalRemaining; }
     
-    public String getOverallStatus() { return overallStatus; }
-    public void setOverallStatus(String overallStatus) { this.overallStatus = overallStatus; }
+    public DebtStatus getOverallStatus() { return overallStatus; }
+    public void setOverallStatus(DebtStatus overallStatus) { this.overallStatus = overallStatus; }
     
     public List<Debt> getDebts() { return debts; }
     public void setDebts(List<Debt> debts) { 
@@ -53,8 +56,8 @@ public class DebtGroupDTO {
     public int getDebtCount() { return debtCount; }
     public void setDebtCount(int debtCount) { this.debtCount = debtCount; }
     
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public DebtType getType() { return type; }
+    public void setType(DebtType type) { this.type = type; }
     
     public String getFormattedTotalAmount() {
         return String.format("%,.0f", totalAmount);
