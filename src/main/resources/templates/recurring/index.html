@@ -46,7 +46,7 @@
                 <tr th:each="rt : ${recurringList}">
                     <td th:text="${rt.description}">Description</td>
                     <td style="font-weight: 600;" th:text="|${#numbers.formatDecimal(rt.amount * conversionRate, 1, 2)} ${userCurrency}|">0.00</td>
-                    <td><span class="badge" th:classappend="${rt.type.name() == 'INCOME' ? 'badge-income' : 'badge-expense'}" th:text="${rt.type.name()}">Type</span></td>
+                    <td><span class="badge" th:classappend="${rt.type?.name() == 'INCOME' ? 'badge-income' : 'badge-expense'}" th:text="${rt.type?.name()}">Type</span></td>
                     <td th:text="${rt.category}">Category</td>
                     <td th:text="${rt.frequency}">Frequency</td>
                     <td th:text="${rt.nextDate}">Next Date</td>

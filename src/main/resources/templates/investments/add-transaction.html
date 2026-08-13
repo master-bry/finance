@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Add Investment Transaction</title>
+    <th:block layout:fragment="styles">
+        <style>
+            .error-message { color: var(--danger); font-size: 0.85rem; margin-top: 0.25rem; }
+            .is-invalid { border-color: var(--danger) !important; }
+        </style>
+    </th:block>
+</head>
+<body>
+    <div layout:fragment="content" class="content-transition">
+        <div class="form-container">
+            <h2 style="color: var(--primary-dark); margin-bottom: 1.5rem;">📈 Add Investment Transaction</h2>
+            
+            <div class="debt-info">
+                <p><strong>Investment:</strong> <span th:text="${investment.name}"></span></p>
+                <p><strong>Current Value:</strong> <span th:text="${#numbers.formatDecimal(investment.currentValue * conversionRate, 1, 2)}"></span> <span th:text="${userCurrency}"></span></p>
+                <p><strong>Amount Invested:</strong> <span th:text="${#numbers.formatDecimal(investment.amountInvested * conversionRate, 1, 2)}"></span> <span th:text="${userCurrency}"></span></p>
+            </div>
+            
+            <form id="addTransactionForm" th:action="@{/investments/add-transaction/{id}(id=${investment.id})}" method="post" novalidate>
+                <div class="form-group">
+                    <label for="type">Transaction Type *</label>
+                    <select id="type" name="type">
+                        <option value="DEPOSIT">💰 Deposit</option>
+                        <option value="WITHDRAWAL">🏦 Withdrawal</option>
+                        <option value="INTEREST">📈 Interest</option>
+                        <option value="DIVIDEND">💵 Dividend</option>
+                    </select>
+                    <div class="error-message" data-error-for="type"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="amount">Amount *</label>
+                    <input type="number" step="0.01" id="amount" name="amount" placeholder="Enter amount" min="0">
+                    <div class="error-message" data-error-for="amount"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description *</label>
+                    <input type="text" id="description" name="description" placeholder="e.g. Monthly deposit" maxlength="200">
+                    <div class="error-message" data-error-for="description"></div>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-success">💾 Save Transaction</button>
+                    <a href="/investments" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <th:block layout:fragment="scripts">
+        <script>
+            document.getElementById('addTransactionForm').addEventListener('submit', function(e) {
+                const amountInput = document.getElementById('amount');
+                const descriptionInput = document.getElementById('description');
+                const amount = parseFloat(amountInput.value);
+                
+                document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+                amountInput.classList.remove('is-invalid');
+                descriptionInput.classList.remove('is-invalid');
+                
+                if (!amountInput.value || isNaN(amount) || amount < 0) {
+                    e.preventDefault();
+                    amountInput.classList.add('is-invalid');
+                    document.querySelector('[data-error-for="amount"]').textContent = 'Please enter a valid amount';
+                    showErrorToast('Please enter a valid amount');
+                }
+                if (!descriptionInput.value.trim()) {
+                    e.preventDefault();
+                    descriptionInput.classList.add('is-invalid');
+                    document.querySelector('[data-error-for="description"]').textContent = 'Description is required';
+                    showErrorToast('Description is required');
+                }
+            });
+        </script>
+    </th:block>
+</body>
+</html>

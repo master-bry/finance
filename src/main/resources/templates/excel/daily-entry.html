@@ -537,8 +537,8 @@
             <div>
                 <strong th:text="${bill.name}"></strong>
                 <span class="badge"
-                      th:classappend="${bill.status.name() == 'PAID' ? 'badge-success' : (bill.status.name() == 'PARTIAL' ? 'badge-warning' : 'badge-pending')}"
-                      th:text="${bill.status.name() == 'PAID' ? 'USED UP' : (bill.status.name() == 'PARTIAL' ? 'PARTIALLY USED' : 'AVAILABLE')}"></span>
+                      th:classappend="${bill.status?.name() == 'PAID' ? 'badge-success' : (bill.status?.name() == 'PARTIAL' ? 'badge-warning' : 'badge-pending')}"
+                      th:text="${bill.status?.name() == 'PAID' ? 'USED UP' : (bill.status?.name() == 'PARTIAL' ? 'PARTIALLY USED' : 'AVAILABLE')}"></span>
                 <br>
                 <small th:text="|${#numbers.formatDecimal(bill.amount * conversionRate, 1, 2)} ${userCurrency} remaining|"></small>
             </div>

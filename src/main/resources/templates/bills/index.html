@@ -56,13 +56,13 @@
                         <td th:text="${bill.category}">...</td>
                         <td th:text="${#temporals.format(bill.dueDate, 'dd MMM yyyy')}">...</td>
                         <td>
-                            <span class="badge" th:classappend="${bill.status.name() == 'PAID' ? 'badge-success' : (bill.status.name() == 'PARTIAL' ? 'badge-warning' : 'badge-pending')}"
+                            <span class="badge" th:classappend="${bill.status?.name() == 'PAID' ? 'badge-success' : (bill.status?.name() == 'PARTIAL' ? 'badge-warning' : 'badge-pending')}"
                                   th:text="${bill.status}"></span>
                         </td>
                         <td th:text="${bill.recurring ? bill.frequency : 'No'}">...</td>
                         <td>
                             <div class="actions">
-                                <a th:if="${bill.status.name() != 'PAID'}" th:href="@{/bills/pay/{id}(id=${bill.id})}" class="btn-xs btn-success">Pay</a>
+                                <a th:if="${bill.status?.name() != 'PAID'}" th:href="@{/bills/pay/{id}(id=${bill.id})}" class="btn-xs btn-success">Pay</a>
                                 <a th:href="@{/bills/edit/{id}(id=${bill.id})}" class="btn-xs btn-edit">Edit</a>
                                 <button class="btn-xs btn-delete" th:data-id="${bill.id}" th:data-name="${bill.name}" onclick="confirmDelete(this)">Delete</button>
                             </div>

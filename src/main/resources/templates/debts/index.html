@@ -196,25 +196,25 @@
                         <div th:if="${debt.phoneNumber}" style="font-size:0.78rem;color:#6B7280;" th:text="${debt.phoneNumber}"></div>
                     </td>
                     <td>
-                        <span class="badge" th:classappend="${debt.type.name() == 'OWED_TO_ME' ? 'badge-owed' : 'badge-iowe'}"
-                              th:text="${debt.type.name() == 'OWED_TO_ME' ? '💰 Owed to Me' : '💸 I Owe'}"></span>
+                        <span class="badge" th:classappend="${debt.type?.name() == 'OWED_TO_ME' ? 'badge-owed' : 'badge-iowe'}"
+                              th:text="${debt.type?.name() == 'OWED_TO_ME' ? '💰 Owed to Me' : '💸 I Owe'}"></span>
                     </td>
                     <td th:text="|${#numbers.formatDecimal(debt.amount * conversionRate, 1, 2)} ${userCurrency}|"></td>
                     <td><strong th:text="|${#numbers.formatDecimal(debt.remainingAmount * conversionRate, 1, 2)} ${userCurrency}|"></strong></td>
                     <td>
                         <span class="badge"
-                              th:classappend="${debt.status.name() == 'SETTLED' ? 'badge-settled' : (debt.status.name() == 'PARTIAL' ? 'badge-partial' : 'badge-pending')}"
-                              th:text="${debt.status.name()}">PENDING</span>
+                              th:classappend="${debt.status?.name() == 'SETTLED' ? 'badge-settled' : (debt.status?.name() == 'PARTIAL' ? 'badge-partial' : 'badge-pending')}"
+                              th:text="${debt.status?.name()}">PENDING</span>
                     </td>
                     <td>
                         <span th:if="${debt.dueDate != null}"
                               th:text="${#temporals.format(debt.dueDate, 'dd MMM yyyy')}"
-                              th:classappend="${debt.dueDate.isBefore(#temporals.createNow().toLocalDate()) and debt.status.name() != 'SETTLED' ? 'overdue' : ''}"></span>
+                              th:classappend="${debt.dueDate.isBefore(#temporals.createNow().toLocalDate()) and debt.status?.name() != 'SETTLED' ? 'overdue' : ''}"></span>
                         <span th:if="${debt.dueDate == null}" style="color:#D1D5DB;">—</span>
                     </td>
                     <td>
                         <div class="actions">
-                            <a th:if="${debt.status.name() != 'SETTLED'}"
+                            <a th:if="${debt.status?.name() != 'SETTLED'}"
                                th:href="@{/debts/make-payment/{id}(id=${debt.id})}"
                                class="btn-xs btn-payment"><i class="fas fa-money-bill-wave"></i> Pay</a>
                             <a th:if="${debt.paymentHistory != null and !debt.paymentHistory.empty}"
@@ -271,11 +271,11 @@
                 </div>
                 <div class="group-totals">
                     <p>
-                        <span th:text="${group.type.name() == 'OWED_TO_ME' ? '💰 Owed to Me' : '💸 I Owe'}"></span>
+                        <span th:text="${group.type?.name() == 'OWED_TO_ME' ? '💰 Owed to Me' : '💸 I Owe'}"></span>
                         &nbsp;
                         <span class="badge"
-                              th:classappend="${group.overallStatus.name() == 'SETTLED' ? 'badge-success' : 'badge-warning'}"
-                              th:text="${group.overallStatus.name()}">ACTIVE</span>
+                              th:classappend="${group.overallStatus?.name() == 'SETTLED' ? 'badge-success' : 'badge-warning'}"
+                              th:text="${group.overallStatus?.name()}">ACTIVE</span>
                     </p>
                     <p style="font-size:0.85rem;color:var(--gray-500);">
                         Original: <strong th:text="|${group.formattedTotalAmount} ${userCurrency}|">0 TZS</strong>
@@ -305,17 +305,17 @@
                             <td><strong th:text="|${#numbers.formatDecimal(debt.remainingAmount * conversionRate, 1, 2)} ${userCurrency}|">0</strong></td>
                             <td>
                                 <span class="badge"
-                                      th:classappend="${debt.status.name() == 'SETTLED' ? 'badge-settled' : (debt.status.name() == 'PARTIAL' ? 'badge-partial' : 'badge-pending')}"
-                                      th:text="${debt.status.name()}">PENDING</span>
+                                      th:classappend="${debt.status?.name() == 'SETTLED' ? 'badge-settled' : (debt.status?.name() == 'PARTIAL' ? 'badge-partial' : 'badge-pending')}"
+                                      th:text="${debt.status?.name()}">PENDING</span>
                             </td>
                             <td>
                                 <span th:if="${debt.dueDate != null}"
                                       th:text="${#temporals.format(debt.dueDate, 'dd MMM yy')}"
-                                      th:classappend="${debt.dueDate.isBefore(#temporals.createNow().toLocalDate()) and debt.status.name() != 'SETTLED' ? 'overdue' : ''}"></span>
+                                      th:classappend="${debt.dueDate.isBefore(#temporals.createNow().toLocalDate()) and debt.status?.name() != 'SETTLED' ? 'overdue' : ''}"></span>
                                 <span th:if="${debt.dueDate == null}" style="color:#D1D5DB;">—</span>
                             </td>
                             <td style="white-space:nowrap;">
-                                <a th:if="${debt.status.name() != 'SETTLED'}"
+                                <a th:if="${debt.status?.name() != 'SETTLED'}"
                                    th:href="@{/debts/make-payment/{id}(id=${debt.id})}"
                                    class="btn-xs btn-payment"><i class="fas fa-money-bill-wave"></i> Pay</a>
                                 <a th:if="${debt.paymentHistory != null and !debt.paymentHistory.empty}"
