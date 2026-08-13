@@ -1,6 +1,7 @@
 package com.master.finance.service;
 
 import com.master.finance.model.Transaction;
+import com.master.finance.model.enums.TransactionType;
 import com.master.finance.repository.TransactionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,7 +157,7 @@ public class TransactionService {
     public Double getTotalIncome(String userId, LocalDateTime start, LocalDateTime end) {
         List<Transaction> transactions = transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end);
         return transactions.stream()
-                .filter(t -> "INCOME".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.INCOME)
                 .mapToDouble(Transaction::getAmount)
                 .sum();
     }
@@ -165,7 +166,7 @@ public class TransactionService {
     public Double getTotalExpense(String userId, LocalDateTime start, LocalDateTime end) {
         List<Transaction> transactions = transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end);
         return transactions.stream()
-                .filter(t -> "EXPENSE".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.EXPENSE)
                 .mapToDouble(Transaction::getAmount)
                 .sum();
     }
@@ -174,7 +175,7 @@ public class TransactionService {
         Map<String, Double> expensesByCategory = new HashMap<>();
         transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end)
                 .stream()
-                .filter(t -> "EXPENSE".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.EXPENSE)
                 .forEach(t -> expensesByCategory.merge(t.getCategory(), t.getAmount(), Double::sum));
         return expensesByCategory;
     }
@@ -183,7 +184,7 @@ public class TransactionService {
         Map<String, Double> incomeByCategory = new HashMap<>();
         transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end)
                 .stream()
-                .filter(t -> "INCOME".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.INCOME)
                 .forEach(t -> incomeByCategory.merge(t.getCategory(), t.getAmount(), Double::sum));
         return incomeByCategory;
     }
@@ -201,11 +202,11 @@ public class TransactionService {
         List<Transaction> transactions = transactionRepository.findByUserIdAndDateBetweenAndDeletedFalse(userId, startDate, endDate);
 
         double totalIncome = transactions.stream()
-                .filter(t -> "INCOME".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.INCOME)
                 .mapToDouble(Transaction::getAmount)
                 .sum();
         double totalExpense = transactions.stream()
-                .filter(t -> "EXPENSE".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.EXPENSE)
                 .mapToDouble(Transaction::getAmount)
                 .sum();
 
@@ -225,7 +226,7 @@ public class TransactionService {
         return transactionRepository.searchByUserIdAndKeyword(userId, keyword);
     }
 
-    public List<Transaction> filterByType(String userId, String type) {
+    public List<Transaction> filterByType(String userId, TransactionType type) {
         return transactionRepository.findByUserIdAndTypeAndDeletedFalse(userId, type);
     }
 
