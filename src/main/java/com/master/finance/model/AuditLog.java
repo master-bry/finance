@@ -5,6 +5,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.index.Indexed;
 import java.time.LocalDateTime;
 
+import com.master.finance.model.enums.AuditSeverity;
+
 @Document(collection = "audit_logs")
 public class AuditLog {
     @Id
@@ -23,11 +25,11 @@ public class AuditLog {
     private String ipAddress;
     @Indexed
     private LocalDateTime timestamp;
-    private String severity;
+    private AuditSeverity severity;
 
     public AuditLog() {
         this.timestamp = LocalDateTime.now();
-        this.severity = "INFO";
+        this.severity = AuditSeverity.INFO;
     }
 
     public AuditLog(String userId, String action, String entityType, String entityId, String description) {
@@ -66,6 +68,6 @@ public class AuditLog {
     public LocalDateTime getTimestamp() { return timestamp; }
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
 
-    public String getSeverity() { return severity; }
-    public void setSeverity(String severity) { this.severity = severity; }
+    public AuditSeverity getSeverity() { return severity; }
+    public void setSeverity(AuditSeverity severity) { this.severity = severity; }
 }
