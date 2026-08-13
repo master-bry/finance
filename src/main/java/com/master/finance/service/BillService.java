@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.master.finance.model.Bill;
+import com.master.finance.model.enums.BillStatus;
 import com.master.finance.repository.BillRepository;
 
 @Service
@@ -58,7 +59,7 @@ public class BillService {
     public Bill applyPayment(String billId, Double amount) {
         Bill bill = billRepository.findById(billId)
                 .orElseThrow(() -> new RuntimeException("Bill not found"));
-        if ("PAID".equals(bill.getStatus())) {
+        if (bill.getStatus() == BillStatus.PAID) {
             throw new IllegalStateException("Bill is already fully used");
         }
         if (amount > bill.getAmount()) {
@@ -67,11 +68,11 @@ public class BillService {
 
         double newAmount = bill.getAmount() - amount;
         if (newAmount <= 0.01) {
-            bill.setStatus("PAID");
+            bill.setStatus(BillStatus.PAID);
             bill.setPaidAt(LocalDateTime.now());
             bill.setAmount(0.0);
         } else {
-            bill.setStatus("PARTIAL");
+            bill.setStatus(BillStatus.PARTIAL);
             bill.setAmount(newAmount);
         }
         bill.setUpdatedAt(LocalDateTime.now());
@@ -86,11 +87,11 @@ public class BillService {
     public Bill markAsPaid(String billId) {
         Bill bill = billRepository.findById(billId)
                 .orElseThrow(() -> new RuntimeException("Bill not found"));
-        if ("PAID".equals(bill.getStatus())) {
+        if (bill.getStatus() == BillStatus.PAID) {
             throw new IllegalStateException("Bill is already paid");
         }
 
-        bill.setStatus("PAID");
+        bill.setStatus(BillStatus.PAID);
         bill.setPaidAt(LocalDateTime.now());
         bill.setAmount(0.0);
         bill.setUpdatedAt(LocalDateTime.now());
