@@ -171,8 +171,8 @@
             <div class="status-text" th:text="${error}"></div>
             <button type="button" class="status-dismiss" onclick="dismissStatusMessage(this)">Dismiss</button>
         </div>
-        <div th:if="${passwordDaysRemaining >= 0 and passwordDaysRemaining <= 14 and !forced}"
-             class="status-message status-warning" style="display:flex;">
+           <div th:if="${passwordDaysRemaining != null and passwordDaysRemaining >= 0 and passwordDaysRemaining <= 14 and forced != true}"
+               class="status-message status-warning" style="display:flex;">
             <div class="status-text">
                 <i class="fas fa-clock" style="margin-right:0.5rem;"></i>
                 Your password will expire in <strong th:text="${passwordDaysRemaining}">14</strong> day(s).
