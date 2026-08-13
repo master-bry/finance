@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.master.finance.model.RecurringTransaction;
 import com.master.finance.model.Transaction;
+import com.master.finance.model.enums.Frequency;
 import com.master.finance.repository.RecurringTransactionRepository;
 import com.master.finance.repository.TransactionRepository;
 
@@ -94,12 +95,15 @@ public class RecurringTransactionService {
 
     private LocalDate calculateNextDate(RecurringTransaction rt) {
         LocalDate current = rt.getNextDate();
+        if (rt.getFrequency() == null) {
+            return current.plusMonths(1);
+        }
         return switch (rt.getFrequency()) {
-            case "DAILY" -> current.plusDays(rt.getIntervalValue());
-            case "WEEKLY" -> current.plusWeeks(rt.getIntervalValue());
-            case "MONTHLY" -> current.plusMonths(rt.getIntervalValue());
-            case "YEARLY" -> current.plusYears(rt.getIntervalValue());
-            default -> current.plusMonths(1);
+            case DAILY -> current.plusDays(rt.getIntervalValue());
+            case WEEKLY -> current.plusWeeks(rt.getIntervalValue());
+            case MONTHLY -> current.plusMonths(rt.getIntervalValue());
+            case YEARLY -> current.plusYears(rt.getIntervalValue());
+            case NONE -> current.plusMonths(1);
         };
     }
 }
