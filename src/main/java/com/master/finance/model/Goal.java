@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.master.finance.model.enums.GoalPriority;
+
 @Document(collection = "goals")
 @CompoundIndex(name = "user_deleted_idx", def = "{'userId': 1, 'deleted': 1}")
 @CompoundIndex(name = "user_achieved_idx", def = "{'userId': 1, 'achieved': 1, 'deleted': 1}")
@@ -28,7 +30,7 @@ public class Goal {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate targetDate;
 
-    private String priority;
+    private GoalPriority priority;
     private boolean achieved;
     private LocalDateTime achievedDate;
     private String description;
@@ -120,8 +122,8 @@ public class Goal {
     public LocalDate getTargetDate() { return targetDate; }
     public void setTargetDate(LocalDate targetDate) { this.targetDate = targetDate; }
 
-    public String getPriority() { return priority; }
-    public void setPriority(String priority) { this.priority = priority; }
+    public GoalPriority getPriority() { return priority; }
+    public void setPriority(GoalPriority priority) { this.priority = priority; }
 
     public boolean isAchieved() { return achieved; }
     public void setAchieved(boolean achieved) { this.achieved = achieved; }
