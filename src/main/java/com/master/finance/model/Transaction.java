@@ -4,9 +4,12 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import com.master.finance.model.enums.TransactionType;
 
 @Document(collection = "transactions")
 @CompoundIndex(name = "user_date_idx", def = "{'userId': 1, 'date': -1}")
@@ -27,8 +30,8 @@ public class Transaction {
     @Positive(message = "Amount must be positive")
     private Double amount;
     
-    @NotBlank(message = "Type is required")
-    private String type; // INCOME or EXPENSE
+    @NotNull(message = "Type is required")
+    private TransactionType type;
     
     @NotBlank(message = "Category is required")
     private String category;
@@ -59,8 +62,8 @@ public class Transaction {
     public Double getAmount() { return amount; }
     public void setAmount(Double amount) { this.amount = amount; }
     
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public TransactionType getType() { return type; }
+    public void setType(TransactionType type) { this.type = type; }
     
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
