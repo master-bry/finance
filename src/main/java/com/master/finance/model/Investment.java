@@ -9,6 +9,11 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.master.finance.model.enums.InvestmentType;
+import com.master.finance.model.enums.InvestmentStatus;
+import com.master.finance.model.enums.InvestmentTransactionType;
+import com.master.finance.model.enums.RiskLevel;
+
 @Document(collection = "investments")
 @CompoundIndex(name = "user_deleted_idx", def = "{'userId': 1, 'deleted': 1}")
 public class Investment {
@@ -17,11 +22,11 @@ public class Investment {
     @Indexed
     private String userId;
     private String name;
-    private String type;
+    private InvestmentType type;
     private Double amountInvested;
     private Double currentValue;
     private Double expectedReturn;
-    private String riskLevel;
+    private RiskLevel riskLevel;
     
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
@@ -29,7 +34,7 @@ public class Investment {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate maturityDate;
     
-    private String status;
+    private InvestmentStatus status;
     private String provider;
     private String notes;
     private List<InvestmentTransaction> transactions = new ArrayList<>();
@@ -39,7 +44,7 @@ public class Investment {
 
     public static class InvestmentTransaction {
         private LocalDate date;
-        private String type;
+        private InvestmentTransactionType type;
         private Double amount;
         private String description;
 
@@ -49,8 +54,8 @@ public class Investment {
 
         public LocalDate getDate() { return date; }
         public void setDate(LocalDate date) { this.date = date; }
-        public String getType() { return type; }
-        public void setType(String type) { this.type = type; }
+        public InvestmentTransactionType getType() { return type; }
+        public void setType(InvestmentTransactionType type) { this.type = type; }
         public Double getAmount() { return amount; }
         public void setAmount(Double amount) { this.amount = amount; }
         public String getDescription() { return description; }
@@ -59,7 +64,7 @@ public class Investment {
 
     public Investment() {
         this.startDate = LocalDate.now();
-        this.status = "ACTIVE";
+        this.status = InvestmentStatus.ACTIVE;
         this.currentValue = 0.0;
         this.amountInvested = 0.0;
         this.transactions = new ArrayList<>();
@@ -84,8 +89,8 @@ public class Investment {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public InvestmentType getType() { return type; }
+    public void setType(InvestmentType type) { this.type = type; }
 
     public Double getAmountInvested() { return amountInvested; }
     public void setAmountInvested(Double amountInvested) { this.amountInvested = amountInvested; }
@@ -96,8 +101,8 @@ public class Investment {
     public Double getExpectedReturn() { return expectedReturn; }
     public void setExpectedReturn(Double expectedReturn) { this.expectedReturn = expectedReturn; }
 
-    public String getRiskLevel() { return riskLevel; }
-    public void setRiskLevel(String riskLevel) { this.riskLevel = riskLevel; }
+    public RiskLevel getRiskLevel() { return riskLevel; }
+    public void setRiskLevel(RiskLevel riskLevel) { this.riskLevel = riskLevel; }
 
     public LocalDate getStartDate() { return startDate; }
     public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
@@ -105,8 +110,8 @@ public class Investment {
     public LocalDate getMaturityDate() { return maturityDate; }
     public void setMaturityDate(LocalDate maturityDate) { this.maturityDate = maturityDate; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public InvestmentStatus getStatus() { return status; }
+    public void setStatus(InvestmentStatus status) { this.status = status; }
 
     public String getProvider() { return provider; }
     public void setProvider(String provider) { this.provider = provider; }
