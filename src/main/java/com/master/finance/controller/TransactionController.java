@@ -1,6 +1,7 @@
 package com.master.finance.controller;
 
 import com.master.finance.model.Transaction;
+import com.master.finance.model.enums.TransactionType;
 import com.master.finance.service.TransactionService;
 import com.master.finance.service.UserService;
 import jakarta.validation.Valid;
@@ -35,11 +36,11 @@ public class TransactionController {
         var transactions = transactionService.getUserTransactions(userId);
 
         double totalIncome = transactions.stream()
-                .filter(t -> "INCOME".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.INCOME)
                 .mapToDouble(Transaction::getAmount)
                 .sum();
         double totalExpense = transactions.stream()
-                .filter(t -> "EXPENSE".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.EXPENSE)
                 .mapToDouble(Transaction::getAmount)
                 .sum();
 
@@ -159,7 +160,8 @@ public class TransactionController {
                     tx.setUserId(userId);
                     tx.setDescription(cols[0].trim());
                     String type = cols[1].trim().toUpperCase();
-                    tx.setType(type.startsWith("INC") || type.equals("CREDIT") ? "INCOME" : "EXPENSE");
+                    tx.setType(type.startsWith("INC") || type.equals("CREDIT")
+                            ? TransactionType.INCOME : TransactionType.EXPENSE);
                     tx.setAmount(Math.abs(Double.parseDouble(cols[2].trim())));
                     tx.setCategory(cols.length > 3 ? cols[3].trim() : "Uncategorized");
                     if (cols.length > 4 && !cols[4].trim().isEmpty()) {
