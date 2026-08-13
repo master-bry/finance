@@ -1,6 +1,7 @@
 package com.master.finance.repository;
 
 import com.master.finance.model.Goal;
+import com.master.finance.model.enums.GoalPriority;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -15,5 +16,5 @@ public interface GoalRepository extends MongoRepository<Goal, String> {
     List<Goal> findByUserIdAndAchievedFalseAndDeletedFalse(String userId);
     
     @Query("{ 'userId': ?0, 'priority': ?1, 'deleted': false }")
-    List<Goal> findByUserIdAndPriorityAndDeletedFalse(String userId, String priority);
+    List<Goal> findByUserIdAndPriorityAndDeletedFalse(String userId, GoalPriority priority);
 }

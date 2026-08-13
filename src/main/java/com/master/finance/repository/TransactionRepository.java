@@ -1,6 +1,7 @@
 package com.master.finance.repository;
 
 import com.master.finance.model.Transaction;
+import com.master.finance.model.enums.TransactionType;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -21,7 +22,7 @@ public interface TransactionRepository extends MongoRepository<Transaction, Stri
     List<Transaction> findRecentTransactionsByUserId(String userId);
 
     @Query("{ 'userId': ?0, 'type': ?1, 'deleted': false }")
-    List<Transaction> findByUserIdAndTypeAndDeletedFalse(String userId, String type);
+    List<Transaction> findByUserIdAndTypeAndDeletedFalse(String userId, TransactionType type);
 
     @Query("{ 'userId': ?0, 'date': { $gte: ?1, $lte: ?2 }, 'deleted': false }")
     List<Transaction> findByUserIdAndDateBetweenAndDeletedFalse(String userId, LocalDateTime start, LocalDateTime end);

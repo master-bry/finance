@@ -1,6 +1,8 @@
 package com.master.finance.repository;
 
 import com.master.finance.model.Debt;
+import com.master.finance.model.enums.DebtType;
+import com.master.finance.model.enums.DebtStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -17,18 +19,18 @@ public interface DebtRepository extends MongoRepository<Debt, String> {
     List<Debt> findByUserIdAndDeletedFalse(String userId);
 
     @Query("{ 'userId': ?0, 'type': ?1, 'deleted': false }")
-    List<Debt> findByUserIdAndTypeAndDeletedFalse(String userId, String type);
+    List<Debt> findByUserIdAndTypeAndDeletedFalse(String userId, DebtType type);
 
     @Query("{ 'userId': ?0, 'status': ?1, 'deleted': false }")
-    List<Debt> findByUserIdAndStatusAndDeletedFalse(String userId, String status);
+    List<Debt> findByUserIdAndStatusAndDeletedFalse(String userId, DebtStatus status);
 
     @Query("{ 'userId': ?0, 'type': ?1, 'status': { $ne: 'SETTLED' }, 'deleted': false }")
-    List<Debt> findActiveDebtsByUserIdAndTypeAndDeletedFalse(String userId, String type);
+    List<Debt> findActiveDebtsByUserIdAndTypeAndDeletedFalse(String userId, DebtType type);
 
     // ========== PAGINATED QUERIES ==========
     Page<Debt> findByUserIdAndDeletedFalse(String userId, Pageable pageable);
-    Page<Debt> findByUserIdAndTypeAndDeletedFalse(String userId, String type, Pageable pageable);
-    Page<Debt> findByUserIdAndStatusAndDeletedFalse(String userId, String status, Pageable pageable);
+    Page<Debt> findByUserIdAndTypeAndDeletedFalse(String userId, DebtType type, Pageable pageable);
+    Page<Debt> findByUserIdAndStatusAndDeletedFalse(String userId, DebtStatus status, Pageable pageable);
     
     // ========== GROUP BY PERSON NAME ==========
     @Query("{ 'userId': ?0, 'deleted': false }")

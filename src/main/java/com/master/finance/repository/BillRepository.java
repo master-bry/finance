@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.master.finance.model.Bill;
+import com.master.finance.model.enums.BillStatus;
 
 @Repository
 public interface BillRepository extends MongoRepository<Bill, String> {
@@ -16,7 +17,7 @@ public interface BillRepository extends MongoRepository<Bill, String> {
     List<Bill> findByUserIdAndDeletedFalse(String userId);
 
     @Query("{ 'userId': ?0, 'status': ?1, 'deleted': false }")
-    List<Bill> findByUserIdAndStatus(String userId, String status);
+    List<Bill> findByUserIdAndStatus(String userId, BillStatus status);
 
     @Query("{ 'userId': ?0, 'deleted': false, 'dueDate': { $lte: ?1 }, 'status': 'PENDING' }")
     List<Bill> findOverdueBills(String userId, LocalDate date);
