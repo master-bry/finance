@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.master.finance.model.enums.DebtType;
+import com.master.finance.model.enums.DebtStatus;
+
 @Document(collection = "debts")
 @CompoundIndex(name = "user_deleted_idx", def = "{'userId': 1, 'deleted': 1}")
 @CompoundIndex(name = "user_type_idx", def = "{'userId': 1, 'type': 1, 'deleted': 1}")
@@ -21,10 +24,10 @@ public class Debt {
     @Indexed
     private String userId;
     private String personName;
-    private String type; // "OWED_TO_ME" or "I_OWE"
+    private DebtType type;
     private Double amount;
     private Double remainingAmount;
-    private String status; // "PARTIAL", "PENDING", "SETTLED"
+    private DebtStatus status;
     private String description;
 
     // Use LocalDate + @DateTimeFormat so HTML <input type="date"> binds correctly
@@ -66,7 +69,7 @@ public class Debt {
     public Debt() {
         this.dateGiven = LocalDateTime.now();
         this.lastUpdated = LocalDateTime.now();
-        this.status = "PENDING";
+        this.status = DebtStatus.PENDING;
         this.paymentHistory = new ArrayList<>();
     }
 
@@ -81,8 +84,8 @@ public class Debt {
     public String getPersonName() { return personName; }
     public void setPersonName(String personName) { this.personName = personName; }
 
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public DebtType getType() { return type; }
+    public void setType(DebtType type) { this.type = type; }
 
     public Double getAmount() { return amount; }
     public void setAmount(Double amount) {
@@ -96,8 +99,8 @@ public class Debt {
     public Double getRemainingAmount() { return remainingAmount; }
     public void setRemainingAmount(Double remainingAmount) { this.remainingAmount = remainingAmount; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public DebtStatus getStatus() { return status; }
+    public void setStatus(DebtStatus status) { this.status = status; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
