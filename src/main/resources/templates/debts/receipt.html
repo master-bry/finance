@@ -220,7 +220,7 @@
                 <div class="receipt-row">
                     <span class="receipt-label">Payment Type:</span>
                     <span class="receipt-value"
-                          th:text="${debt.type == 'OWED_TO_ME' ? 'Payment Received' : 'Payment Made'}"></span>
+                          th:text="${debt.type.name() == 'OWED_TO_ME' ? 'Payment Received' : 'Payment Made'}"></span>
                 </div>
 
                 <div class="receipt-row">
@@ -244,15 +244,15 @@
                 <div class="receipt-row">
                     <span class="receipt-label">Status:</span>
                     <span class="receipt-value">
-                        <span th:if="${debt.status == 'SETTLED'}"
+                        <span th:if="${debt.status.name() == 'SETTLED'}"
                               class="status-badge status-settled">
                             <i class="fas fa-check-circle"></i> FULLY SETTLED
                         </span>
-                        <span th:if="${debt.status == 'PARTIAL'}"
+                        <span th:if="${debt.status.name() == 'PARTIAL'}"
                               class="status-badge status-partial">
                             <i class="fas fa-chart-line"></i> PARTIAL PAYMENT
                         </span>
-                        <span th:if="${debt.status == 'PENDING'}"
+                        <span th:if="${debt.status.name() == 'PENDING'}"
                               class="status-badge status-pending">
                             <i class="fas fa-clock"></i> PENDING
                         </span>
@@ -267,7 +267,7 @@
                     <span class="receipt-value" th:text="${latestPayment.notes}"></span>
                 </div>
 
-                <div th:if="${debt.status == 'SETTLED'}" class="success-message">
+                <div th:if="${debt.status.name() == 'SETTLED'}" class="success-message">
                     <i class="fas fa-check-circle" style="color: #22c55e;"></i>
                     <strong style="margin-left: 0.5rem;">Fully Settled</strong>
                     <p style="margin-top: 0.3rem; margin-bottom: 0;">
@@ -275,7 +275,7 @@
                     </p>
                 </div>
 
-                <div th:unless="${debt.status == 'SETTLED'}" class="info-message">
+                <div th:unless="${debt.status.name() == 'SETTLED'}" class="info-message">
                     <i class="fas fa-info-circle" style="color: #f59e0b;"></i>
                     <strong style="margin-left: 0.5rem;">Payment Recorded</strong>
                     <p style="margin-top: 0.3rem; margin-bottom: 0;">

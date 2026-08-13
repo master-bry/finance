@@ -153,7 +153,7 @@
                 </div>
                 <div class="verify-row">
                     <span class="verify-label">Type</span>
-                    <span class="verify-value" th:text="${debt.type == 'OWED_TO_ME' ? 'Payment Received' : 'Payment Made'}"></span>
+                    <span class="verify-value" th:text="${debt.type.name() == 'OWED_TO_ME' ? 'Payment Received' : 'Payment Made'}"></span>
                 </div>
                 <div class="verify-row">
                     <span class="verify-label">Amount Paid</span>
@@ -166,9 +166,9 @@
                 <div class="verify-row">
                     <span class="verify-label">Status</span>
                     <span class="verify-value">
-                        <span th:if="${debt.status == 'SETTLED'}" class="verify-status status-settled"><i class="fas fa-check-circle"></i> SETTLED</span>
-                        <span th:if="${debt.status == 'PARTIAL'}" class="verify-status status-partial"><i class="fas fa-chart-line"></i> PARTIAL</span>
-                        <span th:if="${debt.status == 'PENDING'}" class="verify-status status-pending"><i class="fas fa-clock"></i> PENDING</span>
+                        <span th:if="${debt.status.name() == 'SETTLED'}" class="verify-status status-settled"><i class="fas fa-check-circle"></i> SETTLED</span>
+                        <span th:if="${debt.status.name() == 'PARTIAL'}" class="verify-status status-partial"><i class="fas fa-chart-line"></i> PARTIAL</span>
+                        <span th:if="${debt.status.name() == 'PENDING'}" class="verify-status status-pending"><i class="fas fa-clock"></i> PENDING</span>
                     </span>
                 </div>
                 <div class="verify-row" th:if="${payment.notes != null and !payment.notes.isEmpty()}">

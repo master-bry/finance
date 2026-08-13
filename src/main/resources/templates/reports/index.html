@@ -184,12 +184,12 @@
                                 <span class="category-badge" th:text="${tx.category}"></span>
                             </td>
                             <td>
-                                <span class="badge" th:classappend="${tx.type == 'INCOME' ? 'badge-income' : 'badge-expense'}"
-                                      th:text="${tx.type}"></span>
+                                <span class="badge" th:classappend="${tx.type.name() == 'INCOME' ? 'badge-income' : 'badge-expense'}"
+                                      th:text="${tx.type.name()}"></span>
                             </td>
                             <td style="text-align:right; font-weight:600;"
-                                th:classappend="${tx.type == 'INCOME' ? 'positive' : 'negative'}"
-                                th:text="${(tx.type == 'INCOME' ? '+' : '-') + #numbers.formatDecimal(tx.amount * conversionRate, 1, 0)}"></td>
+                                th:classappend="${tx.type.name() == 'INCOME' ? 'positive' : 'negative'}"
+                                th:text="${(tx.type.name() == 'INCOME' ? '+' : '-') + #numbers.formatDecimal(tx.amount * conversionRate, 1, 0)}"></td>
                         </tr>
                     </tbody>
                     <tfoot style="border-top: 2px solid var(--gray-300); font-weight: 700;">

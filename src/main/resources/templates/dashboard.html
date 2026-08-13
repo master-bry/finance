@@ -266,8 +266,8 @@
                             <td th:text="${#temporals.format(t.date, 'dd MMM yyyy')}">Date</td>
                             <td th:text="${t.description}">Description</td>
                             <td><span class="category-badge" th:text="${t.category}">Category</span></td>
-                            <td th:class="${t.type == 'INCOME' ? 'positive' : 'negative'}"
-                                th:text="|${(t.type == 'INCOME' ? '+' : '-') + #numbers.formatDecimal(t.amount * conversionRate, 1, 2)} ${userCurrency}|">Amount</td>
+                            <td th:class="${t.type.name() == 'INCOME' ? 'positive' : 'negative'}"
+                                th:text="|${(t.type.name() == 'INCOME' ? '+' : '-') + #numbers.formatDecimal(t.amount * conversionRate, 1, 2)} ${userCurrency}|">Amount</td>
                         </tr>
                         <tr th:if="${recentTransactions == null || recentTransactions.empty}">
                             <td colspan="4">
