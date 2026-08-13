@@ -3,6 +3,9 @@ package com.master.finance.service;
 import com.master.finance.model.Debt;
 import com.master.finance.model.Investment;
 import com.master.finance.model.Transaction;
+import com.master.finance.model.enums.DebtType;
+import com.master.finance.model.enums.DebtStatus;
+import com.master.finance.model.enums.TransactionType;
 import com.master.finance.repository.DebtRepository;
 import com.master.finance.repository.InvestmentRepository;
 import com.master.finance.repository.TransactionRepository;
@@ -60,11 +63,11 @@ public class ReportService {
         List<Transaction> transactions = getMonthTransactions(userId, year, month);
 
         double totalIncome = transactions.stream()
-                .filter(t -> "INCOME".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.INCOME)
                 .mapToDouble(Transaction::getAmount).sum();
 
         double totalExpense = transactions.stream()
-                .filter(t -> "EXPENSE".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.EXPENSE)
                 .mapToDouble(Transaction::getAmount).sum();
 
         double balance = totalIncome - totalExpense;
@@ -111,7 +114,7 @@ public class ReportService {
      */
     public Map<String, Double> getExpenseByCategory(String userId, int year, int month) {
         return getMonthTransactions(userId, year, month).stream()
-                .filter(t -> "EXPENSE".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.EXPENSE)
                 .collect(Collectors.groupingBy(
                         Transaction::getCategory,
                         Collectors.summingDouble(Transaction::getAmount)
@@ -129,13 +132,13 @@ public class ReportService {
         List<Debt> debts = debtRepository.findByUserIdAndDeletedFalse(userId);
 
         double totalOwedToMe = debts.stream()
-                .filter(d -> "OWED_TO_ME".equals(d.getType()))
-                .filter(d -> !"SETTLED".equals(d.getStatus()))
+                .filter(d -> d.getType() == DebtType.OWED_TO_ME)
+                .filter(d -> d.getStatus() != DebtStatus.SETTLED)
                 .mapToDouble(Debt::getRemainingAmount).sum();
 
         double totalIOwe = debts.stream()
-                .filter(d -> "I_OWE".equals(d.getType()))
-                .filter(d -> !"SETTLED".equals(d.getStatus()))
+                .filter(d -> d.getType() == DebtType.I_OWE)
+                .filter(d -> d.getStatus() != DebtStatus.SETTLED)
                 .mapToDouble(Debt::getRemainingAmount).sum();
 
         Map<String, Object> report = new LinkedHashMap<>();
@@ -143,7 +146,7 @@ public class ReportService {
         report.put("totalIOwe", totalIOwe);
         report.put("netPosition", totalOwedToMe - totalIOwe);
         report.put("activeDebtsCount", debts.stream()
-                .filter(d -> !"SETTLED".equals(d.getStatus())).count());
+                .filter(d -> d.getStatus() != DebtStatus.SETTLED).count());
         return report;
     }
 
@@ -361,12 +364,12 @@ public class ReportService {
             row.createCell(0).setCellValue(tx.getDate().format(formatter));
             row.createCell(1).setCellValue(tx.getDescription());
             row.createCell(2).setCellValue(tx.getCategory());
-            row.createCell(3).setCellValue(tx.getType());
+            row.createCell(3).setCellValue(tx.getType().name());
             Cell amountCell = row.createCell(4);
             amountCell.setCellValue(tx.getAmount());
             amountCell.setCellStyle(currencyStyle);
 
-            if ("INCOME".equals(tx.getType())) incomeTotal += tx.getAmount();
+            if (tx.getType() == TransactionType.INCOME) incomeTotal += tx.getAmount();
             else expenseTotal += tx.getAmount();
         }
 
@@ -630,9 +633,9 @@ public class ReportService {
                 transactionTable.addCell(createPdfCell(tx.getDate().format(formatter), normalFont, false));
                 transactionTable.addCell(createPdfCell(tx.getDescription(), normalFont, false));
                 transactionTable.addCell(createPdfCell(tx.getCategory(), normalFont, false));
-                transactionTable.addCell(createPdfCell(tx.getType(), normalFont, false));
+                transactionTable.addCell(createPdfCell(tx.getType().name(), normalFont, false));
                 transactionTable.addCell(createPdfCell(formatCurrency(tx.getAmount()), normalFont, false));
-                if ("INCOME".equals(tx.getType())) incomeTotal += tx.getAmount();
+                if (tx.getType() == TransactionType.INCOME) incomeTotal += tx.getAmount();
                 else expenseTotal += tx.getAmount();
             }
 
@@ -762,18 +765,18 @@ public class ReportService {
                 .findByUserIdAndDateBetweenAndDeletedFalse(userId, start, end);
 
         double totalIncome = transactions.stream()
-                .filter(t -> "INCOME".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.INCOME)
                 .mapToDouble(Transaction::getAmount).sum();
 
         double totalExpense = transactions.stream()
-                .filter(t -> "EXPENSE".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.EXPENSE)
                 .mapToDouble(Transaction::getAmount).sum();
 
         Map<String, Double> deductibleExpenses = new LinkedHashMap<>();
         double totalDeductible = 0;
         String[] taxCategories = {"TAX", "INSURANCE", "MEDICAL", "EDUCATION", "CHARITY", "RENT", "UTILITIES"};
         for (Transaction tx : transactions) {
-            if (!"EXPENSE".equals(tx.getType())) continue;
+            if (tx.getType() != TransactionType.EXPENSE) continue;
             boolean isDeductible = false;
             for (String cat : taxCategories) {
                 if (tx.getCategory().toUpperCase().contains(cat)) {
