@@ -8,6 +8,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.master.finance.model.enums.BillStatus;
+import com.master.finance.model.enums.Frequency;
+
 @Document(collection = "bills")
 @CompoundIndex(name = "user_deleted_status_idx", def = "{'userId': 1, 'deleted': 1, 'status': 1}")
 @CompoundIndex(name = "user_deleted_due_status_idx", def = "{'userId': 1, 'deleted': 1, 'dueDate': 1, 'status': 1}")
@@ -20,9 +23,9 @@ public class Bill {
     private Double amount;
     private String category;
     @Indexed
-    private String status; // PENDING, PAID, PARTIAL
+    private BillStatus status;
     private boolean recurring;
-    private String frequency; // MONTHLY, WEEKLY, YEARLY, NONE
+    private Frequency frequency;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate dueDate;
@@ -39,7 +42,7 @@ public class Bill {
     public Bill() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-        this.status = "PENDING";
+        this.status = BillStatus.PENDING;
     }
 
     // Getters and Setters
@@ -53,12 +56,12 @@ public class Bill {
     public void setAmount(Double amount) { this.amount = amount; }
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public BillStatus getStatus() { return status; }
+    public void setStatus(BillStatus status) { this.status = status; }
     public boolean isRecurring() { return recurring; }
     public void setRecurring(boolean recurring) { this.recurring = recurring; }
-    public String getFrequency() { return frequency; }
-    public void setFrequency(String frequency) { this.frequency = frequency; }
+    public Frequency getFrequency() { return frequency; }
+    public void setFrequency(Frequency frequency) { this.frequency = frequency; }
     public LocalDate getDueDate() { return dueDate; }
     public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
     public LocalDateTime getPaidAt() { return paidAt; }
@@ -75,6 +78,6 @@ public class Bill {
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 
     public boolean isOverdue() {
-        return "PENDING".equals(status) && dueDate != null && dueDate.isBefore(LocalDate.now());
+        return BillStatus.PENDING == status && dueDate != null && dueDate.isBefore(LocalDate.now());
     }
 }
