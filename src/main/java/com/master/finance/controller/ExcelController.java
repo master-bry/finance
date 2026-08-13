@@ -23,6 +23,8 @@ import com.master.finance.model.Bill;
 import com.master.finance.model.DailyEntry;
 import com.master.finance.model.Transaction;
 import com.master.finance.model.User;
+import com.master.finance.model.enums.PaymentMethod;
+import com.master.finance.model.enums.TransactionType;
 import com.master.finance.service.BillService;
 import com.master.finance.service.DailyEntryService;
 import com.master.finance.service.TransactionService;
@@ -77,8 +79,9 @@ public class ExcelController {
         try {
             String userId = getUserId(authentication);
             String curr = userService.findById(userId).map(User::getCurrency).orElse("TZS");
-            
-            if ("CASH".equals(paymentMethod)) {
+            PaymentMethod payment = PaymentMethod.valueOf(paymentMethod.toUpperCase());
+
+            if (payment == PaymentMethod.CASH) {
                 Double currentBalance = dailyEntryService.getCurrentBalance(userId);
                 if (currentBalance == null || currentBalance <= 0) {
                     redirectAttributes.addFlashAttribute("error", "Insufficient balance! Please add income first before using cash.");
@@ -97,9 +100,9 @@ public class ExcelController {
             expense.setAmount(amount);
             expense.setCategory(category);
             expense.setTime(LocalDateTime.now());
-            expense.setPaymentMethod(paymentMethod);
+            expense.setPaymentMethod(payment);
 
-            if ("BILL".equals(paymentMethod)) {
+            if (payment == PaymentMethod.BILL) {
                 if (billIds == null || billIds.isEmpty()) {
                     redirectAttributes.addFlashAttribute("error", "Please select at least one prepaid credit.");
                     return "redirect:/excel/daily-entry";
@@ -144,7 +147,7 @@ public class ExcelController {
                 transaction.setUserId(userId);
                 transaction.setDescription(description);
                 transaction.setAmount(amount);
-                transaction.setType("EXPENSE");
+                transaction.setType(TransactionType.EXPENSE);
                 transaction.setCategory(category);
                 transaction.setDate(LocalDateTime.now());
                 transaction.setDeleted(false);
@@ -176,7 +179,7 @@ public class ExcelController {
             transaction.setUserId(userId);
             transaction.setDescription(description);
             transaction.setAmount(amount);
-            transaction.setType("INCOME");
+            transaction.setType(TransactionType.INCOME);
             transaction.setCategory(source);
             transaction.setDate(LocalDateTime.now());
             transaction.setDeleted(false);
@@ -216,7 +219,7 @@ public class ExcelController {
                 for (Transaction t : todayTransactions) {
                     if (t.getDescription().equals(expense.getDescription()) &&
                         t.getAmount().equals(expense.getAmount()) &&
-                        "EXPENSE".equals(t.getType())) {
+                        t.getType() == TransactionType.EXPENSE) {
                         transactionService.deleteTransaction(t.getId());
                         break;
                     }
@@ -265,7 +268,7 @@ public class ExcelController {
                 for (Transaction t : todayTransactions) {
                     if (t.getDescription().equals(income.getDescription()) &&
                         t.getAmount().equals(income.getAmount()) &&
-                        "INCOME".equals(t.getType())) {
+                        t.getType() == TransactionType.INCOME) {
                         transactionService.deleteTransaction(t.getId());
                         break;
                     }
