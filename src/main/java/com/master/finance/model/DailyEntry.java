@@ -11,6 +11,9 @@ import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.master.finance.model.enums.PaymentMethod;
+import com.master.finance.model.enums.Mood;
+
 @Document(collection = "daily_entries")
 @CompoundIndex(name = "user_deleted_date_desc", def = "{'userId': 1, 'deleted': 1, 'date': -1}")
 @CompoundIndex(name = "user_date_deleted_asc", def = "{'userId': 1, 'date': 1, 'deleted': 1}")
@@ -33,7 +36,7 @@ public class DailyEntry {
     private Map<String, Double> expensesByCategory = new HashMap<>();
     private Map<String, Boolean> goalsCompleted = new HashMap<>();
     private String notes;
-    private String mood;
+    private Mood mood;
     private boolean completed;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -47,12 +50,12 @@ public class DailyEntry {
         private Double amount;
         private String category;
         private LocalDateTime time;
-        private String paymentMethod; // "CASH" or "BILL"
+        private PaymentMethod paymentMethod; // CASH or BILL
         private String billId;
 
         public ExpenseItem() {
             this.time = LocalDateTime.now();
-            this.paymentMethod = "CASH";
+            this.paymentMethod = PaymentMethod.CASH;
         }
 
         // getters and setters
@@ -64,8 +67,8 @@ public class DailyEntry {
         public void setCategory(String category) { this.category = category; }
         public LocalDateTime getTime() { return time; }
         public void setTime(LocalDateTime time) { this.time = time; }
-        public String getPaymentMethod() { return paymentMethod; }
-        public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+        public PaymentMethod getPaymentMethod() { return paymentMethod; }
+        public void setPaymentMethod(PaymentMethod paymentMethod) { this.paymentMethod = paymentMethod; }
         public String getBillId() { return billId; }
         public void setBillId(String billId) { this.billId = billId; }
     }
@@ -101,7 +104,7 @@ public class DailyEntry {
         this.savings = 0.0;
         this.closingBalance = 0.0;
         this.openingBalance = 0.0;
-        this.mood = "NEUTRAL";
+        this.mood = Mood.NEUTRAL;
         this.expenses = new ArrayList<>();
         this.prepaidExpenses = new ArrayList<>();
         this.incomes = new ArrayList<>();
@@ -148,8 +151,8 @@ public class DailyEntry {
     public void setGoalsCompleted(Map<String, Boolean> goalsCompleted) { this.goalsCompleted = goalsCompleted; }
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
-    public String getMood() { return mood; }
-    public void setMood(String mood) { this.mood = mood; }
+    public Mood getMood() { return mood; }
+    public void setMood(Mood mood) { this.mood = mood; }
     public boolean isCompleted() { return completed; }
     public void setCompleted(boolean completed) { this.completed = completed; }
     public LocalDateTime getCreatedAt() { return createdAt; }
