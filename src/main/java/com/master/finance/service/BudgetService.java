@@ -2,6 +2,7 @@ package com.master.finance.service;
 
 import com.master.finance.model.Budget;
 import com.master.finance.model.Transaction;
+import com.master.finance.model.enums.TransactionType;
 import com.master.finance.repository.BudgetRepository;
 import com.master.finance.repository.TransactionRepository;
 import org.slf4j.Logger;
@@ -106,11 +107,11 @@ public class BudgetService {
                 .findByUserIdAndDateBetweenAndDeletedFalse(budget.getUserId(), startDate, endDate);
         
         double totalIncome = transactions.stream()
-                .filter(t -> "INCOME".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.INCOME)
                 .mapToDouble(Transaction::getAmount)
                 .sum();
         double totalExpense = transactions.stream()
-                .filter(t -> "EXPENSE".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.EXPENSE)
                 .mapToDouble(Transaction::getAmount)
                 .sum();
         
@@ -121,7 +122,7 @@ public class BudgetService {
         // Update category actuals
         Map<String, Double> actualByCategory = new HashMap<>();
         for (Transaction t : transactions) {
-            if ("EXPENSE".equals(t.getType())) {
+            if (t.getType() == TransactionType.EXPENSE) {
                 actualByCategory.merge(t.getCategory(), t.getAmount(), Double::sum);
             }
         }

@@ -1,6 +1,7 @@
 package com.master.finance.service;
 
 import com.master.finance.model.AuditLog;
+import com.master.finance.model.enums.AuditSeverity;
 import com.master.finance.repository.AuditLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -20,7 +21,7 @@ public class AuditService {
         auditLogRepository.save(log);
     }
 
-    public void log(String userId, String action, String entityType, String entityId, String description, String severity) {
+    public void log(String userId, String action, String entityType, String entityId, String description, AuditSeverity severity) {
         AuditLog log = new AuditLog(userId, action, entityType, entityId, description);
         log.setSeverity(severity);
         auditLogRepository.save(log);
