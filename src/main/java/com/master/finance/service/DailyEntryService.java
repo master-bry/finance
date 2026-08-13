@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.master.finance.model.DailyEntry;
 import com.master.finance.model.Transaction;
+import com.master.finance.model.enums.TransactionType;
 import com.master.finance.repository.DailyEntryRepository;
 import com.master.finance.repository.TransactionRepository;
 
@@ -64,11 +65,11 @@ public class DailyEntryService {
     public Double getCurrentBalance(String userId) {
         List<Transaction> allTransactions = transactionRepository.findByUserIdAndDeletedFalse(userId);
         double totalIncome = allTransactions.stream()
-                .filter(t -> "INCOME".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.INCOME)
                 .mapToDouble(Transaction::getAmount)
                 .sum();
         double totalExpense = allTransactions.stream()
-                .filter(t -> "EXPENSE".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.EXPENSE)
                 .mapToDouble(Transaction::getAmount)
                 .sum();
         return totalIncome - totalExpense;
@@ -82,11 +83,11 @@ public class DailyEntryService {
         List<Transaction> transactionsBefore = transactionRepository
                 .findByUserIdAndDateBeforeAndDeletedFalse(userId, startOfDay);
         double income = transactionsBefore.stream()
-                .filter(t -> "INCOME".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.INCOME)
                 .mapToDouble(Transaction::getAmount)
                 .sum();
         double expense = transactionsBefore.stream()
-                .filter(t -> "EXPENSE".equals(t.getType()))
+                .filter(t -> t.getType() == TransactionType.EXPENSE)
                 .mapToDouble(Transaction::getAmount)
                 .sum();
         return income - expense;
@@ -137,7 +138,7 @@ public class DailyEntryService {
         DailyEntry entry = entryOpt.get();
         boolean updated = false;
 
-        if ("EXPENSE".equals(transaction.getType())) {
+        if (transaction.getType() == TransactionType.EXPENSE) {
             var iterator = entry.getExpenses().iterator();
             while (iterator.hasNext()) {
                 DailyEntry.ExpenseItem item = iterator.next();
@@ -156,7 +157,7 @@ public class DailyEntryService {
                     break;
                 }
             }
-        } else if ("INCOME".equals(transaction.getType())) {
+        } else if (transaction.getType() == TransactionType.INCOME) {
             var iterator = entry.getIncomes().iterator();
             while (iterator.hasNext()) {
                 DailyEntry.IncomeItem item = iterator.next();

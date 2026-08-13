@@ -1,6 +1,7 @@
 package com.master.finance.service;
 
 import com.master.finance.model.Goal;
+import com.master.finance.model.enums.GoalPriority;
 import com.master.finance.repository.GoalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -130,7 +131,7 @@ public class GoalService {
     }
     
     public List<Goal> getHighPriorityGoals(String userId) {
-        return goalRepository.findByUserIdAndPriorityAndDeletedFalse(userId, "HIGH");
+        return goalRepository.findByUserIdAndPriorityAndDeletedFalse(userId, GoalPriority.HIGH);
     }
     
     public List<Goal> getGoalsByCategory(String userId, String category) {
