@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.master.finance.model.Investment;
+import com.master.finance.model.enums.InvestmentTransactionType;
 import com.master.finance.service.InvestmentService;
 import com.master.finance.service.UserService;
 
@@ -234,7 +235,8 @@ public class InvestmentController {
             String userId = getUserId(authentication);
             investmentService.getInvestment(id).ifPresentOrElse(investment -> {
                 if (investment.getUserId().equals(userId)) {
-                    investmentService.addTransaction(id, type, amount, description);
+                    InvestmentTransactionType transactionType = InvestmentTransactionType.valueOf(type.toUpperCase());
+                    investmentService.addTransaction(id, transactionType, amount, description);
                     redirectAttributes.addFlashAttribute("success", "Transaction added successfully!");
                 } else {
                     redirectAttributes.addFlashAttribute("error", "Access denied.");
