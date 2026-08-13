@@ -9,6 +9,9 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.master.finance.model.enums.TransactionType;
+import com.master.finance.model.enums.Frequency;
+
 @Document(collection = "recurring_transactions")
 @CompoundIndex(name = "user_deleted_idx", def = "{'userId': 1, 'deleted': 1}")
 @CompoundIndex(name = "active_deleted_nextdate_idx", def = "{'active': 1, 'deleted': 1, 'nextDate': 1}")
@@ -25,13 +28,13 @@ public class RecurringTransaction {
     @NotNull
     private Double amount;
 
-    @NotBlank
-    private String type;
+    @NotNull
+    private TransactionType type;
 
     @NotBlank
     private String category;
 
-    private String frequency;
+    private Frequency frequency;
     private int intervalValue;
     @Indexed
     private LocalDate nextDate;
@@ -58,12 +61,12 @@ public class RecurringTransaction {
     public void setDescription(String description) { this.description = description; }
     public Double getAmount() { return amount; }
     public void setAmount(Double amount) { this.amount = amount; }
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public TransactionType getType() { return type; }
+    public void setType(TransactionType type) { this.type = type; }
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
-    public String getFrequency() { return frequency; }
-    public void setFrequency(String frequency) { this.frequency = frequency; }
+    public Frequency getFrequency() { return frequency; }
+    public void setFrequency(Frequency frequency) { this.frequency = frequency; }
     public int getIntervalValue() { return intervalValue; }
     public void setIntervalValue(int intervalValue) { this.intervalValue = intervalValue; }
     public LocalDate getNextDate() { return nextDate; }
